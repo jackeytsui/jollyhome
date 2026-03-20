@@ -1,5 +1,21 @@
-// Supabase client stub — Wave 0 placeholder
-// Full implementation arrives in Plan 01-01 (auth implementation wave)
-// This file exists so jest.mock('@/lib/supabase', ...) in setup.ts can resolve it
+import 'react-native-url-polyfill/auto';
+import { createMMKV } from 'react-native-mmkv';
+import { createClient } from '@supabase/supabase-js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/constants/config';
 
-export const supabase = {} as never;
+const storage = createMMKV({ id: 'supabase-session' });
+
+const mmkvStorageAdapter = {
+  getItem: (key: string): string | null => storage.getString(key) ?? null,
+  setItem: (key: string, value: string): void => storage.set(key, value),
+  removeItem: (key: string): void => { storage.remove(key); },
+};
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storage: mmkvStorageAdapter,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
