@@ -31,12 +31,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Invited user can join the household in under 30 seconds with zero-friction onboarding
   4. User can view household members, create a profile with dietary preferences, and leave or remove members
   5. App provides meaningful solo value (personal expense tracking, personal chore list, meal planning) before other members join
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md — Project scaffold, Supabase schema, design system, core providers
+- [ ] 01-02-PLAN.md — Auth screens (signup, signin, OAuth, magic link) + onboarding tour
+- [ ] 01-03-PLAN.md — Household creation, invite system (QR + deep link + share), join flow
+- [ ] 01-04-PLAN.md — Member directory, profiles with dietary prefs, household settings, leave/remove
+- [ ] 01-05-PLAN.md — Solo-first sandbox demo mode, RevenueCat monetization, AI credit meter
 
 ### Phase 2: Expense Tracking + Receipt OCR
 **Goal**: Users can track shared expenses, view balances with debt simplification, and scan receipts with AI -- replacing Splitwise entirely
@@ -135,7 +137,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Household | 0/3 | Not started | - |
+| 1. Foundation + Household | 0/5 | Planned | - |
 | 2. Expense Tracking + Receipt OCR | 0/4 | Not started | - |
 | 3. Chores + Calendar | 0/4 | Not started | - |
 | 4. Shopping + Meals + Supplies | 0/5 | Not started | - |
