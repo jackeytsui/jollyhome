@@ -138,7 +138,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Household | 2/6 | In Progress|  |
+| 1. Foundation + Household | 4/6 | In Progress|  |
 | 2. Expense Tracking + Receipt OCR | 0/4 | Not started | - |
 | 3. Chores + Calendar | 0/4 | Not started | - |
 | 4. Shopping + Meals + Supplies | 0/5 | Not started | - |

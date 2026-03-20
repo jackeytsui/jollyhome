@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-foundation-household-01-02-PLAN.md
-last_updated: "2026-03-20T06:41:44.811Z"
+stopped_at: Completed 01-foundation-household-01-03-PLAN.md
+last_updated: "2026-03-20T06:44:58.041Z"
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -48,6 +48,7 @@ Plan: 2 of 6
 *Updated after each plan completion*
 | Phase 01-foundation-household P01 | 13 | 4 tasks | 25 files |
 | Phase 01-foundation-household P02 | 5 | 3 tasks | 9 files |
+| Phase 01-foundation-household P03 | 5 min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation-household]: PostHogEventProperties imported from @posthog/core (posthog-react-native re-exports from @posthog/core)
 - [Phase 01-foundation-household]: WebBrowser.maybeCompleteAuthSession() at module level in useAuth — required for OAuth web session completion
 - [Phase 01-foundation-household]: useAuth uses per-call isLoading/error state rather than global Zustand store — avoids race conditions
+- [Phase 01-foundation-household]: Moved home tab from flat index to (home) group to accommodate nested screens under home tab
+- [Phase 01-foundation-household]: Email invite uses mailto deep link rather than Supabase inviteUserByEmail to avoid SMTP setup in Phase 1
+- [Phase 01-foundation-household]: invite/[token] placed outside (auth)/(app) groups to be publicly accessible for unauthenticated invite preview
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T06:41:44.809Z
-Stopped at: Completed 01-foundation-household-01-02-PLAN.md
+Last session: 2026-03-20T06:44:58.038Z
+Stopped at: Completed 01-foundation-household-01-03-PLAN.md
 Resume file: None
