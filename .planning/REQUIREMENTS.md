@@ -9,21 +9,21 @@ Requirements for initial release. Each maps to roadmap phases. Every feature is 
 
 ### Household Foundation
 
-- [ ] **HOUS-01**: User can create a new household with a name and optional photo
-- [ ] **HOUS-02**: User can invite members via shareable deep link (no app install required to preview)
-- [ ] **HOUS-03**: Invited user can join household by tapping the link with zero-friction onboarding (< 30 seconds)
-- [ ] **HOUS-04**: User can create profile with display name, photo, and dietary preferences
-- [ ] **HOUS-05**: User can view all household members and their profiles
-- [ ] **HOUS-06**: User can leave a household (with balance settlement prompt if debts exist)
-- [ ] **HOUS-07**: Household creator can remove members (with balance settlement prompt)
+- [x] **HOUS-01**: User can create a new household with a name and optional photo
+- [x] **HOUS-02**: User can invite members via shareable deep link (no app install required to preview)
+- [x] **HOUS-03**: Invited user can join household by tapping the link with zero-friction onboarding (< 30 seconds)
+- [x] **HOUS-04**: User can create profile with display name, photo, and dietary preferences
+- [x] **HOUS-05**: User can view all household members and their profiles
+- [x] **HOUS-06**: User can leave a household (with balance settlement prompt if debts exist)
+- [x] **HOUS-07**: Household creator can remove members (with balance settlement prompt)
 - [ ] **HOUS-08**: App provides solo-first value before other members join (personal expense tracking, personal chore list, meal planning)
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can sign up with email and password
-- [ ] **AUTH-02**: User receives email verification after signup
-- [ ] **AUTH-03**: User can reset password via email link
-- [ ] **AUTH-04**: User session persists across app restarts
+- [x] **AUTH-01**: User can sign up with email and password
+- [x] **AUTH-02**: User receives email verification after signup
+- [x] **AUTH-03**: User can reset password via email link
+- [x] **AUTH-04**: User session persists across app restarts
 
 ### Expenses (beats Splitwise)
 
@@ -242,17 +242,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| AUTH-04 | Phase 1 | Pending |
-| HOUS-01 | Phase 1 | Pending |
-| HOUS-02 | Phase 1 | Pending |
-| HOUS-03 | Phase 1 | Pending |
-| HOUS-04 | Phase 1 | Pending |
-| HOUS-05 | Phase 1 | Pending |
-| HOUS-06 | Phase 1 | Pending |
-| HOUS-07 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
+| AUTH-03 | Phase 1 | Complete |
+| AUTH-04 | Phase 1 | Complete |
+| HOUS-01 | Phase 1 | Complete |
+| HOUS-02 | Phase 1 | Complete |
+| HOUS-03 | Phase 1 | Complete |
+| HOUS-04 | Phase 1 | Complete |
+| HOUS-05 | Phase 1 | Complete |
+| HOUS-06 | Phase 1 | Complete |
+| HOUS-07 | Phase 1 | Complete |
 | HOUS-08 | Phase 1 | Pending |
 | EXPN-01 | Phase 2 | Pending |
 | EXPN-02 | Phase 2 | Pending |

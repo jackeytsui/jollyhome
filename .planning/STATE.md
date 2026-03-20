@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 1 UI-SPEC approved
-last_updated: "2026-03-20T05:20:17.579Z"
-last_activity: 2026-03-19 -- Roadmap created with 6 phases covering 118 v1 requirements
+status: executing
+stopped_at: "Completed 01-00-PLAN.md"
+last_updated: "2026-03-20T06:25:00Z"
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 6
+  completed_plans: 1
 ---
 
 # Project State
@@ -21,35 +19,31 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Eliminate the friction of shared living by giving every household a single, intelligent hub where money, tasks, supplies, and coordination just work.
-**Current focus:** Phase 1: Foundation + Household
+**Current focus:** Phase 01 — foundation-household
 
 ## Current Position
 
-Phase: 1 of 6 (Foundation + Household)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-03-19 -- Roadmap created with 6 phases covering 118 v1 requirements
-
-Progress: [░░░░░░░░░░] 0%
+Phase: 01 (foundation-household) — EXECUTING
+Plan: 2 of 6
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 5 min
+- Total execution time: 0.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-foundation-household | 1 | 5 min | 5 min |
 
 **Recent Trend:**
 
-- Last 5 plans: -
-- Trend: -
+- Last 5 plans: 5 min
+- Trend: baseline
 
 *Updated after each plan completion*
 
@@ -64,6 +58,9 @@ Recent decisions affecting current work:
 - [Roadmap]: Receipt OCR (AIEX-01..03) placed in Phase 2 as the acquisition hook. The multi-workflow receipt magic (AIEX-04/SYNC-01) deferred to Phase 4 when pantry/shopping exist.
 - [Roadmap]: SYNC requirements placed in the latest phase where all dependencies are met.
 - [Roadmap]: Spending insights (AIEX-05, AIEX-06) placed in Phase 6 since they need 30+ days of data.
+- [01-00]: Used setupFilesAfterEnv (correct Jest key) not setupFilesAfterFramework (plan typo in template)
+- [01-00]: Used testMatch glob instead of testPathPattern/testPathPatterns — Jest 30 renamed these as CLI-only flags
+- [01-00]: Created src/lib/supabase.ts stub rather than virtual mock — virtual mocks in setupFilesAfterEnv don't bypass moduleNameMapper resolution errors
 
 ### Pending Todos
 
@@ -78,6 +75,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T05:20:17.572Z
-Stopped at: Phase 1 UI-SPEC approved
-Resume file: .planning/phases/01-foundation-household/01-UI-SPEC.md
+Last session: 2026-03-20T06:25:00Z
+Stopped at: Completed 01-00-PLAN.md
+Resume file: .planning/phases/01-foundation-household/01-01-PLAN.md
