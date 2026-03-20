@@ -23,7 +23,7 @@ export default function AppLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="(home)"
         options={{
           title: t('tabs.home'),
           tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
@@ -56,6 +56,10 @@ export default function AppLayout() {
           title: t('tabs.more'),
           tabBarIcon: ({ color, size }) => <MoreHorizontal color={color} size={size} />,
         }}
+      />
+      <Tabs.Screen
+        name="create-household"
+        options={{ href: null }}
       />
     </Tabs>
   );
