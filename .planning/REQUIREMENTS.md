@@ -34,7 +34,7 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [ ] **EXPN-03**: User can split an expense by custom percentages, exact amounts, or shares (e.g., 2x share for larger room)
 - [ ] **EXPN-04**: User can split by weighted household shares (e.g., rent proportional to room size — set once, reuse)
 - [ ] **EXPN-05**: User can view expense history with filters (date, category, member, amount range)
-- [ ] **EXPN-06**: User can see running balance ("who owes who") with automatic debt simplification (A→B + B→C = A→C)
+- [ ] **EXPN-06**: User can see running balance ("who owes who") with automatic debt simplification (A->B + B->C = A->C)
 - [ ] **EXPN-07**: User can mark a debt as settled (partial or full)
 - [ ] **EXPN-08**: User can create recurring expenses (rent, utilities) that auto-generate on schedule
 - [ ] **EXPN-09**: User can categorize expenses with smart category suggestions based on description
@@ -58,7 +58,7 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [ ] **CHOR-01**: User can create a chore with title, description, estimated duration, and area of the house
 - [ ] **CHOR-02**: User can assign a chore to one or more household members
 - [ ] **CHOR-03**: User can set a chore as recurring with flexible scheduling (daily, specific weekdays, weekly, biweekly, monthly, custom interval)
-- [ ] **CHOR-04**: Chores display condition bars (green→yellow→red) showing time since last done, not pass/fail deadlines
+- [ ] **CHOR-04**: Chores display condition bars (green->yellow->red) showing time since last done, not pass/fail deadlines
 - [ ] **CHOR-05**: Assigned user can mark a chore as complete (with optional photo proof)
 - [ ] **CHOR-06**: User can view all chores filtered by assignee, area, status, or urgency (condition level)
 - [ ] **CHOR-07**: User can view chore completion history and fairness stats per member (hours contributed, tasks completed)
@@ -123,7 +123,7 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 ### Maintenance (full lifecycle — no consumer app does this)
 
 - [ ] **MANT-01**: User can create a maintenance request with photo, description, priority, and affected area
-- [ ] **MANT-02**: User can track maintenance request status (open → claimed → in progress → resolved)
+- [ ] **MANT-02**: User can track maintenance request status (open -> claimed -> in progress -> resolved)
 - [ ] **MANT-03**: Household member can claim a maintenance request to work on it
 - [ ] **MANT-04**: User can add notes, photos, and cost tracking to a maintenance request
 - [ ] **MANT-05**: User can view maintenance history for the household with search and filters
@@ -162,29 +162,29 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 
 These requirements define how features connect to create a coherent product experience — the reason to use one app instead of five.
 
-**Receipt → Everything Pipeline**
+**Receipt -> Everything Pipeline**
 - [ ] **SYNC-01**: Scanning a grocery receipt simultaneously: (a) creates an expense split, (b) adds purchased items to pantry inventory, (c) checks off matching shopping list items — one action, three updates
 - [ ] **SYNC-02**: Scanning a home repair receipt auto-creates an expense split AND links it to the related maintenance request
 
-**Meals ↔ Shopping ↔ Pantry Pipeline**
+**Meals <-> Shopping <-> Pantry Pipeline**
 - [ ] **SYNC-03**: Planning meals for the week auto-generates a shopping list that deducts what's already in the pantry (only buy what you need)
 - [ ] **SYNC-04**: Checking off a recipe as "cooked" auto-deducts used ingredients from pantry inventory
 - [ ] **SYNC-05**: When pantry items hit low-stock threshold, they appear both as a notification AND auto-add to the active shopping list
 
-**Calendar ↔ Everything Integration**
+**Calendar <-> Everything Integration**
 - [ ] **SYNC-06**: Calendar is the unified timeline — one view shows events, chore condition bars, meal plans, maintenance appointments, guest visits, quiet hours, and shared space bookings
 - [ ] **SYNC-07**: "Home tonight" attendance on the calendar feeds into: meal portion sizing, chore availability for AI rotation, and expense relevance ("only split dinner among people who were home")
 - [ ] **SYNC-08**: AI reads the calendar to suggest context-appropriate actions: slow cooker meals on busy evenings, deep clean suggestions on free weekends, grocery runs before guests arrive
 
-**Expenses ↔ Chores Fairness**
+**Expenses <-> Chores Fairness**
 - [ ] **SYNC-09**: Fairness dashboard shows combined view: who's contributing financially (expense ratio) AND who's contributing labor (chore hours) — the full picture of household equity
 - [ ] **SYNC-10**: When one member consistently pays more, AI can suggest they do fewer chores (and vice versa) to balance overall household contribution
 
-**Maintenance ↔ Expenses ↔ Calendar**
+**Maintenance <-> Expenses <-> Calendar**
 - [ ] **SYNC-11**: Completing a maintenance request with a cost auto-prompts "Split this expense?" and pre-fills the amount
 - [ ] **SYNC-12**: Scheduling a maintenance appointment auto-creates a calendar event visible to the whole household
 
-**Chores ↔ Supplies**
+**Chores <-> Supplies**
 - [ ] **SYNC-13**: Completing a cleaning chore can prompt "Running low on any supplies used?" to keep inventory current
 - [ ] **SYNC-14**: When cleaning supplies are low-stock, related chores show a warning ("Low on dish soap — restock before washing dishes")
 
@@ -242,13 +242,130 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated during roadmap creation) | | |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| HOUS-01 | Phase 1 | Pending |
+| HOUS-02 | Phase 1 | Pending |
+| HOUS-03 | Phase 1 | Pending |
+| HOUS-04 | Phase 1 | Pending |
+| HOUS-05 | Phase 1 | Pending |
+| HOUS-06 | Phase 1 | Pending |
+| HOUS-07 | Phase 1 | Pending |
+| HOUS-08 | Phase 1 | Pending |
+| EXPN-01 | Phase 2 | Pending |
+| EXPN-02 | Phase 2 | Pending |
+| EXPN-03 | Phase 2 | Pending |
+| EXPN-04 | Phase 2 | Pending |
+| EXPN-05 | Phase 2 | Pending |
+| EXPN-06 | Phase 2 | Pending |
+| EXPN-07 | Phase 2 | Pending |
+| EXPN-08 | Phase 2 | Pending |
+| EXPN-09 | Phase 2 | Pending |
+| EXPN-10 | Phase 2 | Pending |
+| EXPN-11 | Phase 2 | Pending |
+| EXPN-12 | Phase 2 | Pending |
+| EXPN-13 | Phase 2 | Pending |
+| EXPN-14 | Phase 2 | Pending |
+| AIEX-01 | Phase 2 | Pending |
+| AIEX-02 | Phase 2 | Pending |
+| AIEX-03 | Phase 2 | Pending |
+| AIEX-04 | Phase 4 | Pending |
+| AIEX-05 | Phase 6 | Pending |
+| AIEX-06 | Phase 6 | Pending |
+| CHOR-01 | Phase 3 | Pending |
+| CHOR-02 | Phase 3 | Pending |
+| CHOR-03 | Phase 3 | Pending |
+| CHOR-04 | Phase 3 | Pending |
+| CHOR-05 | Phase 3 | Pending |
+| CHOR-06 | Phase 3 | Pending |
+| CHOR-07 | Phase 3 | Pending |
+| CHOR-08 | Phase 3 | Pending |
+| CHOR-09 | Phase 3 | Pending |
+| CHOR-10 | Phase 3 | Pending |
+| AICH-01 | Phase 3 | Pending |
+| AICH-02 | Phase 3 | Pending |
+| AICH-03 | Phase 3 | Pending |
+| AICH-04 | Phase 3 | Pending |
+| AICH-05 | Phase 3 | Pending |
+| CALD-01 | Phase 3 | Pending |
+| CALD-02 | Phase 3 | Pending |
+| CALD-03 | Phase 3 | Pending |
+| CALD-04 | Phase 3 | Pending |
+| CALD-05 | Phase 3 | Pending |
+| CALD-06 | Phase 3 | Pending |
+| CALD-07 | Phase 3 | Pending |
+| SHOP-01 | Phase 4 | Pending |
+| SHOP-02 | Phase 4 | Pending |
+| SHOP-03 | Phase 4 | Pending |
+| SHOP-04 | Phase 4 | Pending |
+| SHOP-05 | Phase 4 | Pending |
+| SHOP-06 | Phase 4 | Pending |
+| SHOP-07 | Phase 4 | Pending |
+| SHOP-08 | Phase 4 | Pending |
+| SHOP-09 | Phase 4 | Pending |
+| AISH-01 | Phase 4 | Pending |
+| AISH-02 | Phase 4 | Pending |
+| AISH-03 | Phase 4 | Pending |
+| MEAL-01 | Phase 4 | Pending |
+| MEAL-02 | Phase 4 | Pending |
+| MEAL-03 | Phase 4 | Pending |
+| MEAL-04 | Phase 4 | Pending |
+| MEAL-05 | Phase 4 | Pending |
+| MEAL-06 | Phase 4 | Pending |
+| MEAL-07 | Phase 4 | Pending |
+| AIML-01 | Phase 4 | Pending |
+| AIML-02 | Phase 4 | Pending |
+| AIML-03 | Phase 4 | Pending |
+| AIML-04 | Phase 4 | Pending |
+| AIML-05 | Phase 4 | Pending |
+| MANT-01 | Phase 5 | Pending |
+| MANT-02 | Phase 5 | Pending |
+| MANT-03 | Phase 5 | Pending |
+| MANT-04 | Phase 5 | Pending |
+| MANT-05 | Phase 5 | Pending |
+| MANT-06 | Phase 5 | Pending |
+| RULE-01 | Phase 5 | Pending |
+| RULE-02 | Phase 5 | Pending |
+| RULE-03 | Phase 5 | Pending |
+| RULE-04 | Phase 5 | Pending |
+| RULE-05 | Phase 5 | Pending |
+| NOTF-01 | Phase 6 | Pending |
+| NOTF-02 | Phase 6 | Pending |
+| NOTF-03 | Phase 6 | Pending |
+| NOTF-04 | Phase 6 | Pending |
+| NOTF-05 | Phase 6 | Pending |
+| NOTF-06 | Phase 6 | Pending |
+| DASH-01 | Phase 6 | Pending |
+| DASH-02 | Phase 6 | Pending |
+| DASH-03 | Phase 6 | Pending |
+| ASST-01 | Phase 6 | Pending |
+| ASST-02 | Phase 6 | Pending |
+| ASST-03 | Phase 6 | Pending |
+| SYNC-01 | Phase 4 | Pending |
+| SYNC-02 | Phase 5 | Pending |
+| SYNC-03 | Phase 4 | Pending |
+| SYNC-04 | Phase 4 | Pending |
+| SYNC-05 | Phase 4 | Pending |
+| SYNC-06 | Phase 6 | Pending |
+| SYNC-07 | Phase 4 | Pending |
+| SYNC-08 | Phase 6 | Pending |
+| SYNC-09 | Phase 6 | Pending |
+| SYNC-10 | Phase 6 | Pending |
+| SYNC-11 | Phase 5 | Pending |
+| SYNC-12 | Phase 5 | Pending |
+| SYNC-13 | Phase 5 | Pending |
+| SYNC-14 | Phase 5 | Pending |
+| SYNC-15 | Phase 6 | Pending |
+| SYNC-16 | Phase 6 | Pending |
+| SYNC-17 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 89 total
-- Mapped to phases: 0
-- Unmapped: 89
+- v1 requirements: 118 total (corrected from initial count of 89 -- NOTF, DASH, ASST, SYNC categories were added after initial count)
+- Mapped to phases: 118
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after deep competitive research*
+*Last updated: 2026-03-19 after roadmap creation (traceability populated)*
