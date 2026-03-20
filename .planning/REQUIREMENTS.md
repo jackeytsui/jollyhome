@@ -16,7 +16,7 @@ Requirements for initial release. Each maps to roadmap phases. Every feature is 
 - [x] **HOUS-05**: User can view all household members and their profiles
 - [x] **HOUS-06**: User can leave a household (with balance settlement prompt if debts exist)
 - [x] **HOUS-07**: Household creator can remove members (with balance settlement prompt)
-- [ ] **HOUS-08**: App provides solo-first value before other members join (personal expense tracking, personal chore list, meal planning)
+- [x] **HOUS-08**: App provides solo-first value before other members join (personal expense tracking, personal chore list, meal planning)
 
 ### Authentication
 
@@ -253,7 +253,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | HOUS-05 | Phase 1 | Complete |
 | HOUS-06 | Phase 1 | Complete |
 | HOUS-07 | Phase 1 | Complete |
-| HOUS-08 | Phase 1 | Pending |
+| HOUS-08 | Phase 1 | Complete |
 | EXPN-01 | Phase 2 | Pending |
 | EXPN-02 | Phase 2 | Pending |
 | EXPN-03 | Phase 2 | Pending |

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-foundation-household-01-03-PLAN.md
-last_updated: "2026-03-20T06:44:58.041Z"
+stopped_at: Completed 01-foundation-household-01-05-PLAN.md
+last_updated: "2026-03-20T06:54:25.503Z"
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -49,6 +49,7 @@ Plan: 2 of 6
 | Phase 01-foundation-household P01 | 13 | 4 tasks | 25 files |
 | Phase 01-foundation-household P02 | 5 | 3 tasks | 9 files |
 | Phase 01-foundation-household P03 | 5 min | 3 tasks | 10 files |
+| Phase 01-foundation-household P05 | 5 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation-household]: Moved home tab from flat index to (home) group to accommodate nested screens under home tab
 - [Phase 01-foundation-household]: Email invite uses mailto deep link rather than Supabase inviteUserByEmail to avoid SMTP setup in Phase 1
 - [Phase 01-foundation-household]: invite/[token] placed outside (auth)/(app) groups to be publicly accessible for unauthenticated invite preview
+- [Phase 01-foundation-household]: DDL (CREATE TABLE, RLS, policies) must be top-level migration statements; only DML inside plpgsql function bodies
+- [Phase 01-foundation-household]: showPaywall() falls back to Linking.openURL until react-native-purchases-ui is added to package.json
+- [Phase 01-foundation-household]: CreditMeter color thresholds: accent at 0-89%, sandbox (#CA8A04) at 90-99%, destructive at 100%
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T06:44:58.038Z
-Stopped at: Completed 01-foundation-household-01-03-PLAN.md
+Last session: 2026-03-20T06:54:25.501Z
+Stopped at: Completed 01-foundation-household-01-05-PLAN.md
 Resume file: None
