@@ -14,7 +14,12 @@ Eliminate the friction of shared living by giving every household a single, inte
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Auth flows (email/password, Google, Apple, magic link) — Validated in Phase 1: Foundation Household
+- [x] Household CRUD (create, join, invite via deep link/QR) — Validated in Phase 1
+- [x] Member directory and profile management — Validated in Phase 1
+- [x] Solo-first sandbox/demo mode — Validated in Phase 1
+- [x] RevenueCat monetization integration — Validated in Phase 1
+- [x] Dark mode support — Validated in Phase 1
 
 ### Active
 
@@ -67,4 +72,4 @@ Eliminate the friction of shared living by giving every household a single, inte
 | Cross-platform from day one | Users need mobile + web access | — Pending |
 
 ---
-*Last updated: 2026-03-19 after initialization*
+*Last updated: 2026-03-20 — Phase 1 (Foundation Household) complete, 8/8 plans, all 12 requirements verified*
