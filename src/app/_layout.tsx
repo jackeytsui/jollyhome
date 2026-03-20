@@ -1,13 +1,14 @@
 import '../../../global.css';
 import '@/lib/i18n';
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Appearance, useColorScheme, View } from 'react-native';
 import { Stack, Redirect } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/auth';
+import { useSettingsStore } from '@/stores/settings';
 import { colors } from '@/constants/theme';
 
 const queryClient = new QueryClient({
@@ -21,6 +22,16 @@ const queryClient = new QueryClient({
 
 function RootLayoutInner() {
   const { session, isLoading, setSession } = useAuthStore();
+  const { themeOverride } = useSettingsStore();
+  const systemScheme = useColorScheme();
+
+  useEffect(() => {
+    if (themeOverride === 'system') {
+      Appearance.setColorScheme(null); // follow system
+    } else {
+      Appearance.setColorScheme(themeOverride);
+    }
+  }, [themeOverride]);
 
   useEffect(() => {
     // Get existing session on mount

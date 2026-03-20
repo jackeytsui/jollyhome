@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   SafeAreaView,
+  Pressable,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -19,12 +20,12 @@ import { useSandbox } from '@/hooks/useSandbox';
 import { useHouseholdStore } from '@/stores/household';
 import { colors } from '@/constants/theme';
 
-const FEATURE_PLACEHOLDERS = [
-  { key: 'finances', label: 'Finances', description: 'Track shared expenses and balances.' },
-  { key: 'chores', label: 'Chores', description: 'Manage household tasks fairly.' },
-  { key: 'calendar', label: 'Calendar', description: 'Coordinate schedules together.' },
-  { key: 'shopping', label: 'Shopping', description: 'Shared shopping lists.' },
-  { key: 'meals', label: 'Meals', description: 'Plan meals for the week.' },
+const FEATURE_CARDS = [
+  { key: 'finances', label: 'Finances', description: 'Track your personal expenses.', route: '/(app)/finances' as const },
+  { key: 'chores', label: 'Chores', description: 'Manage your personal tasks.', route: '/(app)/chores' as const },
+  { key: 'calendar', label: 'Calendar', description: 'View your schedule.', route: '/(app)/calendar' as const },
+  { key: 'shopping', label: 'Shopping', description: 'Shared shopping lists.', route: null },
+  { key: 'meals', label: 'Meals', description: 'Plan meals for the week.', route: null },
 ];
 
 export default function HouseholdHomeScreen() {
@@ -191,22 +192,41 @@ export default function HouseholdHomeScreen() {
           </Card>
         ) : null}
 
-        {/* Feature placeholder cards — shown when not in sandbox mode */}
+        {/* Quick Access feature cards — shown when not in sandbox mode */}
         {!isSandboxActive ? (
           <>
-            <Text style={styles.sectionLabel}>Features</Text>
-            {FEATURE_PLACEHOLDERS.map((feature) => (
-              <Card key={feature.key} style={styles.featureCard}>
-                <View style={styles.featureRow}>
-                  <View style={styles.featureInfo}>
-                    <Text style={styles.featureLabel}>{feature.label}</Text>
-                    <Text style={styles.featureDescription}>{feature.description}</Text>
+            <Text style={styles.sectionLabel}>Quick Access</Text>
+            {FEATURE_CARDS.map((feature) => (
+              feature.route ? (
+                <Pressable
+                  key={feature.key}
+                  onPress={() => router.push(feature.route!)}
+                >
+                  <Card style={styles.featureCard}>
+                    <View style={styles.featureRow}>
+                      <View style={styles.featureInfo}>
+                        <Text style={styles.featureLabel}>{feature.label}</Text>
+                        <Text style={styles.featureDescription}>{feature.description}</Text>
+                      </View>
+                      <View style={styles.chevron}>
+                        <Text style={styles.chevronText}>›</Text>
+                      </View>
+                    </View>
+                  </Card>
+                </Pressable>
+              ) : (
+                <Card key={feature.key} style={styles.featureCard}>
+                  <View style={styles.featureRow}>
+                    <View style={styles.featureInfo}>
+                      <Text style={styles.featureLabel}>{feature.label}</Text>
+                      <Text style={styles.featureDescription}>{feature.description}</Text>
+                    </View>
+                    <View style={styles.phase2Badge}>
+                      <Text style={styles.phase2Text}>Phase 2+</Text>
+                    </View>
                   </View>
-                  <View style={styles.comingSoonBadge}>
-                    <Text style={styles.comingSoonText}>Coming soon</Text>
-                  </View>
-                </View>
-              </Card>
+                </Card>
+              )
             ))}
           </>
         ) : null}
@@ -360,7 +380,17 @@ const styles = StyleSheet.create({
     color: colors.textSecondary.light,
     lineHeight: 20,
   },
-  comingSoonBadge: {
+  chevron: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingLeft: 4,
+  },
+  chevronText: {
+    fontSize: 22,
+    color: colors.textSecondary.light,
+    lineHeight: 26,
+  },
+  phase2Badge: {
     backgroundColor: colors.secondary.light,
     borderRadius: 6,
     paddingHorizontal: 8,
@@ -368,7 +398,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border.light,
   },
-  comingSoonText: {
+  phase2Text: {
     fontSize: 12,
     fontWeight: '600',
     color: colors.textSecondary.light,
