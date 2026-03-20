@@ -16,7 +16,19 @@ import { LeaveHouseholdDialog } from '@/components/household/LeaveHouseholdDialo
 import { useHousehold } from '@/hooks/useHousehold';
 import { useMembers } from '@/hooks/useMembers';
 import { useHouseholdStore } from '@/stores/household';
+import { useAuthStore } from '@/stores/auth';
 import { colors } from '@/constants/theme';
+
+async function getOutstandingBalance(
+  _householdId: string,
+  _userId: string
+): Promise<{ hasBalance: boolean; amount: string }> {
+  // Phase 2 will query the expenses/balances table here.
+  // For now, return no outstanding balance since expense tracking
+  // is not yet implemented.
+  // TODO(Phase-2): Replace with actual balance query from expenses table
+  return { hasBalance: false, amount: '$0.00' };
+}
 
 const EXPIRY_OPTIONS = [
   { label: '1 day', value: 1 },
@@ -29,6 +41,7 @@ export default function HouseholdSettingsScreen() {
   const { activeHouseholdId, householdName, userRole, memberCount } = useHouseholdStore();
   const { updateHousehold, isLoading } = useHousehold();
   const { leaveHousehold } = useMembers(activeHouseholdId);
+  const { user } = useAuthStore();
 
   const isAdmin = userRole === 'admin';
 
@@ -38,6 +51,10 @@ export default function HouseholdSettingsScreen() {
   const [saving, setSaving] = useState(false);
   const [leaveDialogVisible, setLeaveDialogVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [balanceData, setBalanceData] = useState<{ hasBalance: boolean; amount: string }>({
+    hasBalance: false,
+    amount: '$0.00',
+  });
 
   useEffect(() => {
     setName(householdName ?? '');
@@ -58,6 +75,14 @@ export default function HouseholdSettingsScreen() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleLeavePress() {
+    if (activeHouseholdId && user?.id) {
+      const balance = await getOutstandingBalance(activeHouseholdId, user.id);
+      setBalanceData(balance);
+    }
+    setLeaveDialogVisible(true);
   }
 
   async function handleLeaveConfirm() {
@@ -157,7 +182,7 @@ export default function HouseholdSettingsScreen() {
           <Button
             label="Leave Household"
             variant="destructive"
-            onPress={() => setLeaveDialogVisible(true)}
+            onPress={handleLeavePress}
           />
         </View>
       </ScrollView>
@@ -166,6 +191,8 @@ export default function HouseholdSettingsScreen() {
         visible={leaveDialogVisible}
         onConfirm={handleLeaveConfirm}
         onCancel={() => setLeaveDialogVisible(false)}
+        hasOutstandingBalance={balanceData.hasBalance}
+        balanceAmount={balanceData.amount}
       />
     </SafeAreaView>
   );

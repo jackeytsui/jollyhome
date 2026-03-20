@@ -17,6 +17,17 @@ import { useAuthStore } from '@/stores/auth';
 import { useHouseholdStore } from '@/stores/household';
 import { colors } from '@/constants/theme';
 
+async function getOutstandingBalance(
+  _householdId: string,
+  _userId: string
+): Promise<{ hasBalance: boolean; amount: string }> {
+  // Phase 2 will query the expenses/balances table here.
+  // For now, return no outstanding balance since expense tracking
+  // is not yet implemented.
+  // TODO(Phase-2): Replace with actual balance query from expenses table
+  return { hasBalance: false, amount: '$0.00' };
+}
+
 export default function MembersScreen() {
   const { user } = useAuthStore();
   const { activeHouseholdId, householdName, userRole } = useHouseholdStore();
@@ -24,6 +35,10 @@ export default function MembersScreen() {
   const inviteSheetRef = useRef<BottomSheetModal>(null);
 
   const [removeTarget, setRemoveTarget] = useState<Member | null>(null);
+  const [removeBalanceData, setRemoveBalanceData] = useState<{ hasBalance: boolean; amount: string }>({
+    hasBalance: false,
+    amount: '$0.00',
+  });
 
   useEffect(() => {
     loadMembers();
@@ -39,6 +54,14 @@ export default function MembersScreen() {
     ...(activeMembers.length > 0 ? [{ title: 'Active Members', data: activeMembers }] : []),
     ...(pendingMembers.length > 0 ? [{ title: 'Pending', data: pendingMembers }] : []),
   ];
+
+  async function handleRemovePress(member: Member) {
+    if (activeHouseholdId) {
+      const balance = await getOutstandingBalance(activeHouseholdId, member.user_id);
+      setRemoveBalanceData(balance);
+    }
+    setRemoveTarget(member);
+  }
 
   async function handleRemoveConfirm() {
     if (!removeTarget) return;
@@ -101,7 +124,7 @@ export default function MembersScreen() {
               member={item}
               isCurrentUser={item.user_id === user?.id}
               isAdmin={isAdmin}
-              onRemove={(m) => setRemoveTarget(m)}
+              onRemove={handleRemovePress}
               onPromote={handlePromote}
               onDemote={handleDemote}
             />
@@ -133,6 +156,8 @@ export default function MembersScreen() {
         memberName={removeTarget?.profile.display_name ?? 'this member'}
         onConfirm={handleRemoveConfirm}
         onCancel={() => setRemoveTarget(null)}
+        hasOutstandingBalance={removeBalanceData.hasBalance}
+        balanceAmount={removeBalanceData.amount}
       />
     </SafeAreaView>
   );

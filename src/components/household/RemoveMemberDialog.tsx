@@ -8,6 +8,8 @@ interface RemoveMemberDialogProps {
   memberName: string;
   onConfirm: () => void;
   onCancel: () => void;
+  hasOutstandingBalance?: boolean;
+  balanceAmount?: string;
 }
 
 export function RemoveMemberDialog({
@@ -15,6 +17,8 @@ export function RemoveMemberDialog({
   memberName,
   onConfirm,
   onCancel,
+  hasOutstandingBalance = false,
+  balanceAmount,
 }: RemoveMemberDialogProps) {
   return (
     <Modal
@@ -27,8 +31,13 @@ export function RemoveMemberDialog({
         <Pressable style={styles.card} onPress={() => {}}>
           <Text style={styles.title}>Remove {memberName}?</Text>
           <Text style={styles.body}>
-            This will remove {memberName} from the household. Their expense history will remain. Any outstanding balances will stay on record.
+            This will remove {memberName} from the household. Their expense history will remain.
           </Text>
+          {hasOutstandingBalance && balanceAmount && (
+            <Text style={styles.warning}>
+              {memberName} has an outstanding balance of {balanceAmount}. This will remain on record after removal.
+            </Text>
+          )}
           <View style={styles.actions}>
             <View style={styles.cancelButton}>
               <Button
@@ -82,6 +91,13 @@ const styles = StyleSheet.create({
     color: colors.textSecondary.light,
     lineHeight: 24,
     marginBottom: 16,
+  },
+  warning: {
+    fontSize: 14,
+    color: colors.destructive.light,
+    lineHeight: 20,
+    marginBottom: 12,
+    fontWeight: '600',
   },
   actions: {
     flexDirection: 'row',
