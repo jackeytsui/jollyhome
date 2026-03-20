@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-foundation-household-01-05-PLAN.md
+stopped_at: Completed 01-foundation-household-01-04-PLAN.md
 last_updated: "2026-03-20T06:54:25.503Z"
 progress:
   total_phases: 6
@@ -49,6 +49,7 @@ Plan: 2 of 6
 | Phase 01-foundation-household P01 | 13 | 4 tasks | 25 files |
 | Phase 01-foundation-household P02 | 5 | 3 tasks | 9 files |
 | Phase 01-foundation-household P03 | 5 min | 3 tasks | 10 files |
+| Phase 01-foundation-household P04 | 7 min | 3 tasks | 13 files |
 | Phase 01-foundation-household P05 | 5 min | 2 tasks | 8 files |
 
 ## Accumulated Context
@@ -73,6 +74,10 @@ Recent decisions affecting current work:
 - [Phase 01-foundation-household]: Moved home tab from flat index to (home) group to accommodate nested screens under home tab
 - [Phase 01-foundation-household]: Email invite uses mailto deep link rather than Supabase inviteUserByEmail to avoid SMTP setup in Phase 1
 - [Phase 01-foundation-household]: invite/[token] placed outside (auth)/(app) groups to be publicly accessible for unauthenticated invite preview
+- [Phase 01-foundation-household]: useProfile and useMembers use local useState not React Query — consistent with existing hook pattern in this phase
+- [Phase 01-foundation-household]: selectedTabs persisted via Zustand persist + MMKV (createJSONStorage) — default tabs are ['home','expenses','chores','calendar','more']
+- [Phase 01-foundation-household]: Dynamic tab rendering in _layout.tsx uses TAB_REGISTRY; inactive screens rendered with href:null so navigation still works
+- [Phase 01-foundation-household]: Supabase MFA listFactors() returns factor_type not type — use factor_type field in TotpFactor interface
 - [Phase 01-foundation-household]: DDL (CREATE TABLE, RLS, policies) must be top-level migration statements; only DML inside plpgsql function bodies
 - [Phase 01-foundation-household]: showPaywall() falls back to Linking.openURL until react-native-purchases-ui is added to package.json
 - [Phase 01-foundation-household]: CreditMeter color thresholds: accent at 0-89%, sandbox (#CA8A04) at 90-99%, destructive at 100%

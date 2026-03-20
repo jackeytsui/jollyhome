@@ -12,7 +12,7 @@ HomeOS delivers a unified household management platform in six phases, ordered b
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation + Household** - Auth, household creation, member invites, profiles, and solo-first value
+- [x] **Phase 1: Foundation + Household** - Auth, household creation, member invites, profiles, and solo-first value (completed 2026-03-20)
 - [ ] **Phase 2: Expense Tracking + Receipt OCR** - Full expense splitting, balances, debt simplification, and AI receipt scanning
 - [ ] **Phase 3: Chores + Calendar** - Condition-based chore management, AI rotation, and unified household calendar
 - [ ] **Phase 4: Shopping + Meals + Supplies** - Real-time shopping lists, pantry tracking, meal planning, AI meal suggestions, and the receipt-to-everything pipeline
@@ -138,7 +138,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Household | 5/6 | In Progress|  |
+| 1. Foundation + Household | 6/6 | Complete   | 2026-03-20 |
 | 2. Expense Tracking + Receipt OCR | 0/4 | Not started | - |
 | 3. Chores + Calendar | 0/4 | Not started | - |
 | 4. Shopping + Meals + Supplies | 0/5 | Not started | - |
