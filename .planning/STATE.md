@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-foundation-household-01-04-PLAN.md
-last_updated: "2026-03-20T06:54:25.503Z"
+stopped_at: Completed 01-foundation-household-01-07-PLAN.md
+last_updated: "2026-03-20T16:50:54.585Z"
 progress:
   total_phases: 6
-  completed_phases: 0
-  total_plans: 6
-  completed_plans: 5
+  completed_phases: 1
+  total_plans: 8
+  completed_plans: 8
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 01 (foundation-household) — EXECUTING
-Plan: 2 of 6
+Plan: 1 of 8
 
 ## Performance Metrics
 
@@ -51,6 +51,8 @@ Plan: 2 of 6
 | Phase 01-foundation-household P03 | 5 min | 3 tasks | 10 files |
 | Phase 01-foundation-household P04 | 7 min | 3 tasks | 13 files |
 | Phase 01-foundation-household P05 | 5 min | 2 tasks | 8 files |
+| Phase 01-foundation-household P06 | 3 min | 2 tasks | 4 files |
+| Phase 01-foundation-household P07 | 3 min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -81,6 +83,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation-household]: DDL (CREATE TABLE, RLS, policies) must be top-level migration statements; only DML inside plpgsql function bodies
 - [Phase 01-foundation-household]: showPaywall() falls back to Linking.openURL until react-native-purchases-ui is added to package.json
 - [Phase 01-foundation-household]: CreditMeter color thresholds: accent at 0-89%, sandbox (#CA8A04) at 90-99%, destructive at 100%
+- [Phase 01-foundation-household]: finances.tsx and chores.tsx use local useState only — no Supabase persistence for Phase 1 solo-first value
+- [Phase 01-foundation-household]: Dark mode uses Appearance.setColorScheme (imperative) rather than NativeWind dark: variants — matches existing StyleSheet.create pattern throughout codebase
+- [Phase 01-foundation-household]: getOutstandingBalance as module-level stub returning $0.00 with TODO(Phase-2) marker; fetch-before-show pattern so dialogs always open with correct balance data
 
 ### Pending Todos
 
@@ -95,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T06:54:25.501Z
-Stopped at: Completed 01-foundation-household-01-05-PLAN.md
+Last session: 2026-03-20T16:50:54.582Z
+Stopped at: Completed 01-foundation-household-01-07-PLAN.md
 Resume file: None
