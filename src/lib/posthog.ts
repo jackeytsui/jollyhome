@@ -1,4 +1,5 @@
 import PostHog from 'posthog-react-native';
+import { PostHogEventProperties } from '@posthog/core';
 import { POSTHOG_KEY } from '@/constants/config';
 
 let posthogInstance: PostHog | null = null;
@@ -15,14 +16,14 @@ export function getPostHog(): PostHog | null {
   return posthogInstance;
 }
 
-export function captureEvent(event: string, properties?: Record<string, string | number | boolean | null | undefined>): void {
+export function captureEvent(event: string, properties?: PostHogEventProperties): void {
   const ph = getPostHog();
   if (ph) {
     ph.capture(event, properties);
   }
 }
 
-export function identifyUser(userId: string, properties?: Record<string, string | number | boolean | null | undefined>): void {
+export function identifyUser(userId: string, properties?: PostHogEventProperties): void {
   const ph = getPostHog();
   if (ph) {
     ph.identify(userId, properties);
