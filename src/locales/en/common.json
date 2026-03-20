@@ -1,0 +1,90 @@
+{
+  "cta": {
+    "createHousehold": "Create Your Household",
+    "shareInviteLink": "Share Invite Link",
+    "joinHousehold": "Join Household",
+    "getStarted": "Get Started",
+    "signIn": "Sign In",
+    "continue": "Continue",
+    "skip": "Skip"
+  },
+  "emptyState": {
+    "noHousehold": {
+      "heading": "Welcome to Jolly Home",
+      "body": "Create your household to get started, or join one with an invite link."
+    },
+    "solo": {
+      "heading": "You're flying solo",
+      "body": "Invite roommates or family to unlock shared features. Until then, explore with demo data."
+    }
+  },
+  "sandbox": {
+    "banner": "You're viewing demo data. Clear it anytime when you're ready to go live."
+  },
+  "error": {
+    "authFailure": "Incorrect email or password. Please try again or reset your password.",
+    "network": "Connection problem. Check your internet and try again.",
+    "inviteExpired": "This invite has expired. Ask your household admin to send a new one.",
+    "inviteUsed": "This invite link has already been used. Ask your household admin for a new one.",
+    "memberLimit": "Households are limited to 6 members on the free plan. Upgrade to Plus to add more.",
+    "emailNotVerified": "Check your inbox — we sent a verification email. Didn't get it? Resend below."
+  },
+  "destructive": {
+    "leaveHousehold": {
+      "action": "Leave Household",
+      "confirmation": "Are you sure you want to leave? Your expense history stays on record. Any outstanding balances will remain visible to other members.",
+      "confirm": "Yes, Leave",
+      "cancel": "Never Mind"
+    },
+    "removeMember": {
+      "action": "Remove {{name}}",
+      "confirmation": "This will remove {{name}} from the household. Their expense history will remain. Any outstanding balances will stay on record.",
+      "confirm": "Remove Member",
+      "cancel": "Cancel"
+    },
+    "deleteAccount": {
+      "action": "Delete My Account",
+      "confirmation": "Deleting your account is permanent. You can choose immediate deletion or a 30-day grace period.",
+      "deleteImmediately": "Delete Immediately",
+      "gracePeriod": "Start 30-Day Grace Period",
+      "cancel": "Keep My Account"
+    }
+  },
+  "credits": {
+    "warning90": "You've used 90% of your AI credits this month. Purchase more or upgrade your plan.",
+    "warning100": "You've used all your AI credits. Add more credits to continue using AI features."
+  },
+  "trial": {
+    "active": "30-day free trial active — {{days}} days remaining."
+  },
+  "onboarding": {
+    "card1": {
+      "heading": "Your household, organized",
+      "body": "Track money, chores, meals, and more — all in one place your whole household actually uses."
+    },
+    "card2": {
+      "heading": "Invite anyone in seconds",
+      "body": "Share a link, QR code, or email. No app required to preview — they can join from any device."
+    },
+    "card3": {
+      "heading": "Jolly keeps it fair",
+      "body": "Your AI housemate helps balance chores, suggest meals, and track who owes what — so nobody keeps score."
+    }
+  },
+  "tabs": {
+    "home": "Home",
+    "finances": "Finances",
+    "chores": "Chores",
+    "calendar": "Calendar",
+    "more": "More"
+  },
+  "common": {
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "done": "Done",
+    "edit": "Edit",
+    "delete": "Delete",
+    "resend": "Resend"
+  }
+}
