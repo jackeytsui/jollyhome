@@ -85,6 +85,54 @@
     "done": "Done",
     "edit": "Edit",
     "delete": "Delete",
-    "resend": "Resend"
+    "resend": "Resend",
+    "or": "or"
+  },
+  "social": {
+    "google": "Continue with Google",
+    "apple": "Continue with Apple"
+  },
+  "auth": {
+    "signUp": {
+      "heading": "Welcome to Jolly Home",
+      "body": "Create your account to get started with your household.",
+      "alreadyHaveAccount": "Already have an account?",
+      "signInLink": "Sign In",
+      "magicLinkPrompt": "Sign in with magic link",
+      "displayNameLabel": "Display Name",
+      "displayNamePlaceholder": "How should we call you?",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters"
+    },
+    "signIn": {
+      "heading": "Sign In",
+      "noAccount": "Don't have an account?",
+      "getStartedLink": "Get Started",
+      "forgotPassword": "Forgot Password?",
+      "magicLinkPrompt": "Sign in with magic link",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Your password"
+    },
+    "magicLink": {
+      "heading": "Sign in with Magic Link",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "sendButton": "Send Magic Link",
+      "backToSignIn": "Back to Sign In",
+      "sentMessage": "We sent a magic link to {{email}}. Check your inbox and tap the link to sign in."
+    },
+    "forgotPassword": {
+      "heading": "Reset Password",
+      "body": "Enter your email and we'll send you a reset link.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "sendButton": "Send Reset Link",
+      "backToSignIn": "Back to Sign In",
+      "sentMessage": "Check your email for a password reset link."
+    }
   }
 }
