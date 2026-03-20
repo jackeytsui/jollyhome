@@ -12,7 +12,7 @@ HomeOS delivers a unified household management platform in six phases, ordered b
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Foundation + Household** - Auth, household creation, member invites, profiles, and solo-first value (completed 2026-03-20)
+- [ ] **Phase 1: Foundation + Household** - Auth, household creation, member invites, profiles, and solo-first value (gap closure in progress)
 - [ ] **Phase 2: Expense Tracking + Receipt OCR** - Full expense splitting, balances, debt simplification, and AI receipt scanning
 - [ ] **Phase 3: Chores + Calendar** - Condition-based chore management, AI rotation, and unified household calendar
 - [ ] **Phase 4: Shopping + Meals + Supplies** - Real-time shopping lists, pantry tracking, meal planning, AI meal suggestions, and the receipt-to-everything pipeline
@@ -31,15 +31,17 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Invited user can join the household in under 30 seconds with zero-friction onboarding
   4. User can view household members, create a profile with dietary preferences, and leave or remove members
   5. App provides meaningful solo value (personal expense tracking, personal chore list, meal planning) before other members join
-**Plans**: 6 plans
+**Plans**: 8 plans
 
 Plans:
-- [ ] 01-00-PLAN.md — Wave 0: Test infrastructure (Jest config, mocks, test stubs)
-- [ ] 01-01-PLAN.md — Project scaffold, Supabase schema, design system, core providers
-- [ ] 01-02-PLAN.md — Auth screens (signup, signin, OAuth, magic link) + onboarding tour
-- [ ] 01-03-PLAN.md — Household creation, invite system (QR + deep link + share), join flow
-- [ ] 01-04-PLAN.md — Member directory, profiles with dietary prefs, household settings, leave/remove, TOTP 2FA
-- [ ] 01-05-PLAN.md — Solo-first sandbox demo mode, RevenueCat monetization, AI credit meter
+- [x] 01-00-PLAN.md — Wave 0: Test infrastructure (Jest config, mocks, test stubs)
+- [x] 01-01-PLAN.md — Project scaffold, Supabase schema, design system, core providers
+- [x] 01-02-PLAN.md — Auth screens (signup, signin, OAuth, magic link) + onboarding tour
+- [x] 01-03-PLAN.md — Household creation, invite system (QR + deep link + share), join flow
+- [x] 01-04-PLAN.md — Member directory, profiles with dietary prefs, household settings, leave/remove, TOTP 2FA
+- [x] 01-05-PLAN.md — Solo-first sandbox demo mode, RevenueCat monetization, AI credit meter
+- [ ] 01-06-PLAN.md — Gap closure: solo-first personal screens (finances + chores), dark mode wiring, home screen navigation
+- [ ] 01-07-PLAN.md — Gap closure: balance settlement prompts for leave/remove member dialogs
 
 ### Phase 2: Expense Tracking + Receipt OCR
 **Goal**: Users can track shared expenses, view balances with debt simplification, and scan receipts with AI -- replacing Splitwise entirely
@@ -138,7 +140,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Household | 6/6 | Complete   | 2026-03-20 |
+| 1. Foundation + Household | 6/8 | Gap closure | - |
 | 2. Expense Tracking + Receipt OCR | 0/4 | Not started | - |
 | 3. Chores + Calendar | 0/4 | Not started | - |
 | 4. Shopping + Meals + Supplies | 0/5 | Not started | - |
