@@ -13,7 +13,9 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { HouseholdHeader } from '@/components/household/HouseholdHeader';
 import { InviteSheet } from '@/components/household/InviteSheet';
+import { SandboxBanner } from '@/components/household/SandboxBanner';
 import { useHousehold } from '@/hooks/useHousehold';
+import { useSandbox } from '@/hooks/useSandbox';
 import { useHouseholdStore } from '@/stores/household';
 import { colors } from '@/constants/theme';
 
@@ -31,10 +33,33 @@ export default function HouseholdHomeScreen() {
   const { activeHouseholdId, householdName, memberCount } = useHouseholdStore();
   const inviteSheetRef = useRef<BottomSheetModal>(null);
 
+  const {
+    isSandboxActive,
+    activateSandbox,
+    deactivateSandbox,
+    sandboxData,
+    loadSandboxData,
+    checkSandboxStatus,
+  } = useSandbox();
+
   useEffect(() => {
     loadActiveHousehold();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (activeHouseholdId) {
+      checkSandboxStatus();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeHouseholdId]);
+
+  useEffect(() => {
+    if (isSandboxActive && activeHouseholdId) {
+      loadSandboxData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSandboxActive, activeHouseholdId]);
 
   function handleInvitePress() {
     inviteSheetRef.current?.present();
@@ -80,9 +105,72 @@ export default function HouseholdHomeScreen() {
         onInvitePress={handleInvitePress}
       />
 
+      {/* Sandbox banner — shown when demo mode is active */}
+      {isSandboxActive ? (
+        <SandboxBanner onClear={deactivateSandbox} />
+      ) : null}
+
       <ScrollView contentContainerStyle={styles.content}>
+        {/* Sandbox demo content cards */}
+        {isSandboxActive && sandboxData ? (
+          <>
+            {/* Recent Expenses */}
+            {sandboxData.expenses.length > 0 ? (
+              <Card style={styles.demoCard}>
+                <Text style={styles.demoCardTitle}>Recent Expenses</Text>
+                {sandboxData.expenses.slice(0, 3).map((expense, idx) => (
+                  <View key={idx} style={styles.demoRow}>
+                    <Text style={styles.demoItemLabel}>{expense.description}</Text>
+                    <Text style={styles.demoItemValue}>${expense.amount.toFixed(2)}</Text>
+                  </View>
+                ))}
+              </Card>
+            ) : null}
+
+            {/* Chores Due */}
+            {sandboxData.chores.length > 0 ? (
+              <Card style={styles.demoCard}>
+                <Text style={styles.demoCardTitle}>Chores Due</Text>
+                {sandboxData.chores.slice(0, 3).map((chore, idx) => (
+                  <View key={idx} style={styles.demoRow}>
+                    <View style={[styles.conditionDot, styles[`condition_${chore.condition}`]]} />
+                    <Text style={styles.demoItemLabel}>{chore.title}</Text>
+                    <Text style={styles.demoItemMeta}>{chore.assigned_to}</Text>
+                  </View>
+                ))}
+              </Card>
+            ) : null}
+
+            {/* This Week's Meals */}
+            {sandboxData.meals.length > 0 ? (
+              <Card style={styles.demoCard}>
+                <Text style={styles.demoCardTitle}>This Week's Meals</Text>
+                {sandboxData.meals.slice(0, 3).map((meal, idx) => (
+                  <View key={idx} style={styles.demoRow}>
+                    <Text style={styles.demoItemLabel}>{meal.name}</Text>
+                    <Text style={styles.demoItemMeta}>{meal.day}</Text>
+                  </View>
+                ))}
+              </Card>
+            ) : null}
+
+            {/* Upcoming Events */}
+            {sandboxData.events.length > 0 ? (
+              <Card style={styles.demoCard}>
+                <Text style={styles.demoCardTitle}>Upcoming</Text>
+                {sandboxData.events.slice(0, 2).map((event, idx) => (
+                  <View key={idx} style={styles.demoRow}>
+                    <Text style={styles.demoItemLabel}>{event.title}</Text>
+                    <Text style={styles.demoItemMeta}>{event.date}</Text>
+                  </View>
+                ))}
+              </Card>
+            ) : null}
+          </>
+        ) : null}
+
         {/* Solo empty state */}
-        {isSolo ? (
+        {isSolo && !isSandboxActive ? (
           <Card style={styles.soloCard}>
             <Text style={styles.soloHeading}>{t('emptyState.solo.heading')}</Text>
             <Text style={styles.soloBody}>{t('emptyState.solo.body')}</Text>
@@ -93,24 +181,35 @@ export default function HouseholdHomeScreen() {
                 onPress={handleInvitePress}
               />
             </View>
+            <View style={styles.demoButton}>
+              <Button
+                label="Explore with Demo Data"
+                variant="secondary"
+                onPress={activateSandbox}
+              />
+            </View>
           </Card>
         ) : null}
 
-        {/* Feature placeholder cards */}
-        <Text style={styles.sectionLabel}>Features</Text>
-        {FEATURE_PLACEHOLDERS.map((feature) => (
-          <Card key={feature.key} style={styles.featureCard}>
-            <View style={styles.featureRow}>
-              <View style={styles.featureInfo}>
-                <Text style={styles.featureLabel}>{feature.label}</Text>
-                <Text style={styles.featureDescription}>{feature.description}</Text>
-              </View>
-              <View style={styles.comingSoonBadge}>
-                <Text style={styles.comingSoonText}>Coming soon</Text>
-              </View>
-            </View>
-          </Card>
-        ))}
+        {/* Feature placeholder cards — shown when not in sandbox mode */}
+        {!isSandboxActive ? (
+          <>
+            <Text style={styles.sectionLabel}>Features</Text>
+            {FEATURE_PLACEHOLDERS.map((feature) => (
+              <Card key={feature.key} style={styles.featureCard}>
+                <View style={styles.featureRow}>
+                  <View style={styles.featureInfo}>
+                    <Text style={styles.featureLabel}>{feature.label}</Text>
+                    <Text style={styles.featureDescription}>{feature.description}</Text>
+                  </View>
+                  <View style={styles.comingSoonBadge}>
+                    <Text style={styles.comingSoonText}>Coming soon</Text>
+                  </View>
+                </View>
+              </Card>
+            ))}
+          </>
+        ) : null}
       </ScrollView>
 
       {/* Invite sheet — rendered here so it can be presented from this screen */}
@@ -178,6 +277,56 @@ const styles = StyleSheet.create({
   },
   soloAction: {
     marginTop: 16,
+  },
+  demoButton: {
+    marginTop: 8,
+  },
+  demoCard: {
+    marginBottom: 0,
+  },
+  demoCardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary.light,
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  demoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    gap: 8,
+  },
+  demoItemLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.textPrimary.light,
+    lineHeight: 20,
+  },
+  demoItemValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary.light,
+    lineHeight: 20,
+  },
+  demoItemMeta: {
+    fontSize: 13,
+    color: colors.textSecondary.light,
+    lineHeight: 18,
+  },
+  conditionDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  condition_green: {
+    backgroundColor: colors.success.light,
+  },
+  condition_yellow: {
+    backgroundColor: colors.sandbox.light,
+  },
+  condition_red: {
+    backgroundColor: colors.destructive.light,
   },
   sectionLabel: {
     fontSize: 14,
