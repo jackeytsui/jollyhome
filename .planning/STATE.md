@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-foundation-household-01-01-PLAN.md
-last_updated: "2026-03-20T06:34:31.655Z"
+stopped_at: Completed 01-foundation-household-01-02-PLAN.md
+last_updated: "2026-03-20T06:41:44.811Z"
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 6
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -47,6 +47,7 @@ Plan: 2 of 6
 
 *Updated after each plan completion*
 | Phase 01-foundation-household P01 | 13 | 4 tasks | 25 files |
+| Phase 01-foundation-household P02 | 5 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,8 @@ Recent decisions affecting current work:
 - [Phase 01-foundation-household]: react-native-mmkv 4.x uses createMMKV() factory not MMKV class constructor, and remove() not delete() for key removal
 - [Phase 01-foundation-household]: Expo Router conditional Redirect in root layout for auth routing between (auth) and (app) groups
 - [Phase 01-foundation-household]: PostHogEventProperties imported from @posthog/core (posthog-react-native re-exports from @posthog/core)
+- [Phase 01-foundation-household]: WebBrowser.maybeCompleteAuthSession() at module level in useAuth — required for OAuth web session completion
+- [Phase 01-foundation-household]: useAuth uses per-call isLoading/error state rather than global Zustand store — avoids race conditions
 
 ### Pending Todos
 
@@ -79,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T06:34:31.653Z
-Stopped at: Completed 01-foundation-household-01-01-PLAN.md
+Last session: 2026-03-20T06:41:44.809Z
+Stopped at: Completed 01-foundation-household-01-02-PLAN.md
 Resume file: None
