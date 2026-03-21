@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-21T05:08:42.180Z"
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-21T12:45:10.711Z"
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 15
+  completed_plans: 9
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Eliminate the friction of shared living by giving every household a single, intelligent hub where money, tasks, supplies, and coordination just work.
-**Current focus:** Phase 01 — foundation-household
+**Current focus:** Phase 02 — expense-tracking-receipt-ocr
 
 ## Current Position
 
-Phase: 01 (foundation-household) — EXECUTING
-Plan: 1 of 8
+Phase: 02 (expense-tracking-receipt-ocr) — EXECUTING
+Plan: 1 of 7
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Plan: 1 of 8
 | Phase 01-foundation-household P05 | 5 min | 2 tasks | 8 files |
 | Phase 01-foundation-household P06 | 3 min | 2 tasks | 4 files |
 | Phase 01-foundation-household P07 | 3 min | 1 tasks | 3 files |
+| Phase 02-expense-tracking-receipt-ocr P01 | 22 min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 01-foundation-household]: finances.tsx and chores.tsx use local useState only — no Supabase persistence for Phase 1 solo-first value
 - [Phase 01-foundation-household]: Dark mode uses Appearance.setColorScheme (imperative) rather than NativeWind dark: variants — matches existing StyleSheet.create pattern throughout codebase
 - [Phase 01-foundation-household]: getOutstandingBalance as module-level stub returning $0.00 with TODO(Phase-2) marker; fetch-before-show pattern so dialogs always open with correct balance data
+- [Phase 02-expense-tracking-receipt-ocr]: NODE_OPTIONS=--experimental-vm-modules required to bypass jest-expo + Jest 30 lazy-getter isInsideTestCode check in expo winter runtime
+- [Phase 02-expense-tracking-receipt-ocr]: shares and equal split remainder goes to first people (not last) — floor all, distribute extra cents to first (remainder) members
 
 ### Pending Todos
 
@@ -100,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T05:08:42.177Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-expense-tracking-receipt-ocr/02-CONTEXT.md
+Last session: 2026-03-21T12:45:10.708Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: None

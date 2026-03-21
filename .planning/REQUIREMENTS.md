@@ -30,19 +30,19 @@ Requirements for initial release. Each maps to roadmap phases. Every feature is 
 Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 
 - [ ] **EXPN-01**: User can add an expense with amount, description, and category in under 15 seconds
-- [ ] **EXPN-02**: User can split an expense equally among selected members
-- [ ] **EXPN-03**: User can split an expense by custom percentages, exact amounts, or shares (e.g., 2x share for larger room)
-- [ ] **EXPN-04**: User can split by weighted household shares (e.g., rent proportional to room size — set once, reuse)
+- [x] **EXPN-02**: User can split an expense equally among selected members
+- [x] **EXPN-03**: User can split an expense by custom percentages, exact amounts, or shares (e.g., 2x share for larger room)
+- [x] **EXPN-04**: User can split by weighted household shares (e.g., rent proportional to room size — set once, reuse)
 - [ ] **EXPN-05**: User can view expense history with filters (date, category, member, amount range)
-- [ ] **EXPN-06**: User can see running balance ("who owes who") with automatic debt simplification (A->B + B->C = A->C)
+- [x] **EXPN-06**: User can see running balance ("who owes who") with automatic debt simplification (A->B + B->C = A->C)
 - [ ] **EXPN-07**: User can mark a debt as settled (partial or full)
 - [ ] **EXPN-08**: User can create recurring expenses (rent, utilities) that auto-generate on schedule
-- [ ] **EXPN-09**: User can categorize expenses with smart category suggestions based on description
+- [x] **EXPN-09**: User can categorize expenses with smart category suggestions based on description
 - [ ] **EXPN-10**: User can edit or delete an expense they created (with change history visible to all members)
-- [ ] **EXPN-11**: User can view settlement suggestions with pre-filled deep links to Venmo/Cash App/PayPal
+- [x] **EXPN-11**: User can view settlement suggestions with pre-filled deep links to Venmo/Cash App/PayPal
 - [ ] **EXPN-12**: User can dispute an expense with a note (other members see the dispute and can discuss)
-- [ ] **EXPN-13**: Tax and tip are auto-distributed proportionally on itemized receipt splits
-- [ ] **EXPN-14**: User can set privacy tiers per expense (visible to all, visible to involved parties only)
+- [x] **EXPN-13**: Tax and tip are auto-distributed proportionally on itemized receipt splits
+- [x] **EXPN-14**: User can set privacy tiers per expense (visible to all, visible to involved parties only)
 
 ### AI Expenses (free receipt OCR — key acquisition hook)
 
@@ -255,19 +255,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 | HOUS-07 | Phase 1 | Complete |
 | HOUS-08 | Phase 1 | Complete |
 | EXPN-01 | Phase 2 | Pending |
-| EXPN-02 | Phase 2 | Pending |
-| EXPN-03 | Phase 2 | Pending |
-| EXPN-04 | Phase 2 | Pending |
+| EXPN-02 | Phase 2 | Complete |
+| EXPN-03 | Phase 2 | Complete |
+| EXPN-04 | Phase 2 | Complete |
 | EXPN-05 | Phase 2 | Pending |
-| EXPN-06 | Phase 2 | Pending |
+| EXPN-06 | Phase 2 | Complete |
 | EXPN-07 | Phase 2 | Pending |
 | EXPN-08 | Phase 2 | Pending |
-| EXPN-09 | Phase 2 | Pending |
+| EXPN-09 | Phase 2 | Complete |
 | EXPN-10 | Phase 2 | Pending |
-| EXPN-11 | Phase 2 | Pending |
+| EXPN-11 | Phase 2 | Complete |
 | EXPN-12 | Phase 2 | Pending |
-| EXPN-13 | Phase 2 | Pending |
-| EXPN-14 | Phase 2 | Pending |
+| EXPN-13 | Phase 2 | Complete |
+| EXPN-14 | Phase 2 | Complete |
 | AIEX-01 | Phase 2 | Pending |
 | AIEX-02 | Phase 2 | Pending |
 | AIEX-03 | Phase 2 | Pending |
