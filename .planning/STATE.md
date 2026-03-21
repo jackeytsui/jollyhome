@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-07-PLAN.md
-last_updated: "2026-03-21T13:18:47.801Z"
+stopped_at: Completed 02-06-PLAN.md
+last_updated: "2026-03-21T13:20:30.542Z"
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -59,6 +59,7 @@ Plan: 1 of 7
 | Phase 02-expense-tracking-receipt-ocr P04 | 5 min | 2 tasks | 7 files |
 | Phase 02-expense-tracking-receipt-ocr P05 | 4 min | 2 tasks | 5 files |
 | Phase 02-expense-tracking-receipt-ocr P07 | 4 | 2 tasks | 6 files |
+| Phase 02-expense-tracking-receipt-ocr P06 | 6 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,9 @@ Recent decisions affecting current work:
 - [Phase 02-expense-tracking-receipt-ocr]: Jolly NL toast uses Animated.View slide-in/fade-out (not a library) to avoid adding dependencies
 - [Phase 02-expense-tracking-receipt-ocr]: Edge Function maps member names to IDs server-side using household_members input; credit deduction uses fetch-then-update pattern without requiring custom SQL RPC
 - [Phase 02-expense-tracking-receipt-ocr]: getOutstandingBalance reuses computeBalances() + settlement adjustment loop — consistent with balance computation pattern throughout Phase 2
+- [Phase 02-expense-tracking-receipt-ocr]: Receipt scan flow rendered as Modal overlay in finances.tsx — avoids Expo Router modal presentation issues with @gorhom/bottom-sheet gesture handler context
+- [Phase 02-expense-tracking-receipt-ocr]: processReceipt triggered via useEffect watching showReceiptReview + images.length — decouples state update from callback chain
+- [Phase 02-expense-tracking-receipt-ocr]: Edge Function validates OpenAI response shape before returning (fills missing fields with defaults: tax_cents:0, tip_cents:0, date:null)
 
 ### Pending Todos
 
@@ -121,6 +125,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T13:18:47.798Z
-Stopped at: Completed 02-07-PLAN.md
+Last session: 2026-03-21T13:20:30.539Z
+Stopped at: Completed 02-06-PLAN.md
 Resume file: None

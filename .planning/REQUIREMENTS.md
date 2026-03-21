@@ -46,9 +46,9 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 
 ### AI Expenses (free receipt OCR — key acquisition hook)
 
-- [ ] **AIEX-01**: User can scan a receipt with camera and AI extracts store name, date, line items, prices, tax, and total (< 4 seconds, 95%+ accuracy)
-- [ ] **AIEX-02**: AI suggests which items are personal vs shared based on item names and household patterns
-- [ ] **AIEX-03**: User can review, edit, and confirm AI-extracted data before saving (mandatory confirmation step)
+- [x] **AIEX-01**: User can scan a receipt with camera and AI extracts store name, date, line items, prices, tax, and total (< 4 seconds, 95%+ accuracy)
+- [x] **AIEX-02**: AI suggests which items are personal vs shared based on item names and household patterns
+- [x] **AIEX-03**: User can review, edit, and confirm AI-extracted data before saving (mandatory confirmation step)
 - [ ] **AIEX-04**: Receipt scan simultaneously creates expense split + updates pantry inventory + checks off shopping list items (one photo, three workflows)
 - [ ] **AIEX-05**: User can view AI-generated spending pattern insights after 30+ days (trends, anomalies, category breakdown)
 - [ ] **AIEX-06**: AI suggests budget optimizations ("You spent 40% more on dining this month — here are meal plans that could save $X")
@@ -268,9 +268,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXPN-12 | Phase 2 | Complete |
 | EXPN-13 | Phase 2 | Complete |
 | EXPN-14 | Phase 2 | Complete |
-| AIEX-01 | Phase 2 | Pending |
-| AIEX-02 | Phase 2 | Pending |
-| AIEX-03 | Phase 2 | Pending |
+| AIEX-01 | Phase 2 | Complete |
+| AIEX-02 | Phase 2 | Complete |
+| AIEX-03 | Phase 2 | Complete |
 | AIEX-04 | Phase 4 | Pending |
 | AIEX-05 | Phase 6 | Pending |
 | AIEX-06 | Phase 6 | Pending |
