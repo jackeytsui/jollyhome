@@ -56,23 +56,27 @@ Exceptions:
 
 ## Typography
 
+4 canonical sizes, 2 weights:
+
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 16px | 400 (regular) | 1.5 (24px) |
 | Label | 14px | 600 (semibold) | 1.43 (20px) |
 | Heading | 20px | 600 (semibold) | 1.3 (26px) |
-| Display | 28px | 700 (bold) | 1.2 (34px) |
+| Display | 28px | 600 (semibold) | 1.2 (34px) |
 
-**Sub-roles for expense-specific elements:**
+**Usage aliases (map to canonical sizes — no new scale values):**
 
-| Role | Size | Weight | Line Height | Usage |
-|------|------|--------|-------------|-------|
-| Amount large | 24px | 700 | 1.2 (29px) | Balance totals, receipt total |
-| Amount medium | 15px | 600 | 1.47 (22px) | Expense list amounts, split per-person |
-| Caption | 13px | 400 | 1.38 (18px) | Dates, metadata, secondary labels |
-| Micro | 12px | 400 | 1.5 (18px) | Phase notes, legal copy, credit meter labels |
+| Alias | Maps To | Size | Weight | Usage |
+|-------|---------|------|--------|-------|
+| Amount large | Display | 28px | 600 | Balance totals, receipt grand total |
+| Amount medium | Label | 14px | 600 | Expense list amounts, split per-person |
+| Caption | Label | 14px | 400 | Dates, metadata, secondary labels — use Body size at 400 weight |
+| Micro | Body | 16px | 400 | Phase notes, credit meter labels — use minimum Label size |
 
-**Source:** Existing finances.tsx styles (heading: 24/700, sectionTitle: 16/600, description: 15/500, date: 13, empty: 15) + Input.tsx (label: 14/600, input: 16) — extended with Display role for balance totals.
+> Correction note (2026-03-21): Display weight remapped from 700 to 600. Amount large remapped from 24px to 28px (Display canonical). Amount medium remapped from 15px to 14px (Label canonical). Caption remapped from 13px to 14px (Label canonical). Micro remapped from 12px to 14px (Label canonical). All sub-role sizes now resolve to one of the 4 canonical sizes.
+
+**Source:** Existing finances.tsx styles + Input.tsx — collapsed to 4-size / 2-weight constraint per checker rule.
 
 ---
 
@@ -134,7 +138,7 @@ New components required for Phase 2 (follow StyleSheet.create pattern):
 - `ChangeHistoryRow` — actor avatar + action text + timestamp.
 
 ### Receipt Scanning
-- `ReceiptCameraView` — full-screen camera with corner-bracket framing guide (4 accent-colored corner marks, no full border). Auto-capture shimmer animation when receipt detected. Manual shutter button (64px circle, white bg, accent border) at bottom center.
+- `ReceiptCameraView` — full-screen camera with corner-bracket framing guide (4 accent-colored corner marks, no full border). Auto-capture shimmer animation when receipt detected. Manual shutter button (64px circle, white bg, accent border) at bottom center. Cancel button bottom-right: label "Discard Scan", accessibilityLabel "Discard Scan".
 - `ReceiptPageStack` — multi-page indicator (dot row) + "Add another page" button for long receipts.
 - `ReceiptReviewCard` — Card with store name (heading), date, scrollable line items list, tax row, tip row, total row. Each field editable inline (tap to edit).
 - `ItemClassificationTag` — pill on each receipt line item: green "Shared" or amber "Personal: [Name]". Tap cycles through: Shared -> Personal:Me -> Personal:[Member...] -> back to Shared. Haptic feedback on toggle.
@@ -189,7 +193,7 @@ New components required for Phase 2 (follow StyleSheet.create pattern):
 
 **Visual treatment:**
 - Simplified debt: primary card row, full opacity
-- Original chain debts (in expanded view): secondary row, 60% opacity, smaller font (13px)
+- Original chain debts (in expanded view): secondary row, 60% opacity, smaller font (Label: 14px / 400 — maps to Caption alias)
 - Simplification savings indicator: small chip "Saved 2 transfers" in accent bg at bottom of expanded section
 
 ---
@@ -202,6 +206,7 @@ New components required for Phase 2 (follow StyleSheet.create pattern):
 | Primary CTA — confirm receipt | "Confirm & Save" |
 | Primary CTA — settle debt | "Settle Up" |
 | Primary CTA — scan receipt | "Scan Receipt" |
+| Camera view — cancel button | "Discard Scan" |
 | Jolly NL placeholder | "Tell Jolly... (e.g., \"Pizza with Jake, $42\")" |
 | Empty state heading (no household) | "Track your spending" |
 | Empty state body (no household) | "Add your first expense to start tracking. Your balance will appear here." |
@@ -235,6 +240,20 @@ New components required for Phase 2 (follow StyleSheet.create pattern):
 
 ---
 
+## Accessibility Labels
+
+Icon-only interactive elements must declare an explicit `accessibilityLabel`:
+
+| Element | Location | accessibilityLabel |
+|---------|----------|--------------------|
+| Camera icon button | Expenses Tab quick action row | "Scan Receipt" |
+| Shutter button | ReceiptCameraView | "Take Photo" |
+| Gallery button | ReceiptCameraView | "Choose from Library" |
+
+**Source:** Checker flag — Dimension 2 Visuals (2026-03-21)
+
+---
+
 ## Registry Safety
 
 | Registry | Blocks Used | Safety Gate |
@@ -255,7 +274,7 @@ SafeAreaView [dominant bg]
   ScrollView
     JollyNLInput                    ← top of screen, always visible
     BalanceSummaryCard              ← collapsible, collapses on scroll
-    [+ Add Expense button] [camera icon button]   ← Quick action row
+    [+ Add Expense button] [camera icon button, accessibilityLabel="Scan Receipt"]
     Section: "Recent Expenses"
       ExpenseCard × N               ← newest first
       "See all expenses →" link
@@ -286,9 +305,9 @@ QuickAddCard
 ```
 Screen 1: ReceiptCameraView (full-screen camera)
   Corner brackets framing guide
-  [Gallery] button bottom-left
-  [Shutter] button bottom-center
-  [Cancel] button bottom-right
+  [Gallery] button bottom-left               accessibilityLabel="Choose from Library"
+  [Shutter] button bottom-center             accessibilityLabel="Take Photo"
+  [Discard Scan] button bottom-right         accessibilityLabel="Discard Scan"
   ReceiptPageStack indicator if multi-page
 
 Screen 2: ReceiptReviewCard (scrollable)
