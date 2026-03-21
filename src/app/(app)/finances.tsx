@@ -10,6 +10,7 @@ import {
   TextInput,
 } from 'react-native';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
 import { colors } from '@/constants/theme';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useBalances } from '@/hooks/useBalances';
@@ -22,9 +23,12 @@ import { ExpenseCard } from '@/components/expenses/ExpenseCard';
 import { ExpenseSkeletonCard } from '@/components/expenses/ExpenseSkeletonCard';
 import { OfflineBanner } from '@/components/expenses/OfflineBanner';
 import { DebtDetailSheet } from '@/components/expenses/DebtDetailSheet';
+import { ExpenseDetailSheet } from '@/components/expenses/ExpenseDetailSheet';
 import type { CreateExpenseInput } from '@/types/expenses';
+import type { ExpenseWithSplits } from '@/hooks/useExpenses';
 
 export default function FinancesScreen() {
+  const router = useRouter();
   const { activeHouseholdId } = useHouseholdStore();
   const { user } = useAuthStore();
 
@@ -39,6 +43,7 @@ export default function FinancesScreen() {
 
   const [isOffline, setIsOffline] = useState(false);
   const [selectedDebtMember, setSelectedDebtMember] = useState<{ userId: string; name: string } | null>(null);
+  const [selectedExpense, setSelectedExpense] = useState<ExpenseWithSplits | null>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = ['85%'];
 
@@ -88,8 +93,8 @@ export default function FinancesScreen() {
     setSelectedDebtMember({ userId, name: member?.profile.display_name ?? 'Member' });
   }, [members]);
 
-  const handleExpensePress = useCallback((_expenseId: string) => {
-    // Expense detail sheet comes in a future plan
+  const handleExpensePress = useCallback((expense: ExpenseWithSplits) => {
+    setSelectedExpense(expense);
   }, []);
 
   const hasHousehold = Boolean(activeHouseholdId);
@@ -179,14 +184,12 @@ export default function FinancesScreen() {
                 <ExpenseCard
                   key={expense.id}
                   expense={expense}
-                  onPress={() => handleExpensePress(expense.id)}
+                  onPress={() => handleExpensePress(expense)}
                 />
               ))}
-              {expenses.length > 10 && (
-                <Pressable style={styles.seeAllLink}>
-                  <Text style={styles.seeAllText}>See all expenses →</Text>
-                </Pressable>
-              )}
+              <Pressable style={styles.seeAllLink} onPress={() => router.push('/expense-history')}>
+                <Text style={styles.seeAllText}>See all expenses →</Text>
+              </Pressable>
             </View>
           )}
         </View>
@@ -215,6 +218,18 @@ export default function FinancesScreen() {
         memberId={selectedDebtMember?.userId ?? ''}
         onSettled={() => {
           loadBalances();
+        }}
+      />
+
+      {/* Expense Detail Sheet */}
+      <ExpenseDetailSheet
+        visible={!!selectedExpense}
+        onClose={() => setSelectedExpense(null)}
+        expense={selectedExpense}
+        onUpdate={() => {
+          loadExpenses();
+          loadBalances();
+          setSelectedExpense(null);
         }}
       />
 

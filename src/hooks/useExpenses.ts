@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useHouseholdStore } from '@/stores/household';
 import { useExpenseStore } from '@/stores/expenses';
-import type { Expense, ExpenseSplit, CreateExpenseInput, SplitPreset } from '@/types/expenses';
+import type { Expense, ExpenseSplit, CreateExpenseInput, SplitPreset, ExpenseFilters } from '@/types/expenses';
 
 export type ExpenseWithSplits = Expense & { expense_splits: ExpenseSplit[] };
 
@@ -126,12 +126,63 @@ export function useExpenses() {
     };
   }, [activeHouseholdId, loadExpenses, loadPresets]);
 
+  const loadFilteredExpenses = useCallback(
+    async (filters: ExpenseFilters, page: number = 0): Promise<ExpenseWithSplits[]> => {
+      if (!activeHouseholdId) return [];
+
+      const PAGE_SIZE = 20;
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      let query = supabase
+        .from('expenses')
+        .select('*, expense_splits(*)')
+        .eq('household_id', activeHouseholdId)
+        .is('deleted_at', null)
+        .order('expense_date', { ascending: false })
+        .range(from, to);
+
+      if (filters.category) {
+        query = query.eq('category', filters.category);
+      }
+      if (filters.dateFrom) {
+        query = query.gte('expense_date', filters.dateFrom);
+      }
+      if (filters.dateTo) {
+        query = query.lte('expense_date', filters.dateTo);
+      }
+      if (filters.amountMin != null) {
+        query = query.gte('amount_cents', Math.round(filters.amountMin * 100));
+      }
+      if (filters.amountMax != null) {
+        query = query.lte('amount_cents', Math.round(filters.amountMax * 100));
+      }
+      if (filters.search) {
+        query = query.ilike('description', `%${filters.search}%`);
+      }
+      if (filters.memberId) {
+        // Filter by member involved in the split
+        query = query.eq('expense_splits.user_id', filters.memberId);
+      }
+
+      try {
+        const { data, error: fetchError } = await query;
+        if (fetchError) throw fetchError;
+        return (data ?? []) as ExpenseWithSplits[];
+      } catch {
+        return [];
+      }
+    },
+    [activeHouseholdId]
+  );
+
   return {
     expenses,
     loading,
     error,
     createExpense,
     loadExpenses,
+    loadFilteredExpenses,
     presets,
     loadPresets,
   };
