@@ -33,14 +33,14 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [x] **EXPN-02**: User can split an expense equally among selected members
 - [x] **EXPN-03**: User can split an expense by custom percentages, exact amounts, or shares (e.g., 2x share for larger room)
 - [x] **EXPN-04**: User can split by weighted household shares (e.g., rent proportional to room size — set once, reuse)
-- [ ] **EXPN-05**: User can view expense history with filters (date, category, member, amount range)
+- [x] **EXPN-05**: User can view expense history with filters (date, category, member, amount range)
 - [x] **EXPN-06**: User can see running balance ("who owes who") with automatic debt simplification (A->B + B->C = A->C)
 - [x] **EXPN-07**: User can mark a debt as settled (partial or full)
 - [ ] **EXPN-08**: User can create recurring expenses (rent, utilities) that auto-generate on schedule
 - [x] **EXPN-09**: User can categorize expenses with smart category suggestions based on description
-- [ ] **EXPN-10**: User can edit or delete an expense they created (with change history visible to all members)
+- [x] **EXPN-10**: User can edit or delete an expense they created (with change history visible to all members)
 - [x] **EXPN-11**: User can view settlement suggestions with pre-filled deep links to Venmo/Cash App/PayPal
-- [ ] **EXPN-12**: User can dispute an expense with a note (other members see the dispute and can discuss)
+- [x] **EXPN-12**: User can dispute an expense with a note (other members see the dispute and can discuss)
 - [x] **EXPN-13**: Tax and tip are auto-distributed proportionally on itemized receipt splits
 - [x] **EXPN-14**: User can set privacy tiers per expense (visible to all, visible to involved parties only)
 
@@ -258,14 +258,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXPN-02 | Phase 2 | Complete |
 | EXPN-03 | Phase 2 | Complete |
 | EXPN-04 | Phase 2 | Complete |
-| EXPN-05 | Phase 2 | Pending |
+| EXPN-05 | Phase 2 | Complete |
 | EXPN-06 | Phase 2 | Complete |
 | EXPN-07 | Phase 2 | Complete |
 | EXPN-08 | Phase 2 | Pending |
 | EXPN-09 | Phase 2 | Complete |
-| EXPN-10 | Phase 2 | Pending |
+| EXPN-10 | Phase 2 | Complete |
 | EXPN-11 | Phase 2 | Complete |
-| EXPN-12 | Phase 2 | Pending |
+| EXPN-12 | Phase 2 | Complete |
 | EXPN-13 | Phase 2 | Complete |
 | EXPN-14 | Phase 2 | Complete |
 | AIEX-01 | Phase 2 | Pending |

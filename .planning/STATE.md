@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-03-21T12:58:15.752Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-03-21T13:05:43.381Z"
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -56,6 +56,7 @@ Plan: 1 of 7
 | Phase 02-expense-tracking-receipt-ocr P01 | 22 min | 3 tasks | 6 files |
 | Phase 02-expense-tracking-receipt-ocr P02 | 5 min | 2 tasks | 12 files |
 | Phase 02-expense-tracking-receipt-ocr P03 | 10min | 2 tasks | 5 files |
+| Phase 02-expense-tracking-receipt-ocr P04 | 5 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,9 @@ Recent decisions affecting current work:
 - [Phase 02]: DebtDetailSheet controls its own BottomSheet ref via useEffect on visible prop — avoids lifting ref state to parent finances.tsx
 - [Phase 02]: loadSettlements uses Supabase .or() with two and() clauses to fetch settlements in both directions for a member pair
 - [Phase 02]: PGRST116 (no rows found) suppressed in loadPaymentPrefs — null prefs is valid first-run state
+- [Phase 02-expense-tracking-receipt-ocr]: ExpenseDetailSheet controls its own BottomSheet ref via useEffect on visible prop — same pattern as DebtDetailSheet from Plan 03
+- [Phase 02-expense-tracking-receipt-ocr]: loadFilteredExpenses added to useExpenses as separate callback — avoids breaking existing loadExpenses; expense-history.tsx has its own local state
+- [Phase 02-expense-tracking-receipt-ocr]: FilterBar uses single-panel-open state (one filter panel at a time) — avoids nested ScrollView conflicts
 
 ### Pending Todos
 
@@ -110,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T12:58:15.749Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-03-21T13:05:43.378Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
