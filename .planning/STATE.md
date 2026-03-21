@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-05-PLAN.md
-last_updated: "2026-03-21T13:11:23.814Z"
+stopped_at: Completed 02-07-PLAN.md
+last_updated: "2026-03-21T13:18:47.801Z"
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Project State
@@ -58,6 +58,7 @@ Plan: 1 of 7
 | Phase 02-expense-tracking-receipt-ocr P03 | 10min | 2 tasks | 5 files |
 | Phase 02-expense-tracking-receipt-ocr P04 | 5 min | 2 tasks | 7 files |
 | Phase 02-expense-tracking-receipt-ocr P05 | 4 min | 2 tasks | 5 files |
+| Phase 02-expense-tracking-receipt-ocr P07 | 4 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ Recent decisions affecting current work:
 - [Phase 02-expense-tracking-receipt-ocr]: FilterBar uses single-panel-open state (one filter panel at a time) — avoids nested ScrollView conflicts
 - [Phase 02]: skipNext calculates next_due_date client-side before DB write — avoids round-trip, matches RPC behavior for non-overdue skips
 - [Phase 02]: RecurrenceSchedulePicker uses visible prop + useEffect on internal BottomSheet ref — consistent with DebtDetailSheet/ExpenseDetailSheet pattern
+- [Phase 02-expense-tracking-receipt-ocr]: Jolly NL toast uses Animated.View slide-in/fade-out (not a library) to avoid adding dependencies
+- [Phase 02-expense-tracking-receipt-ocr]: Edge Function maps member names to IDs server-side using household_members input; credit deduction uses fetch-then-update pattern without requiring custom SQL RPC
+- [Phase 02-expense-tracking-receipt-ocr]: getOutstandingBalance reuses computeBalances() + settlement adjustment loop — consistent with balance computation pattern throughout Phase 2
 
 ### Pending Todos
 
@@ -117,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T13:11:23.811Z
-Stopped at: Completed 02-05-PLAN.md
+Last session: 2026-03-21T13:18:47.798Z
+Stopped at: Completed 02-07-PLAN.md
 Resume file: None
