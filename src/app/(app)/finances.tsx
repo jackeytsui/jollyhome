@@ -1,208 +1,381 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   SafeAreaView,
+  Pressable,
+  Alert,
   TextInput,
-  FlatList,
 } from 'react-native';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { colors } from '@/constants/theme';
-
-interface Expense {
-  id: string;
-  description: string;
-  amount: number;
-  date: string;
-}
+import { useExpenses } from '@/hooks/useExpenses';
+import { useBalances } from '@/hooks/useBalances';
+import { useMembers } from '@/hooks/useMembers';
+import { useHouseholdStore } from '@/stores/household';
+import { useAuthStore } from '@/stores/auth';
+import { BalanceSummaryCard } from '@/components/expenses/BalanceSummaryCard';
+import { QuickAddCard } from '@/components/expenses/QuickAddCard';
+import { ExpenseCard } from '@/components/expenses/ExpenseCard';
+import { ExpenseSkeletonCard } from '@/components/expenses/ExpenseSkeletonCard';
+import { OfflineBanner } from '@/components/expenses/OfflineBanner';
+import type { CreateExpenseInput } from '@/types/expenses';
 
 export default function FinancesScreen() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
+  const { activeHouseholdId } = useHouseholdStore();
+  const { user } = useAuthStore();
 
-  function handleAddExpense() {
-    const parsedAmount = parseFloat(amount);
-    if (!description.trim() || isNaN(parsedAmount) || parsedAmount <= 0) {
-      return;
+  const { expenses, loading: expensesLoading, createExpense, loadExpenses, presets } = useExpenses();
+  const {
+    netBalances,
+    simplifiedDebts,
+    loading: balancesLoading,
+    loadBalances,
+  } = useBalances();
+  const { members, loadMembers } = useMembers(activeHouseholdId);
+
+  const [isOffline, setIsOffline] = useState(false);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = ['85%'];
+
+  // Load all data on mount
+  useEffect(() => {
+    loadExpenses();
+    loadBalances();
+    if (activeHouseholdId) {
+      loadMembers();
     }
+  }, [activeHouseholdId, loadExpenses, loadBalances, loadMembers]);
 
-    const newExpense: Expense = {
-      id: Date.now().toString(),
-      description: description.trim(),
-      amount: parsedAmount,
-      date: new Date().toLocaleDateString(),
-    };
+  const handleOpenAddExpense = useCallback(() => {
+    bottomSheetRef.current?.expand();
+  }, []);
 
-    setExpenses((prev) => [newExpense, ...prev]);
-    setDescription('');
-    setAmount('');
-  }
+  const handleScanReceipt = useCallback(() => {
+    Alert.alert('Coming soon', 'Receipt scanning is coming in a future update.');
+  }, []);
 
-  function renderExpense({ item }: { item: Expense }) {
-    return (
-      <View style={styles.expenseItem}>
-        <View style={styles.expenseLeft}>
-          <Text style={styles.expenseDescription}>{item.description}</Text>
-          <Text style={styles.expenseDate}>{item.date}</Text>
-        </View>
-        <Text style={styles.expenseAmount}>${item.amount.toFixed(2)}</Text>
-      </View>
-    );
-  }
+  const handleSaveExpense = useCallback(
+    async (input: CreateExpenseInput) => {
+      try {
+        await createExpense(input);
+        bottomSheetRef.current?.close();
+        loadExpenses();
+        loadBalances();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to save expense';
+        if (
+          message.toLowerCase().includes('network') ||
+          message.toLowerCase().includes('offline') ||
+          message.toLowerCase().includes('fetch')
+        ) {
+          setIsOffline(true);
+          bottomSheetRef.current?.close();
+        } else {
+          Alert.alert('Error', message);
+        }
+      }
+    },
+    [createExpense, loadExpenses, loadBalances]
+  );
+
+  const handleMemberPress = useCallback((_userId: string) => {
+    // Debt detail sheet comes in a future plan
+  }, []);
+
+  const handleExpensePress = useCallback((_expenseId: string) => {
+    // Expense detail sheet comes in a future plan
+  }, []);
+
+  const hasHousehold = Boolean(activeHouseholdId);
+  const showSkeleton = expensesLoading && expenses.length === 0;
 
   return (
-    <SafeAreaView style={[styles.flex, styles.bgDominant]}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.heading}>My Expenses</Text>
+    <SafeAreaView style={styles.container}>
+      {isOffline && <OfflineBanner />}
 
-        {/* Add Expense Section */}
-        <Card style={styles.addCard}>
-          <Text style={styles.sectionTitle}>Add Expense</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Description"
-            placeholderTextColor={colors.textSecondary.light}
-            value={description}
-            onChangeText={setDescription}
-            returnKeyType="next"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Amount"
-            placeholderTextColor={colors.textSecondary.light}
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="decimal-pad"
-            returnKeyType="done"
-          />
-          <View style={styles.buttonWrapper}>
-            <Button
-              label="Add Expense"
-              variant="primary"
-              onPress={handleAddExpense}
-            />
-          </View>
-        </Card>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, isOffline && styles.scrollContentOffline]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Jolly NL Input — placeholder, functional in Plan 07 */}
+        <TextInput
+          style={styles.jollyInput}
+          placeholder={'Tell Jolly... (e.g., "Pizza with Jake, $42")'}
+          placeholderTextColor={colors.textSecondary.light}
+          editable={false}
+          pointerEvents="none"
+        />
 
-        {/* Expense List */}
-        {expenses.length === 0 ? (
-          <Card>
-            <Text style={styles.emptyText}>
-              No expenses yet. Add your first personal expense above.
+        {/* Balance Summary Card */}
+        <BalanceSummaryCard
+          netBalances={netBalances}
+          simplifiedDebts={simplifiedDebts}
+          members={members}
+          onMemberPress={handleMemberPress}
+          loading={balancesLoading}
+          currentUserId={user?.id}
+        />
+
+        {/* Quick action buttons */}
+        <View style={styles.actionRow}>
+          <Pressable style={styles.addButton} onPress={handleOpenAddExpense}>
+            <Text style={styles.addButtonText}>+ Add Expense</Text>
+          </Pressable>
+          <Pressable
+            style={styles.cameraButton}
+            onPress={handleScanReceipt}
+            accessibilityLabel="Scan Receipt"
+          >
+            <Text style={styles.cameraIcon}>📷</Text>
+          </Pressable>
+        </View>
+
+        {/* Recent Expenses section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recent Expenses</Text>
+
+          {showSkeleton ? (
+            <View style={styles.expenseList}>
+              <ExpenseSkeletonCard />
+              <ExpenseSkeletonCard />
+              <ExpenseSkeletonCard />
+            </View>
+          ) : expenses.length === 0 ? (
+            <View style={styles.emptyCard}>
+              {hasHousehold ? (
+                <>
+                  <Text style={styles.emptyHeading}>Split expenses fairly</Text>
+                  <Text style={styles.emptyBody}>
+                    Add an expense or scan a receipt — Jolly will handle the math.
+                  </Text>
+                  <View style={styles.emptyActions}>
+                    <Pressable style={styles.emptyButton} onPress={handleOpenAddExpense}>
+                      <Text style={styles.emptyButtonText}>Add Expense</Text>
+                    </Pressable>
+                    <Pressable style={styles.emptyButtonSecondary} onPress={handleScanReceipt}>
+                      <Text style={styles.emptyButtonSecondaryText}>Scan Receipt</Text>
+                    </Pressable>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.emptyHeading}>Track your spending</Text>
+                  <Text style={styles.emptyBody}>
+                    Add your first expense to start tracking. Your balance will appear here.
+                  </Text>
+                </>
+              )}
+            </View>
+          ) : (
+            <View style={styles.expenseList}>
+              {expenses.slice(0, 10).map((expense) => (
+                <ExpenseCard
+                  key={expense.id}
+                  expense={expense}
+                  onPress={() => handleExpensePress(expense.id)}
+                />
+              ))}
+              {expenses.length > 10 && (
+                <Pressable style={styles.seeAllLink}>
+                  <Text style={styles.seeAllText}>See all expenses →</Text>
+                </Pressable>
+              )}
+            </View>
+          )}
+        </View>
+
+        {/* Recurring section — placeholder, functional in Plan 05 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recurring</Text>
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyBody}>
+              Recurring expenses coming soon.
             </Text>
-          </Card>
-        ) : (
-          <Card style={styles.listCard}>
-            <Text style={styles.sectionTitle}>Recent Expenses</Text>
-            <FlatList
-              data={expenses}
-              keyExtractor={(item) => item.id}
-              renderItem={renderExpense}
-              scrollEnabled={false}
-              ItemSeparatorComponent={() => <View style={styles.separator} />}
-            />
-          </Card>
-        )}
-
-        <Text style={styles.phaseNote}>
-          Phase 1 — personal tracking with local state. Shared expense tracking with Supabase comes in Phase 2.
-        </Text>
+          </View>
+        </View>
       </ScrollView>
+
+      {/* Bottom Sheet for Quick Add */}
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        backgroundStyle={styles.bottomSheetBackground}
+        handleIndicatorStyle={styles.bottomSheetHandle}
+      >
+        <BottomSheetScrollView contentContainerStyle={styles.bottomSheetContent}>
+          <Text style={styles.bottomSheetTitle}>Add Expense</Text>
+          <QuickAddCard
+            onSave={handleSaveExpense}
+            members={members}
+            presets={presets}
+          />
+        </BottomSheetScrollView>
+      </BottomSheet>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
+  container: {
     flex: 1,
-  },
-  bgDominant: {
     backgroundColor: colors.dominant.light,
   },
-  container: {
+  scrollContent: {
     padding: 16,
+    gap: 16,
+    paddingBottom: 64,
+  },
+  scrollContentOffline: {
+    paddingTop: 52,
+  },
+  jollyInput: {
+    backgroundColor: colors.secondary.light,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: colors.textPrimary.light,
+    lineHeight: 24,
+    minHeight: 52,
+  },
+  actionRow: {
+    flexDirection: 'row',
     gap: 12,
   },
-  heading: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.textPrimary.light,
-    lineHeight: 30,
-    marginBottom: 4,
+  addButton: {
+    flex: 1,
+    backgroundColor: colors.accent.light,
+    borderRadius: 8,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  addCard: {
+  addButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    lineHeight: 24,
+  },
+  cameraButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: colors.secondary.light,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraIcon: {
+    fontSize: 20,
+  },
+  section: {
     gap: 10,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     color: colors.textPrimary.light,
-    lineHeight: 24,
-    marginBottom: 4,
+    lineHeight: 26,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    color: colors.textPrimary.light,
-    backgroundColor: colors.dominant.light,
-  },
-  buttonWrapper: {
-    marginTop: 4,
-  },
-  listCard: {
+  expenseList: {
     gap: 8,
   },
-  expenseItem: {
-    flexDirection: 'row',
+  emptyCard: {
+    backgroundColor: colors.secondary.light,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    padding: 24,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
+    gap: 8,
   },
-  expenseLeft: {
-    flex: 1,
-  },
-  expenseDescription: {
-    fontSize: 15,
-    fontWeight: '500',
+  emptyHeading: {
+    fontSize: 20,
+    fontWeight: '600',
     color: colors.textPrimary.light,
-    lineHeight: 22,
+    lineHeight: 26,
+    textAlign: 'center',
   },
-  expenseDate: {
-    fontSize: 13,
+  emptyBody: {
+    fontSize: 16,
     color: colors.textSecondary.light,
-    lineHeight: 18,
+    lineHeight: 24,
+    textAlign: 'center',
   },
-  expenseAmount: {
-    fontSize: 15,
+  emptyActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  emptyButton: {
+    backgroundColor: colors.accent.light,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    lineHeight: 20,
+  },
+  emptyButtonSecondary: {
+    backgroundColor: colors.secondary.light,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyButtonSecondaryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary.light,
+    lineHeight: 20,
+  },
+  seeAllLink: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  seeAllText: {
+    fontSize: 14,
     fontWeight: '600',
     color: colors.accent.light,
-    lineHeight: 22,
-    marginLeft: 12,
+    lineHeight: 20,
   },
-  separator: {
-    height: 1,
+  bottomSheetBackground: {
+    backgroundColor: colors.dominant.light,
+  },
+  bottomSheetHandle: {
     backgroundColor: colors.border.light,
-    marginVertical: 6,
   },
-  emptyText: {
-    fontSize: 15,
-    color: colors.textSecondary.light,
-    lineHeight: 22,
-    textAlign: 'center',
+  bottomSheetContent: {
+    paddingBottom: 32,
   },
-  phaseNote: {
-    fontSize: 12,
-    color: colors.textSecondary.light,
-    lineHeight: 18,
-    textAlign: 'center',
-    marginTop: 8,
+  bottomSheetTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.textPrimary.light,
+    lineHeight: 26,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
 });
