@@ -15,6 +15,7 @@ import { colors } from '@/constants/theme';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useBalances } from '@/hooks/useBalances';
 import { useMembers } from '@/hooks/useMembers';
+import { useRecurring } from '@/hooks/useRecurring';
 import { useHouseholdStore } from '@/stores/household';
 import { useAuthStore } from '@/stores/auth';
 import { BalanceSummaryCard } from '@/components/expenses/BalanceSummaryCard';
@@ -24,6 +25,7 @@ import { ExpenseSkeletonCard } from '@/components/expenses/ExpenseSkeletonCard';
 import { OfflineBanner } from '@/components/expenses/OfflineBanner';
 import { DebtDetailSheet } from '@/components/expenses/DebtDetailSheet';
 import { ExpenseDetailSheet } from '@/components/expenses/ExpenseDetailSheet';
+import { RecurringExpenseRow } from '@/components/expenses/RecurringExpenseRow';
 import type { CreateExpenseInput } from '@/types/expenses';
 import type { ExpenseWithSplits } from '@/hooks/useExpenses';
 
@@ -40,6 +42,13 @@ export default function FinancesScreen() {
     loadBalances,
   } = useBalances();
   const { members, loadMembers } = useMembers(activeHouseholdId);
+  const {
+    templates,
+    pauseTemplate,
+    resumeTemplate,
+    skipNext,
+    deleteTemplate,
+  } = useRecurring();
 
   const [isOffline, setIsOffline] = useState(false);
   const [selectedDebtMember, setSelectedDebtMember] = useState<{ userId: string; name: string } | null>(null);
@@ -194,14 +203,39 @@ export default function FinancesScreen() {
           )}
         </View>
 
-        {/* Recurring section — placeholder, functional in Plan 05 */}
+        {/* Recurring section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recurring</Text>
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyBody}>
-              Recurring expenses coming soon.
-            </Text>
-          </View>
+          {templates.length === 0 ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyBody}>
+                No recurring expenses yet. Add one to track rent, utilities, and subscriptions automatically.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.expenseList}>
+              {templates.map((template) => (
+                <RecurringExpenseRow
+                  key={template.id}
+                  template={template}
+                  onSkip={() => skipNext(template.id)}
+                  onPause={() => pauseTemplate(template.id)}
+                  onResume={() => resumeTemplate(template.id)}
+                  onEdit={() => Alert.alert('Edit', 'Edit recurring template coming soon.')}
+                  onDelete={() =>
+                    Alert.alert(
+                      'Delete recurring expense',
+                      `Delete "${template.description}"? This will not affect past expenses.`,
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Delete', style: 'destructive', onPress: () => deleteTemplate(template.id) },
+                      ]
+                    )
+                  }
+                />
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
 
