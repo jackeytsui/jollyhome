@@ -7,7 +7,6 @@ import {
   SafeAreaView,
   Pressable,
   Alert,
-  TextInput,
 } from 'react-native';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
@@ -26,6 +25,7 @@ import { OfflineBanner } from '@/components/expenses/OfflineBanner';
 import { DebtDetailSheet } from '@/components/expenses/DebtDetailSheet';
 import { ExpenseDetailSheet } from '@/components/expenses/ExpenseDetailSheet';
 import { RecurringExpenseRow } from '@/components/expenses/RecurringExpenseRow';
+import { JollyNLInput } from '@/components/expenses/JollyNLInput';
 import type { CreateExpenseInput } from '@/types/expenses';
 import type { ExpenseWithSplits } from '@/hooks/useExpenses';
 
@@ -53,6 +53,8 @@ export default function FinancesScreen() {
   const [isOffline, setIsOffline] = useState(false);
   const [selectedDebtMember, setSelectedDebtMember] = useState<{ userId: string; name: string } | null>(null);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithSplits | null>(null);
+  const [nlPrefilled, setNlPrefilled] = useState<Partial<CreateExpenseInput> | undefined>(undefined);
+  const [nlConfidenceFlags, setNlConfidenceFlags] = useState<string[]>([]);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = ['85%'];
 
@@ -69,6 +71,15 @@ export default function FinancesScreen() {
     bottomSheetRef.current?.expand();
   }, []);
 
+  const handleJollyParsed = useCallback(
+    (prefilled: Partial<CreateExpenseInput>, confidenceFlags: string[]) => {
+      setNlPrefilled(prefilled);
+      setNlConfidenceFlags(confidenceFlags);
+      bottomSheetRef.current?.expand();
+    },
+    []
+  );
+
   const handleScanReceipt = useCallback(() => {
     Alert.alert('Coming soon', 'Receipt scanning is coming in a future update.');
   }, []);
@@ -78,6 +89,8 @@ export default function FinancesScreen() {
       try {
         await createExpense(input);
         bottomSheetRef.current?.close();
+        setNlPrefilled(undefined);
+        setNlConfidenceFlags([]);
         loadExpenses();
         loadBalances();
       } catch (err) {
@@ -118,13 +131,10 @@ export default function FinancesScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Jolly NL Input — placeholder, functional in Plan 07 */}
-        <TextInput
-          style={styles.jollyInput}
-          placeholder={'Tell Jolly... (e.g., "Pizza with Jake, $42")'}
-          placeholderTextColor={colors.textSecondary.light}
-          editable={false}
-          pointerEvents="none"
+        {/* Jolly NL Input */}
+        <JollyNLInput
+          onParsed={handleJollyParsed}
+          disabled={!activeHouseholdId}
         />
 
         {/* Balance Summary Card */}
@@ -282,6 +292,8 @@ export default function FinancesScreen() {
             onSave={handleSaveExpense}
             members={members}
             presets={presets}
+            prefilled={nlPrefilled}
+            confidenceFlags={nlConfidenceFlags}
           />
         </BottomSheetScrollView>
       </BottomSheet>
@@ -301,18 +313,6 @@ const styles = StyleSheet.create({
   },
   scrollContentOffline: {
     paddingTop: 52,
-  },
-  jollyInput: {
-    backgroundColor: colors.secondary.light,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: colors.textPrimary.light,
-    lineHeight: 24,
-    minHeight: 52,
   },
   actionRow: {
     flexDirection: 'row',
