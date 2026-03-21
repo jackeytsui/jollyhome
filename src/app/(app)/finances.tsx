@@ -21,6 +21,7 @@ import { QuickAddCard } from '@/components/expenses/QuickAddCard';
 import { ExpenseCard } from '@/components/expenses/ExpenseCard';
 import { ExpenseSkeletonCard } from '@/components/expenses/ExpenseSkeletonCard';
 import { OfflineBanner } from '@/components/expenses/OfflineBanner';
+import { DebtDetailSheet } from '@/components/expenses/DebtDetailSheet';
 import type { CreateExpenseInput } from '@/types/expenses';
 
 export default function FinancesScreen() {
@@ -37,6 +38,7 @@ export default function FinancesScreen() {
   const { members, loadMembers } = useMembers(activeHouseholdId);
 
   const [isOffline, setIsOffline] = useState(false);
+  const [selectedDebtMember, setSelectedDebtMember] = useState<{ userId: string; name: string } | null>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = ['85%'];
 
@@ -81,9 +83,10 @@ export default function FinancesScreen() {
     [createExpense, loadExpenses, loadBalances]
   );
 
-  const handleMemberPress = useCallback((_userId: string) => {
-    // Debt detail sheet comes in a future plan
-  }, []);
+  const handleMemberPress = useCallback((userId: string) => {
+    const member = members.find((m) => m.user_id === userId);
+    setSelectedDebtMember({ userId, name: member?.profile.display_name ?? 'Member' });
+  }, [members]);
 
   const handleExpensePress = useCallback((_expenseId: string) => {
     // Expense detail sheet comes in a future plan
@@ -198,6 +201,22 @@ export default function FinancesScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Debt Detail Sheet */}
+      <DebtDetailSheet
+        visible={!!selectedDebtMember}
+        onClose={() => setSelectedDebtMember(null)}
+        debt={simplifiedDebts.find(
+          (d) =>
+            d.from === selectedDebtMember?.userId ||
+            d.to === selectedDebtMember?.userId
+        ) ?? null}
+        memberName={selectedDebtMember?.name ?? ''}
+        memberId={selectedDebtMember?.userId ?? ''}
+        onSettled={() => {
+          loadBalances();
+        }}
+      />
 
       {/* Bottom Sheet for Quick Add */}
       <BottomSheet
