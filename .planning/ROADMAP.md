@@ -53,13 +53,16 @@ Plans:
   3. User can scan a receipt with their camera and AI extracts store name, line items, prices, tax, and total in under 4 seconds at 95%+ accuracy -- with a mandatory review step before saving
   4. User can create recurring expenses, view expense history with filters, edit/delete expenses with visible change history, dispute expenses, and set privacy tiers per expense
   5. AI suggests which scanned items are personal vs shared, and tax/tip are auto-distributed proportionally on itemized splits
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
-- [ ] 02-04: TBD
+- [ ] 02-01-PLAN.md — Database schema + RLS, TypeScript types, pure math functions (TDD), Zustand store
+- [ ] 02-02-PLAN.md — Expense entry UI (quick-add form, split types, category suggestions), balance display, expenses tab layout
+- [ ] 02-03-PLAN.md — Settlement flow (debt detail, payment app deep links, settlement history)
+- [ ] 02-04-PLAN.md — Expense history with filters, expense detail with edit/delete/dispute, change history audit trail
+- [ ] 02-05-PLAN.md — Recurring expense templates (create/skip/pause/edit), payment preferences settings
+- [ ] 02-06-PLAN.md — Receipt OCR pipeline (camera, Edge Function, GPT-4o Vision, review card, item classification)
+- [ ] 02-07-PLAN.md — Jolly NL expense parsing (Edge Function, JollyNLInput), Phase 1 balance stub wiring
 
 ### Phase 3: Chores + Calendar
 **Goal**: Users can manage household chores with condition-based tracking, AI-powered fair rotation, and a unified shared calendar -- replacing OurHome and Cozi
@@ -141,7 +144,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Household | 6/8 | Gap closure | - |
-| 2. Expense Tracking + Receipt OCR | 0/4 | Not started | - |
+| 2. Expense Tracking + Receipt OCR | 0/7 | Planned | - |
 | 3. Chores + Calendar | 0/4 | Not started | - |
 | 4. Shopping + Meals + Supplies | 0/5 | Not started | - |
 | 5. Maintenance + House Rules | 0/3 | Not started | - |
