@@ -36,7 +36,7 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [x] **EXPN-05**: User can view expense history with filters (date, category, member, amount range)
 - [x] **EXPN-06**: User can see running balance ("who owes who") with automatic debt simplification (A->B + B->C = A->C)
 - [x] **EXPN-07**: User can mark a debt as settled (partial or full)
-- [ ] **EXPN-08**: User can create recurring expenses (rent, utilities) that auto-generate on schedule
+- [x] **EXPN-08**: User can create recurring expenses (rent, utilities) that auto-generate on schedule
 - [x] **EXPN-09**: User can categorize expenses with smart category suggestions based on description
 - [x] **EXPN-10**: User can edit or delete an expense they created (with change history visible to all members)
 - [x] **EXPN-11**: User can view settlement suggestions with pre-filled deep links to Venmo/Cash App/PayPal
@@ -261,7 +261,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXPN-05 | Phase 2 | Complete |
 | EXPN-06 | Phase 2 | Complete |
 | EXPN-07 | Phase 2 | Complete |
-| EXPN-08 | Phase 2 | Pending |
+| EXPN-08 | Phase 2 | Complete |
 | EXPN-09 | Phase 2 | Complete |
 | EXPN-10 | Phase 2 | Complete |
 | EXPN-11 | Phase 2 | Complete |
