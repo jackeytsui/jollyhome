@@ -18,16 +18,56 @@ import { useMembers } from '@/hooks/useMembers';
 import { useHouseholdStore } from '@/stores/household';
 import { useAuthStore } from '@/stores/auth';
 import { colors } from '@/constants/theme';
+import { supabase } from '@/lib/supabase';
+import { computeBalances } from '@/lib/expenseMath';
+import type { LedgerEntry } from '@/types/expenses';
 
 async function getOutstandingBalance(
-  _householdId: string,
-  _userId: string
+  householdId: string,
+  userId: string
 ): Promise<{ hasBalance: boolean; amount: string }> {
-  // Phase 2 will query the expenses/balances table here.
-  // For now, return no outstanding balance since expense tracking
-  // is not yet implemented.
-  // TODO(Phase-2): Replace with actual balance query from expenses table
-  return { hasBalance: false, amount: '$0.00' };
+  const { data: expenses } = await supabase
+    .from('expenses')
+    .select('paid_by, expense_splits(user_id, amount_cents)')
+    .eq('household_id', householdId)
+    .is('deleted_at', null);
+
+  if (!expenses || expenses.length === 0) {
+    return { hasBalance: false, amount: '$0.00' };
+  }
+
+  const entries: LedgerEntry[] = expenses.map((e) => ({
+    paidBy: e.paid_by as string,
+    splits: ((e.expense_splits as { user_id: string; amount_cents: number }[]) || []).map((s) => ({
+      userId: s.user_id,
+      amount: s.amount_cents,
+    })),
+  }));
+
+  const { data: settlements } = await supabase
+    .from('settlements')
+    .select('from_user_id, to_user_id, amount_cents')
+    .eq('household_id', householdId);
+
+  const net = computeBalances(entries);
+
+  // Adjust for settlements
+  for (const s of settlements || []) {
+    net[s.from_user_id] = (net[s.from_user_id] ?? 0) + (s.amount_cents as number);
+    net[s.to_user_id] = (net[s.to_user_id] ?? 0) - (s.amount_cents as number);
+  }
+
+  const userBalance = net[userId] ?? 0;
+  const absBalance = Math.abs(userBalance);
+
+  if (absBalance < 1) {
+    return { hasBalance: false, amount: '$0.00' };
+  }
+
+  return {
+    hasBalance: true,
+    amount: `$${(absBalance / 100).toFixed(2)}`,
+  };
 }
 
 const EXPIRY_OPTIONS = [
