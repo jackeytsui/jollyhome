@@ -29,7 +29,7 @@ Requirements for initial release. Each maps to roadmap phases. Every feature is 
 
 Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 
-- [ ] **EXPN-01**: User can add an expense with amount, description, and category in under 15 seconds
+- [x] **EXPN-01**: User can add an expense with amount, description, and category in under 15 seconds
 - [x] **EXPN-02**: User can split an expense equally among selected members
 - [x] **EXPN-03**: User can split an expense by custom percentages, exact amounts, or shares (e.g., 2x share for larger room)
 - [x] **EXPN-04**: User can split by weighted household shares (e.g., rent proportional to room size — set once, reuse)
@@ -254,7 +254,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | HOUS-06 | Phase 1 | Complete |
 | HOUS-07 | Phase 1 | Complete |
 | HOUS-08 | Phase 1 | Complete |
-| EXPN-01 | Phase 2 | Pending |
+| EXPN-01 | Phase 2 | Complete |
 | EXPN-02 | Phase 2 | Complete |
 | EXPN-03 | Phase 2 | Complete |
 | EXPN-04 | Phase 2 | Complete |

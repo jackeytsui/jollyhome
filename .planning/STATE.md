@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-21T12:45:10.711Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-03-21T12:53:32.052Z"
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -54,6 +54,7 @@ Plan: 1 of 7
 | Phase 01-foundation-household P06 | 3 min | 2 tasks | 4 files |
 | Phase 01-foundation-household P07 | 3 min | 1 tasks | 3 files |
 | Phase 02-expense-tracking-receipt-ocr P01 | 22 min | 3 tasks | 6 files |
+| Phase 02-expense-tracking-receipt-ocr P02 | 5 min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,8 @@ Recent decisions affecting current work:
 - [Phase 01-foundation-household]: getOutstandingBalance as module-level stub returning $0.00 with TODO(Phase-2) marker; fetch-before-show pattern so dialogs always open with correct balance data
 - [Phase 02-expense-tracking-receipt-ocr]: NODE_OPTIONS=--experimental-vm-modules required to bypass jest-expo + Jest 30 lazy-getter isInsideTestCode check in expo winter runtime
 - [Phase 02-expense-tracking-receipt-ocr]: shares and equal split remainder goes to first people (not last) — floor all, distribute extra cents to first (remainder) members
+- [Phase 02-expense-tracking-receipt-ocr]: Offline detection in createExpense uses error message heuristic (network/fetch/offline keywords) — pragmatic approach without NetInfo dependency
+- [Phase 02-expense-tracking-receipt-ocr]: Category picker in CategoryChipSuggestion uses Modal rather than nested BottomSheet to avoid @gorhom/bottom-sheet nesting limitations
 
 ### Pending Todos
 
@@ -103,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T12:45:10.708Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-21T12:53:32.050Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
