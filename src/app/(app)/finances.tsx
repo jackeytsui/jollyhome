@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Pressable,
   Alert,
+  Modal,
 } from 'react-native';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
@@ -15,6 +16,7 @@ import { useExpenses } from '@/hooks/useExpenses';
 import { useBalances } from '@/hooks/useBalances';
 import { useMembers } from '@/hooks/useMembers';
 import { useRecurring } from '@/hooks/useRecurring';
+import { useReceipt } from '@/hooks/useReceipt';
 import { useHouseholdStore } from '@/stores/household';
 import { useAuthStore } from '@/stores/auth';
 import { BalanceSummaryCard } from '@/components/expenses/BalanceSummaryCard';
@@ -26,6 +28,8 @@ import { DebtDetailSheet } from '@/components/expenses/DebtDetailSheet';
 import { ExpenseDetailSheet } from '@/components/expenses/ExpenseDetailSheet';
 import { RecurringExpenseRow } from '@/components/expenses/RecurringExpenseRow';
 import { JollyNLInput } from '@/components/expenses/JollyNLInput';
+import { ReceiptCameraView } from '@/components/receipt/ReceiptCameraView';
+import { ReceiptReviewCard } from '@/components/receipt/ReceiptReviewCard';
 import type { CreateExpenseInput } from '@/types/expenses';
 import type { ExpenseWithSplits } from '@/hooks/useExpenses';
 
@@ -50,11 +54,26 @@ export default function FinancesScreen() {
     deleteTemplate,
   } = useRecurring();
 
+  const {
+    receiptData,
+    images,
+    loading: receiptLoading,
+    error: receiptError,
+    captureImage,
+    pickFromGallery,
+    addPage,
+    removePage,
+    processReceipt,
+    clearReceipt,
+  } = useReceipt();
+
   const [isOffline, setIsOffline] = useState(false);
   const [selectedDebtMember, setSelectedDebtMember] = useState<{ userId: string; name: string } | null>(null);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithSplits | null>(null);
   const [nlPrefilled, setNlPrefilled] = useState<Partial<CreateExpenseInput> | undefined>(undefined);
   const [nlConfidenceFlags, setNlConfidenceFlags] = useState<string[]>([]);
+  const [showReceiptCamera, setShowReceiptCamera] = useState(false);
+  const [showReceiptReview, setShowReceiptReview] = useState(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = ['85%'];
 
@@ -81,8 +100,48 @@ export default function FinancesScreen() {
   );
 
   const handleScanReceipt = useCallback(() => {
-    Alert.alert('Coming soon', 'Receipt scanning is coming in a future update.');
-  }, []);
+    clearReceipt();
+    setShowReceiptCamera(true);
+  }, [clearReceipt]);
+
+  const handleReceiptCapture = useCallback((uri: string) => {
+    captureImage(uri);
+    setShowReceiptCamera(false);
+    setShowReceiptReview(true);
+    // processReceipt will be triggered by useEffect once images state updates
+  }, [captureImage]);
+
+  const handlePickGallery = useCallback(async () => {
+    await pickFromGallery();
+    // After gallery pick, close camera and show review
+    // images state will be updated by pickFromGallery
+    setShowReceiptCamera(false);
+    setShowReceiptReview(true);
+  }, [pickFromGallery]);
+
+  const handleReceiptConfirm = useCallback(async (input: CreateExpenseInput) => {
+    try {
+      await createExpense(input);
+      setShowReceiptReview(false);
+      clearReceipt();
+      loadExpenses();
+      loadBalances();
+      Alert.alert('Saved!', 'Expense created from receipt.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save expense';
+      Alert.alert('Error', message);
+    }
+  }, [createExpense, clearReceipt, loadExpenses, loadBalances]);
+
+  const handleReceiptCancel = useCallback(() => {
+    setShowReceiptReview(false);
+    clearReceipt();
+  }, [clearReceipt]);
+
+  const handleReceiptCameraDiscard = useCallback(() => {
+    setShowReceiptCamera(false);
+    clearReceipt();
+  }, [clearReceipt]);
 
   const handleSaveExpense = useCallback(
     async (input: CreateExpenseInput) => {
@@ -118,6 +177,23 @@ export default function FinancesScreen() {
   const handleExpensePress = useCallback((expense: ExpenseWithSplits) => {
     setSelectedExpense(expense);
   }, []);
+
+  // Trigger OCR processing when review modal opens and we have images but no data yet
+  useEffect(() => {
+    if (showReceiptReview && images.length > 0 && !receiptData && !receiptLoading) {
+      processReceipt();
+    }
+  }, [showReceiptReview, images.length, receiptData, receiptLoading, processReceipt]);
+
+  // Show error from receipt processing
+  useEffect(() => {
+    if (receiptError && showReceiptReview) {
+      Alert.alert('Receipt Error', receiptError, [
+        { text: 'Retry', onPress: () => processReceipt() },
+        { text: 'Cancel', onPress: handleReceiptCancel },
+      ]);
+    }
+  }, [receiptError, showReceiptReview]);
 
   const hasHousehold = Boolean(activeHouseholdId);
   const showSkeleton = expensesLoading && expenses.length === 0;
@@ -297,6 +373,65 @@ export default function FinancesScreen() {
           />
         </BottomSheetScrollView>
       </BottomSheet>
+
+      {/* Receipt Camera Modal */}
+      <Modal
+        visible={showReceiptCamera}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={handleReceiptCameraDiscard}
+      >
+        <ReceiptCameraView
+          pageCount={images.length}
+          currentPage={images.length > 0 ? images.length - 1 : 0}
+          onCapture={handleReceiptCapture}
+          onPickGallery={handlePickGallery}
+          onAddPage={() => {}}
+          onDiscard={handleReceiptCameraDiscard}
+        />
+      </Modal>
+
+      {/* Receipt Review Modal */}
+      <Modal
+        visible={showReceiptReview}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={handleReceiptCancel}
+      >
+        {receiptData ? (
+          <SafeAreaView style={styles.container}>
+            <ReceiptReviewCard
+              receiptData={receiptData}
+              members={members}
+              currentUserId={user?.id ?? ''}
+              householdId={activeHouseholdId ?? ''}
+              onConfirm={handleReceiptConfirm}
+              onCancel={handleReceiptCancel}
+              loading={false}
+            />
+          </SafeAreaView>
+        ) : (
+          <SafeAreaView style={styles.container}>
+            <ReceiptReviewCard
+              receiptData={{
+                store_name: '',
+                date: null,
+                items: [],
+                subtotal_cents: 0,
+                tax_cents: 0,
+                tip_cents: 0,
+                total_cents: 0,
+              }}
+              members={members}
+              currentUserId={user?.id ?? ''}
+              householdId={activeHouseholdId ?? ''}
+              onConfirm={handleReceiptConfirm}
+              onCancel={handleReceiptCancel}
+              loading={receiptLoading}
+            />
+          </SafeAreaView>
+        )}
+      </Modal>
     </SafeAreaView>
   );
 }
