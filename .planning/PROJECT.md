@@ -20,11 +20,14 @@ Eliminate the friction of shared living by giving every household a single, inte
 - [x] Solo-first sandbox/demo mode — Validated in Phase 1
 - [x] RevenueCat monetization integration — Validated in Phase 1
 - [x] Dark mode support — Validated in Phase 1
+- [x] Expense tracking and smart splitting (receipt OCR, manual entry, equal/custom/percentage/shares splits) — Validated in Phase 2: Expense Tracking + Receipt OCR
+- [x] Balance tracking with debt simplification and settlement history — Validated in Phase 2
+- [x] AI-powered receipt scanning and item extraction (GPT-4o Vision) — Validated in Phase 2
+- [x] AI natural language expense input (Jolly NL parsing) — Validated in Phase 2
+- [x] Recurring expense templates with auto-creation — Validated in Phase 2
+- [x] Payment app deep links (Venmo/CashApp/PayPal/Zelle) — Validated in Phase 2
 
 ### Active
-
-- [ ] Expense tracking and smart splitting (receipt OCR, manual entry, equal/custom splits)
-- [ ] Balance tracking with settlement history
 - [ ] Chore assignment, rotation, and completion tracking
 - [ ] Shared household calendar
 - [ ] Meal planning and coordination
@@ -33,7 +36,6 @@ Eliminate the friction of shared living by giving every household a single, inte
 - [ ] Guest management and shared space scheduling
 - [ ] House rules and quiet hours
 - [ ] Push notifications to household members
-- [ ] AI-powered receipt scanning and item extraction
 - [ ] AI smart suggestions (predictive reminders, spending patterns)
 - [ ] AI meal planning (preferences, budget, dietary needs)
 - [ ] AI chore optimization (fair rotation based on availability)
@@ -72,4 +74,4 @@ Eliminate the friction of shared living by giving every household a single, inte
 | Cross-platform from day one | Users need mobile + web access | — Pending |
 
 ---
-*Last updated: 2026-03-20 — Phase 1 (Foundation Household) complete, 8/8 plans, all 12 requirements verified*
+*Last updated: 2026-03-21 — Phase 2 (Expense Tracking + Receipt OCR) complete, 7/7 plans, all 17 requirements verified*
