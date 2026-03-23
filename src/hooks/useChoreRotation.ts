@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { buildFairnessStats, getRollingAverageMinutes } from '@/lib/fairness';
 import {
@@ -17,12 +17,133 @@ function getDateKey(value: string | null | undefined) {
   return value ? value.slice(0, 10) : null;
 }
 
+interface MemberChorePreferenceRecord {
+  member_user_id: string;
+  template_id: string | null;
+  area: string | null;
+  preference_score: number;
+  preferred: boolean;
+}
+
+function clampPreferenceScore(value: number) {
+  return Math.max(-1, Math.min(1, value));
+}
+
+function getPreferenceValue(row: MemberChorePreferenceRecord) {
+  const baseScore = Number(row.preference_score ?? 0);
+  const preferredBoost = row.preferred ? 0.25 : 0;
+  return clampPreferenceScore(baseScore + preferredBoost);
+}
+
+function averagePreferenceValues(values: number[]) {
+  if (values.length === 0) {
+    return 0;
+  }
+
+  return clampPreferenceScore(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function buildPreferenceMaps(rows: MemberChorePreferenceRecord[]) {
+  const grouped = new Map<string, {
+    templateScores: Map<string, number[]>;
+    areaScores: Map<string, number[]>;
+    fallbackScores: number[];
+  }>();
+
+  for (const row of rows) {
+    const value = getPreferenceValue(row);
+    const entry = grouped.get(row.member_user_id) ?? {
+      templateScores: new Map<string, number[]>(),
+      areaScores: new Map<string, number[]>(),
+      fallbackScores: [],
+    };
+
+    entry.fallbackScores.push(value);
+
+    if (row.template_id) {
+      const templateValues = entry.templateScores.get(row.template_id) ?? [];
+      templateValues.push(value);
+      entry.templateScores.set(row.template_id, templateValues);
+    }
+
+    if (row.area) {
+      const areaValues = entry.areaScores.get(row.area) ?? [];
+      areaValues.push(value);
+      entry.areaScores.set(row.area, areaValues);
+    }
+
+    grouped.set(row.member_user_id, entry);
+  }
+
+  return new Map(
+    Array.from(grouped.entries()).map(([memberId, entry]) => [
+      memberId,
+      {
+        preferenceScore: averagePreferenceValues(entry.fallbackScores),
+        preferenceScoresByTemplate: Object.fromEntries(
+          Array.from(entry.templateScores.entries()).map(([templateId, values]) => [
+            templateId,
+            averagePreferenceValues(values),
+          ])
+        ),
+        preferenceScoresByArea: Object.fromEntries(
+          Array.from(entry.areaScores.entries()).map(([area, values]) => [
+            area,
+            averagePreferenceValues(values),
+          ])
+        ),
+      },
+    ])
+  );
+}
+
 export function useChoreRotation() {
   const activeHouseholdId = useHouseholdStore((state) => state.activeHouseholdId);
   const chores = useChores();
   const attendanceState = useAttendance();
   const calendar = useCalendar();
   const { members, loadMembers } = useMembers(activeHouseholdId);
+  const [preferences, setPreferences] = useState<MemberChorePreferenceRecord[]>([]);
+  const [preferencesLoading, setPreferencesLoading] = useState(false);
+  const [preferencesError, setPreferencesError] = useState<string | null>(null);
+
+  const loadPreferences = useCallback(async (): Promise<MemberChorePreferenceRecord[]> => {
+    if (!activeHouseholdId) {
+      setPreferences([]);
+      setPreferencesError(null);
+      return [];
+    }
+
+    setPreferencesLoading(true);
+    setPreferencesError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('member_chore_preferences')
+        .select('member_user_id, template_id, area, preference_score, preferred')
+        .eq('household_id', activeHouseholdId);
+
+      if (error) {
+        throw error;
+      }
+
+      const rows = (data as MemberChorePreferenceRecord[] | null) ?? [];
+      setPreferences(rows);
+      return rows;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load chore preferences';
+      setPreferencesError(message);
+      return [];
+    } finally {
+      setPreferencesLoading(false);
+    }
+  }, [activeHouseholdId]);
+
+  useEffect(() => {
+    void loadPreferences();
+  }, [loadPreferences]);
+
+  const preferenceMaps = useMemo(() => buildPreferenceMaps(preferences), [preferences]);
 
   const context = useMemo<RotationContext>(() => {
     const openInstances = chores.instances.filter((instance) => instance.status === 'open' || instance.status === 'claimed');
@@ -99,7 +220,9 @@ export function useChoreRotation() {
             memberId: member.user_id,
             window: '30d',
           }),
-          preferenceScore: 0,
+          preferenceScore: preferenceMaps.get(member.user_id)?.preferenceScore ?? 0,
+          preferenceScoresByTemplate: preferenceMaps.get(member.user_id)?.preferenceScoresByTemplate,
+          preferenceScoresByArea: preferenceMaps.get(member.user_id)?.preferenceScoresByArea,
         };
       }),
     };
@@ -112,6 +235,7 @@ export function useChoreRotation() {
     chores.instances,
     chores.templates,
     members,
+    preferenceMaps,
   ]);
 
   const suggestions = useMemo(() => scoreRotationSuggestions(context), [context]);
@@ -122,10 +246,11 @@ export function useChoreRotation() {
       attendanceState.loadAttendance(),
       calendar.loadCalendar(),
       loadMembers(),
+      loadPreferences(),
     ]);
 
     return rebalanceSuggestions(context);
-  }, [attendanceState, calendar, chores, context, loadMembers]);
+  }, [attendanceState, calendar, chores, context, loadMembers, loadPreferences]);
 
   const applySuggestions = useCallback(async (
     nextSuggestions: Array<Pick<RotationSuggestion, 'choreInstanceId' | 'templateId' | 'recommendedMemberId' | 'rationale'>>
@@ -173,7 +298,7 @@ export function useChoreRotation() {
     suggestions,
     refreshSuggestions,
     applySuggestions,
-    loading: chores.loading || attendanceState.loading || calendar.loading,
-    error: chores.error || attendanceState.error || calendar.error,
+    loading: chores.loading || attendanceState.loading || calendar.loading || preferencesLoading,
+    error: chores.error || attendanceState.error || calendar.error || preferencesError,
   };
 }

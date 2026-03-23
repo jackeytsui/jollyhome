@@ -19,6 +19,8 @@ export interface RotationMemberInput {
   trailingMinutes: number;
   learnedAverageMinutes: number | null;
   preferenceScore: number;
+  preferenceScoresByTemplate?: Record<string, number>;
+  preferenceScoresByArea?: Record<string, number>;
   queuePosition?: number;
 }
 
@@ -120,6 +122,22 @@ function computeMemberScore(
   return roundScore(availability * 1.05 + loadRelief + taskRelief + preferenceWeight);
 }
 
+function resolvePreferenceScore(member: RotationMemberInput, chore: RotationChoreInput) {
+  const templateScore = member.preferenceScoresByTemplate?.[chore.templateId];
+  if (typeof templateScore === 'number') {
+    return templateScore;
+  }
+
+  if (chore.area) {
+    const areaScore = member.preferenceScoresByArea?.[chore.area];
+    if (typeof areaScore === 'number') {
+      return areaScore;
+    }
+  }
+
+  return member.preferenceScore;
+}
+
 export function buildRotationRationale(input: RotationRationaleInput): string[] {
   const reasons: string[] = [];
 
@@ -165,8 +183,12 @@ export function scoreRotationSuggestions(context: RotationContext): RotationSugg
     const estimatedEffortMinutes = getEstimatedEffortMinutes(chore, activeMembers);
     const rankings = activeMembers
       .map((member) => {
+        const preferenceScore = resolvePreferenceScore(member, chore);
         const score = computeMemberScore(
-          member,
+          {
+            ...member,
+            preferenceScore,
+          },
           estimatedEffortMinutes,
           baseline,
           activeMembers.length
@@ -184,7 +206,7 @@ export function scoreRotationSuggestions(context: RotationContext): RotationSugg
             trailingTaskCount: member.trailingTaskCount,
             learnedAverageMinutes: member.learnedAverageMinutes,
             estimatedEffortMinutes,
-            preferenceScore: member.preferenceScore,
+            preferenceScore,
             activeMemberCount: activeMembers.length,
             rosterChanged,
           }),
