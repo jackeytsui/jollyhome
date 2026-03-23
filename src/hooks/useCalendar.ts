@@ -7,6 +7,20 @@ import type { CalendarActivityType, CalendarEvent, EventRsvp, HouseholdCalendarI
 
 const REALTIME_CHANNEL_NAME = (householdId: string) => `household:${householdId}:chores-calendar`;
 
+export const CALENDAR_SOURCE_ICON_MAP: Record<
+  HouseholdCalendarItem['sourceType'],
+  string
+> = {
+  event: 'calendar',
+  chore: 'sparkles',
+  attendance: 'home',
+  meal: 'utensils',
+  maintenance: 'wrench',
+  guest: 'users',
+  'quiet-hours': 'moon',
+  booking: 'key',
+};
+
 interface CalendarEventInput {
   activity_type?: CalendarActivityType;
   title: string;
@@ -19,6 +33,23 @@ interface CalendarEventInput {
   recurrence_rule?: string | null;
   recurrence_timezone?: string;
   recurrence_anchor: string;
+  icon_key?: string | null;
+  visual_weight?: 'light' | 'medium' | 'secondary' | 'strong';
+  owner_member_user_ids?: string[];
+}
+
+interface CalendarEventUpdateInput {
+  activity_type?: CalendarActivityType;
+  title?: string;
+  description?: string | null;
+  location?: string | null;
+  starts_at?: string;
+  ends_at?: string;
+  timezone?: string;
+  all_day?: boolean;
+  recurrence_rule?: string | null;
+  recurrence_timezone?: string;
+  recurrence_anchor?: string;
   icon_key?: string | null;
   visual_weight?: 'light' | 'medium' | 'secondary' | 'strong';
   owner_member_user_ids?: string[];
@@ -188,6 +219,10 @@ export function useCalendar() {
             note: row.note,
           })),
         })
+          .map((item) => ({
+            ...item,
+            iconKey: item.iconKey ?? CALENDAR_SOURCE_ICON_MAP[item.sourceType],
+          }))
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load calendar');
@@ -215,7 +250,9 @@ export function useCalendar() {
       recurrence_rule: input.recurrence_rule ?? null,
       recurrence_timezone: input.recurrence_timezone ?? input.timezone ?? 'UTC',
       recurrence_anchor: input.recurrence_anchor,
-      icon_key: input.icon_key ?? null,
+      icon_key:
+        input.icon_key ??
+        CALENDAR_SOURCE_ICON_MAP[input.activity_type === 'quiet_hours' ? 'quiet-hours' : input.activity_type ?? 'event'],
       visual_weight: input.visual_weight ?? (input.activity_type === 'event' ? 'strong' : 'secondary'),
       owner_member_user_ids: input.owner_member_user_ids ?? [],
     });
@@ -238,7 +275,7 @@ export function useCalendar() {
     });
   }, [createEvent]);
 
-  const updateEvent = useCallback(async (id: string, updates: Partial<CalendarEventInput>): Promise<void> => {
+  const updateEvent = useCallback(async (id: string, updates: CalendarEventUpdateInput): Promise<void> => {
     const { error: updateError } = await supabase.from('calendar_events').update(updates).eq('id', id);
 
     if (updateError) {
@@ -297,6 +334,7 @@ export function useCalendar() {
     events,
     rsvps,
     items,
+    iconMap: CALENDAR_SOURCE_ICON_MAP,
     loading,
     error,
     loadCalendar,
