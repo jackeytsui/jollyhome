@@ -84,7 +84,7 @@ Plans:
 - [x] 03-06-PLAN.md — Chores depth UX: history, fairness, energy adaptation, and optional gamification surfaces
 - [x] 03-07-PLAN.md — Full calendar rendering: day/week/month/agenda views and projected household timeline UI
 - [x] 03-04-PLAN.md — AI rotation and integration: stateless suggestion engine, review/apply flow, and home/calendar synchronization
-- [ ] 03-08-PLAN.md — Gap closure: persisted member chore preferences wired into AI rotation scoring and rationale
+- [x] 03-08-PLAN.md — Gap closure: persisted member chore preferences wired into AI rotation scoring and rationale
 - [x] 03-09-PLAN.md — Gap closure: recurring event UI with daily/weekly/monthly/custom controls and RRULE translation
 
 ### Phase 4: Shopping + Meals + Supplies
