@@ -60,7 +60,7 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [x] **CHOR-03**: User can set a chore as recurring with flexible scheduling (daily, specific weekdays, weekly, biweekly, monthly, custom interval)
 - [x] **CHOR-04**: Chores display condition bars (green->yellow->red) showing time since last done, not pass/fail deadlines
 - [x] **CHOR-05**: Assigned user can mark a chore as complete (with optional photo proof)
-- [ ] **CHOR-06**: User can view all chores filtered by assignee, area, status, or urgency (condition level)
+- [x] **CHOR-06**: User can view all chores filtered by assignee, area, status, or urgency (condition level)
 - [x] **CHOR-07**: User can view chore completion history and fairness stats per member (hours contributed, tasks completed)
 - [x] **CHOR-08**: User can indicate daily energy level ("How much energy today?") and get an adapted task list prioritized by urgency and effort
 - [x] **CHOR-09**: Chores distinguish between "responsibilities" (assigned rotation) and "bonus tasks" (anyone can claim for credit)
@@ -279,7 +279,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHOR-03 | Phase 3 | Complete |
 | CHOR-04 | Phase 3 | Complete |
 | CHOR-05 | Phase 3 | Complete |
-| CHOR-06 | Phase 3 | Pending |
+| CHOR-06 | Phase 3 | Complete |
 | CHOR-07 | Phase 3 | Complete |
 | CHOR-08 | Phase 3 | Complete |
 | CHOR-09 | Phase 3 | Complete |

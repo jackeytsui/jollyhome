@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-03-23T03:45:39.996Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-23T03:55:00.602Z"
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 22
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 03 (chores-calendar) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Plan: 4 of 7
 | Phase 03-chores-calendar P01 | 3 min | 2 tasks | 7 files |
 | Phase 03-chores-calendar P05 | 60 min | 2 tasks | 12 files |
 | Phase 03-chores-calendar P03 | 13 min | 1 tasks | 6 files |
+| Phase 03-chores-calendar P02 | 14 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,9 @@ Recent decisions affecting current work:
 - [Phase 03-chores-calendar]: Kept HouseholdCalendarItem.sourceType as an explicit future-facing union to avoid timeline contract churn
 - [Phase 03-chores-calendar]: All Phase 3 base hooks share the channel name household:{activeHouseholdId}:chores-calendar so downstream screens can subscribe consistently.
 - [Phase 03-chores-calendar]: Non-event calendar projections use visualWeight secondary and explicit activityType/sourceType mappings to keep events visually dominant without changing contracts later.
+- [Phase 03-chores-calendar]: Persist assignee selections in useChores by syncing chore_assignments during create/edit flows.
+- [Phase 03-chores-calendar]: Use lightweight modal sheets for chore create/edit/complete flows to keep the chores screen focused.
+- [Phase 03-chores-calendar]: Bonus chores require an explicit claim action before completion while photo proof stays optional.
 
 ### Pending Todos
 
@@ -133,6 +137,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T03:45:39.993Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-03-23T03:55:00.600Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
