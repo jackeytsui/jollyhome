@@ -57,4 +57,16 @@ describe('calendar UI contracts', () => {
     expect(legendSource).toContain("'quiet-hours',");
     expect(legendSource).toContain("'booking',");
   });
+
+  it('defines explicit day, week, month, and agenda options and renders the agenda path', () => {
+    const switcherSource = read('src/components/calendar/CalendarViewSwitcher.tsx');
+    const screenSource = read('src/app/(app)/calendar.tsx');
+
+    expect(switcherSource).toContain("{ label: 'Day', value: 'day' }");
+    expect(switcherSource).toContain("{ label: 'Week', value: 'week' }");
+    expect(switcherSource).toContain("{ label: 'Month', value: 'month' }");
+    expect(switcherSource).toContain("{ label: 'Agenda', value: 'agenda' }");
+    expect(screenSource).toContain('CalendarAgendaList');
+    expect(screenSource).toContain("const [selectedView, setSelectedView] = useState<CalendarViewMode>('week');");
+  });
 });

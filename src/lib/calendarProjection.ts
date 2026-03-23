@@ -153,7 +153,7 @@ export function projectCalendarItems(input: ProjectCalendarItemsInput): Househol
     startsAt: startOfAttendanceDay(attendance.attendanceDate),
     endsAt: endOfAttendanceDay(attendance.attendanceDate),
     allDay: true,
-    iconKey: attendance.status === 'home_tonight' ? 'home' : 'plane',
+    iconKey: null,
     visualWeight: 'secondary',
     memberOwnerIds: [attendance.memberUserId],
     memberColorKey: null,
