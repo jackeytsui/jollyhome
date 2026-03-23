@@ -1,11 +1,13 @@
 export type EventRsvpStatus = 'going' | 'maybe' | 'not_going';
 export type AttendanceStatus = 'home_tonight' | 'away_tonight';
-export type CalendarVisualWeight = 'light' | 'medium' | 'strong';
+export type CalendarVisualWeight = 'light' | 'medium' | 'secondary' | 'strong';
+export type CalendarActivityType = 'event' | 'meal' | 'maintenance' | 'guest' | 'quiet_hours' | 'booking';
 
 export interface CalendarEvent {
   id: string;
   householdId: string;
   createdBy: string;
+  activityType: CalendarActivityType;
   title: string;
   description: string | null;
   location: string | null;
