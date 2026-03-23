@@ -82,7 +82,7 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [x] **CALD-04**: Calendar displays all household activity types in one view: events, chore due dates, meal plans, maintenance, guest visits, quiet hours, shared space bookings
 - [x] **CALD-05**: User can RSVP to household events
 - [x] **CALD-06**: User can indicate "home tonight" / "away tonight" for dinner planning (lightweight attendance)
-- [ ] **CALD-07**: Calendar supports day, week, and month views with agenda list option
+- [x] **CALD-07**: Calendar supports day, week, and month views with agenda list option
 
 ### Shopping & Supplies (AnyList's polish + Grocy's intelligence)
 
@@ -295,7 +295,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CALD-04 | Phase 3 | Complete |
 | CALD-05 | Phase 3 | Complete |
 | CALD-06 | Phase 3 | Complete |
-| CALD-07 | Phase 3 | Pending |
+| CALD-07 | Phase 3 | Complete |
 | SHOP-01 | Phase 4 | Pending |
 | SHOP-02 | Phase 4 | Pending |
 | SHOP-03 | Phase 4 | Pending |

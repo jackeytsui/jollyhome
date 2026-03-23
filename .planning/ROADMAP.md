@@ -82,7 +82,7 @@ Plans:
 - [x] 03-02-PLAN.md — Core chores UX: personal-first list, create/edit/complete flows, filters, and bonus claim behavior
 - [x] 03-03-PLAN.md — Calendar controls UX: event editor, RSVP, attendance toggles, and event-type icon/color cues
 - [ ] 03-06-PLAN.md — Chores depth UX: history, fairness, energy adaptation, and optional gamification surfaces
-- [ ] 03-07-PLAN.md — Full calendar rendering: day/week/month/agenda views and projected household timeline UI
+- [x] 03-07-PLAN.md — Full calendar rendering: day/week/month/agenda views and projected household timeline UI
 - [ ] 03-04-PLAN.md — AI rotation and integration: stateless suggestion engine, review/apply flow, and home/calendar synchronization
 
 ### Phase 4: Shopping + Meals + Supplies
@@ -148,7 +148,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Foundation + Household | 6/8 | Gap closure | - |
 | 2. Expense Tracking + Receipt OCR | 7/7 | Complete   | 2026-03-21 |
-| 3. Chores + Calendar | 3/7 | In Progress | - |
+| 3. Chores + Calendar | 5/7 | In Progress | - |
 | 4. Shopping + Meals + Supplies | 0/5 | Not started | - |
 | 5. Maintenance + House Rules | 0/3 | Not started | - |
 | 6. Intelligence + Polish | 0/4 | Not started | - |
