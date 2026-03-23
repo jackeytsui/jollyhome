@@ -74,7 +74,7 @@ Plans:
   3. AI generates fair chore rotation based on calendar availability, past load, and preferences -- rotation never breaks when someone misses a task, and AI rebalances when availability changes
   4. User can create household calendar events with recurring patterns, per-member color coding, and RSVP -- calendar displays all activity types (events, chores, meals, maintenance, guests, quiet hours, bookings) in day/week/month/agenda views
   5. User can indicate "home tonight" / "away tonight" for lightweight dinner attendance tracking
-**Plans**: 7 plans
+**Plans**: 9 plans
 
 Plans:
 - [x] 03-01-PLAN.md — Phase 3 contracts and passing scaffold tests: dependencies, type interfaces, and executable placeholders
@@ -84,6 +84,8 @@ Plans:
 - [x] 03-06-PLAN.md — Chores depth UX: history, fairness, energy adaptation, and optional gamification surfaces
 - [x] 03-07-PLAN.md — Full calendar rendering: day/week/month/agenda views and projected household timeline UI
 - [x] 03-04-PLAN.md — AI rotation and integration: stateless suggestion engine, review/apply flow, and home/calendar synchronization
+- [ ] 03-08-PLAN.md — Gap closure: persisted member chore preferences wired into AI rotation scoring and rationale
+- [ ] 03-09-PLAN.md — Gap closure: recurring event UI with daily/weekly/monthly/custom controls and RRULE translation
 
 ### Phase 4: Shopping + Meals + Supplies
 **Goal**: Users can manage shared shopping lists, track pantry inventory, plan meals with AI, and experience the "one receipt photo, three workflows" magic moment -- the food pipeline that no competitor has
@@ -148,7 +150,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Foundation + Household | 6/8 | Gap closure | - |
 | 2. Expense Tracking + Receipt OCR | 7/7 | Complete   | 2026-03-21 |
-| 3. Chores + Calendar | 5/7 | In Progress | - |
+| 3. Chores + Calendar | 7/9 | Gap closure | - |
 | 4. Shopping + Meals + Supplies | 0/5 | Not started | - |
 | 5. Maintenance + House Rules | 0/3 | Not started | - |
 | 6. Intelligence + Polish | 0/4 | Not started | - |

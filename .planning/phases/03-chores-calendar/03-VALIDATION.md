@@ -50,6 +50,8 @@ created: 2026-03-22
 | 03-07-01 | 07 | 4 | CALD-03, CALD-04, CALD-07 | integration | `npm test -- --runInBand src/__tests__/calendar-ui.test.ts src/__tests__/calendar-projection.test.ts` | ❌ W0 | ⬜ pending |
 | 03-04-01 | 04 | 5 | AICH-01, AICH-02, AICH-04, AICH-05 | unit | `npm test -- --runInBand src/__tests__/chore-rotation.test.ts` | ❌ W0 | ⬜ pending |
 | 03-04-02 | 04 | 5 | AICH-03, CHOR-05, CHOR-06, CALD-05, CALD-06, SYNC-07 | integration | `npm test -- --runInBand src/__tests__/chore-rotation.test.ts src/__tests__/phase3-flows.test.ts` | ❌ W0 | ⬜ pending |
+| 03-08-01 | 08 | 6 | AICH-01 | unit | `npm test -- --runInBand src/__tests__/chore-rotation.test.ts` | ❌ W0 | ⬜ pending |
+| 03-09-01 | 09 | 6 | CALD-02 | component | `npm test -- --runInBand src/__tests__/calendar-ui.test.ts` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -61,10 +63,10 @@ created: 2026-03-22
 - [ ] `src/__tests__/calendar-core.test.ts` — Wave 1 scaffold suite for recurrence, attendance day-boundary, and calendar contract coverage used by Plan `03-01` then converted by `03-05`
 - [ ] `src/__tests__/fairness-condition.test.ts` — Wave 1 scaffold suite for fairness rollups, energy scoring, and learned-duration coverage used by Plans `03-01` and `03-05`
 - [ ] `src/__tests__/chores-ui.test.ts` — Wave 3 chores screen coverage for list layout, filters, editor flow, claim flow, and completion sheet
-- [ ] `src/__tests__/calendar-ui.test.ts` — Wave 3 and Wave 4 calendar control/render coverage for event editor, RSVP, attendance, icon cues, and day/week/month/agenda controls
+- [ ] `src/__tests__/calendar-ui.test.ts` — Wave 3, 4, and 6 coverage for event editor, RSVP, attendance, icon cues, day/week/month/agenda controls, and recurrence-control gap closure
 - [ ] `src/__tests__/chores-stats-energy.test.ts` — Wave 4 detail/fairness/energy/gamification coverage including non-punitive gamification behavior
 - [ ] `src/__tests__/calendar-projection.test.ts` — Wave 4 unified household timeline projection and agenda rendering coverage
-- [ ] `src/__tests__/chore-rotation.test.ts` — Wave 5 stateless rotation scoring and rebalance coverage including household roster changes
+- [ ] `src/__tests__/chore-rotation.test.ts` — Wave 5 and 6 stateless rotation scoring coverage including household roster changes and preference-aware suggestion weighting
 - [ ] `src/__tests__/phase3-flows.test.ts` — Wave 5 end-to-end phase flows for apply-rotation UX and home/calendar sync
 
 ---
