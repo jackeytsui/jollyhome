@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 03-07-PLAN.md
-last_updated: "2026-03-23T04:02:05.921Z"
+stopped_at: Completed 03-06-PLAN.md
+last_updated: "2026-03-23T04:05:36.315Z"
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 22
-  completed_plans: 20
+  completed_plans: 21
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 03 (chores-calendar) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ Plan: 6 of 7
 | Phase 03-chores-calendar P03 | 13 min | 1 tasks | 6 files |
 | Phase 03-chores-calendar P02 | 14 min | 2 tasks | 8 files |
 | Phase 03-chores-calendar P07 | 5 min | 1 tasks | 6 files |
+| Phase 03-chores-calendar P06 | 9 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,9 @@ Recent decisions affecting current work:
 - [Phase 03-chores-calendar]: Bonus chores require an explicit claim action before completion while photo proof stays optional.
 - [Phase 03-chores-calendar]: Week remains the default selected calendar mode while agenda renders through a dedicated list component over projected household items.
 - [Phase 03-chores-calendar]: Attendance projections defer to the shared calendar source icon map so rendered item icons stay consistent across timeline surfaces.
+- [Phase 03-chores-calendar]: Kept the main chores screen lightweight by surfacing only a fairness snapshot there and routing deeper history to /chores/[id].
+- [Phase 03-chores-calendar]: Applied daily energy adaptation only to the personal chores section so household visibility remains stable while individual ordering shifts.
+- [Phase 03-chores-calendar]: Treated gamification as a single household-wide toggle that hides leaderboard, points, and streak UI entirely when off.
 
 ### Pending Todos
 
@@ -140,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T04:02:05.918Z
-Stopped at: Completed 03-07-PLAN.md
+Last session: 2026-03-23T04:05:36.313Z
+Stopped at: Completed 03-06-PLAN.md
 Resume file: None

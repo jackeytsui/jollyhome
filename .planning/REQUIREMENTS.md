@@ -64,7 +64,7 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [x] **CHOR-07**: User can view chore completion history and fairness stats per member (hours contributed, tasks completed)
 - [x] **CHOR-08**: User can indicate daily energy level ("How much energy today?") and get an adapted task list prioritized by urgency and effort
 - [x] **CHOR-09**: Chores distinguish between "responsibilities" (assigned rotation) and "bonus tasks" (anyone can claim for credit)
-- [ ] **CHOR-10**: Household can toggle gamification on/off (points, streaks, leaderboard — great for families, optional for adults)
+- [x] **CHOR-10**: Household can toggle gamification on/off (points, streaks, leaderboard — great for families, optional for adults)
 
 ### AI Chores (no competitor has this)
 
@@ -283,7 +283,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHOR-07 | Phase 3 | Complete |
 | CHOR-08 | Phase 3 | Complete |
 | CHOR-09 | Phase 3 | Complete |
-| CHOR-10 | Phase 3 | Pending |
+| CHOR-10 | Phase 3 | Complete |
 | AICH-01 | Phase 3 | Pending |
 | AICH-02 | Phase 3 | Pending |
 | AICH-03 | Phase 3 | Pending |
