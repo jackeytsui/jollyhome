@@ -85,7 +85,7 @@ Plans:
 - [x] 03-07-PLAN.md — Full calendar rendering: day/week/month/agenda views and projected household timeline UI
 - [x] 03-04-PLAN.md — AI rotation and integration: stateless suggestion engine, review/apply flow, and home/calendar synchronization
 - [ ] 03-08-PLAN.md — Gap closure: persisted member chore preferences wired into AI rotation scoring and rationale
-- [ ] 03-09-PLAN.md — Gap closure: recurring event UI with daily/weekly/monthly/custom controls and RRULE translation
+- [x] 03-09-PLAN.md — Gap closure: recurring event UI with daily/weekly/monthly/custom controls and RRULE translation
 
 ### Phase 4: Shopping + Meals + Supplies
 **Goal**: Users can manage shared shopping lists, track pantry inventory, plan meals with AI, and experience the "one receipt photo, three workflows" magic moment -- the food pipeline that no competitor has

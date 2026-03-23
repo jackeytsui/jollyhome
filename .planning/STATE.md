@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase complete — ready for verification
-stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-03-23T04:15:26.672Z"
+status: Ready to execute
+stopped_at: Completed 03-09-PLAN.md
+last_updated: "2026-03-23T17:01:50.844Z"
 progress:
   total_phases: 6
-  completed_phases: 3
-  total_plans: 22
-  completed_plans: 22
+  completed_phases: 2
+  total_plans: 24
+  completed_plans: 23
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 03 (chores-calendar) — EXECUTING
-Plan: 7 of 7
+Plan: 2 of 9
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Plan: 7 of 7
 | Phase 03-chores-calendar P07 | 5 min | 1 tasks | 6 files |
 | Phase 03-chores-calendar P06 | 9 min | 2 tasks | 8 files |
 | Phase 03-chores-calendar P04 | 9 min | 2 tasks | 9 files |
+| Phase 03-chores-calendar P09 | 8 min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,8 @@ Recent decisions affecting current work:
 - [Phase 03-chores-calendar]: Treated gamification as a single household-wide toggle that hides leaderboard, points, and streak UI entirely when off.
 - [Phase 03-chores-calendar]: Rotation suggestions stay deterministic and stateless; queue position is ignored entirely.
 - [Phase 03-chores-calendar]: AI rotation remains assistive by requiring a review sheet with manual overrides before assignments are applied.
+- [Phase 03-chores-calendar]: Added a one-time preset alongside the required daily/weekly/monthly/custom controls so events can still be saved without recurrence.
+- [Phase 03-chores-calendar]: Kept RRULE generation and parsing behind buildRecurrenceRule/parseRecurrenceRule so the editor stays aligned with the existing calendar data layer.
 
 ### Pending Todos
 
@@ -147,6 +150,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T04:15:26.669Z
-Stopped at: Completed 03-04-PLAN.md
+Last session: 2026-03-23T17:01:50.841Z
+Stopped at: Completed 03-09-PLAN.md
 Resume file: None
