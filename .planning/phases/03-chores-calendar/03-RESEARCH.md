@@ -427,49 +427,50 @@ Source: https://github.com/acro5piano/react-native-big-calendar
 |----------|-------|
 | Framework | Jest `30.3.0` with `jest-expo` `55.0.11` |
 | Config file | `jest.config.ts` |
-| Quick run command | `npm test -- chores` |
-| Full suite command | `npm test` |
+| Quick run command | `npm test -- --runInBand` |
+| Full suite command | `npm run test:coverage -- --runInBand` |
 
 ### Phase Requirements → Test Map
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
-| CHOR-01 | Chore create validation + persistence mapping | unit | `npm test -- chores.test.ts` | ❌ Wave 0 |
-| CHOR-02 | Multi-member assignment persistence | unit | `npm test -- chore-rotation.test.ts` | ❌ Wave 0 |
-| CHOR-03 | Recurrence rule build/parse | unit | `npm test -- recurrence.test.ts` | ❌ Wave 0 |
-| CHOR-04 | Condition bar state thresholds | unit | `npm test -- condition.test.ts` | ❌ Wave 0 |
-| CHOR-05 | Completion flow with optional photo metadata | unit | `npm test -- chore-completion.test.ts` | ❌ Wave 0 |
-| CHOR-06 | Filter combinations | unit | `npm test -- chores-filters.test.ts` | ❌ Wave 0 |
-| CHOR-07 | Fairness aggregate calculations | unit | `npm test -- fairness.test.ts` | ❌ Wave 0 |
-| CHOR-08 | Energy-adapted prioritization | unit | `npm test -- energy-priority.test.ts` | ❌ Wave 0 |
-| CHOR-09 | Responsibility vs bonus-task rules | unit | `npm test -- chores-kind.test.ts` | ❌ Wave 0 |
-| CHOR-10 | Gamification off/on behavior boundaries | unit | `npm test -- gamification.test.ts` | ❌ Wave 0 |
-| AICH-01 | Rotation suggestions combine availability/load/preferences | unit | `npm test -- chore-rotation.test.ts` | ❌ Wave 0 |
-| AICH-02 | Missed task does not corrupt future suggestions | unit | `npm test -- chore-rotation.test.ts` | ❌ Wave 0 |
-| AICH-03 | Manual override path preserves accepted edits | integration | `npm test -- chores-screen.test.tsx` | ❌ Wave 0 |
-| AICH-04 | Rebalance after unavailability change | unit | `npm test -- chore-rotation.test.ts` | ❌ Wave 0 |
-| AICH-05 | Actual durations update fairness/effort estimation | unit | `npm test -- fairness.test.ts` | ❌ Wave 0 |
-| CALD-01 | Event create/edit validation | unit | `npm test -- calendar-events.test.ts` | ❌ Wave 0 |
-| CALD-02 | Event recurrence projection | unit | `npm test -- recurrence.test.ts` | ❌ Wave 0 |
-| CALD-03 | Member colors and type cues projection | unit | `npm test -- calendar-projection.test.ts` | ❌ Wave 0 |
-| CALD-04 | Unified activity projection order/weighting | unit | `npm test -- calendar-projection.test.ts` | ❌ Wave 0 |
-| CALD-05 | RSVP state transitions | unit | `npm test -- rsvp.test.ts` | ❌ Wave 0 |
-| CALD-06 | Home-tonight attendance toggle and storage mapping | unit | `npm test -- attendance.test.ts` | ❌ Wave 0 |
-| CALD-07 | View-mode selector and agenda fallback | integration | `npm test -- calendar-screen.test.tsx` | ❌ Wave 0 |
+| CHOR-01 | Chore create validation + persistence mapping | component | `npm test -- --runInBand src/__tests__/chores-ui.test.ts` | ❌ Wave 3 |
+| CHOR-02 | Multi-member assignment persistence | component | `npm test -- --runInBand src/__tests__/chores-ui.test.ts` | ❌ Wave 3 |
+| CHOR-03 | Recurrence rule build/parse | unit | `npm test -- --runInBand src/__tests__/chores-core.test.ts` | ❌ Wave 1/2 |
+| CHOR-04 | Condition bar state thresholds | unit | `npm test -- --runInBand src/__tests__/fairness-condition.test.ts` | ❌ Wave 1/2 |
+| CHOR-05 | Completion flow with optional photo metadata | component | `npm test -- --runInBand src/__tests__/chores-ui.test.ts src/__tests__/phase3-flows.test.ts` | ❌ Wave 3/5 |
+| CHOR-06 | Filter combinations | component | `npm test -- --runInBand src/__tests__/chores-ui.test.ts src/__tests__/phase3-flows.test.ts` | ❌ Wave 3/5 |
+| CHOR-07 | Fairness aggregate calculations and detail surfacing | component | `npm test -- --runInBand src/__tests__/chores-stats-energy.test.ts` | ❌ Wave 4 |
+| CHOR-08 | Energy-adapted prioritization | component | `npm test -- --runInBand src/__tests__/chores-stats-energy.test.ts` | ❌ Wave 4 |
+| CHOR-09 | Responsibility vs bonus-task rules | component | `npm test -- --runInBand src/__tests__/chores-ui.test.ts` | ❌ Wave 3 |
+| CHOR-10 | Gamification off/on behavior boundaries | component | `npm test -- --runInBand src/__tests__/chores-stats-energy.test.ts` | ❌ Wave 4 |
+| AICH-01 | Rotation suggestions combine availability/load/preferences | unit | `npm test -- --runInBand src/__tests__/chore-rotation.test.ts` | ❌ Wave 5 |
+| AICH-02 | Missed task does not corrupt future suggestions | unit | `npm test -- --runInBand src/__tests__/chore-rotation.test.ts` | ❌ Wave 5 |
+| AICH-03 | Manual override path preserves accepted edits | integration | `npm test -- --runInBand src/__tests__/phase3-flows.test.ts` | ❌ Wave 5 |
+| AICH-04 | Rebalance after unavailability or roster change | unit | `npm test -- --runInBand src/__tests__/chore-rotation.test.ts` | ❌ Wave 5 |
+| AICH-05 | Actual durations update fairness/effort estimation | unit | `npm test -- --runInBand src/__tests__/fairness-condition.test.ts src/__tests__/chore-rotation.test.ts` | ❌ Wave 2/5 |
+| CALD-01 | Event create/edit validation | component | `npm test -- --runInBand src/__tests__/calendar-ui.test.ts` | ❌ Wave 3 |
+| CALD-02 | Event recurrence projection | unit | `npm test -- --runInBand src/__tests__/calendar-core.test.ts` | ❌ Wave 1/2 |
+| CALD-03 | Member colors and event/chore/attendance icons | integration | `npm test -- --runInBand src/__tests__/calendar-ui.test.ts src/__tests__/calendar-projection.test.ts` | ❌ Wave 3/4 |
+| CALD-04 | Unified activity projection order/weighting | integration | `npm test -- --runInBand src/__tests__/calendar-core.test.ts src/__tests__/calendar-projection.test.ts` | ❌ Wave 1/4 |
+| CALD-05 | RSVP state transitions | component | `npm test -- --runInBand src/__tests__/calendar-ui.test.ts` | ❌ Wave 3 |
+| CALD-06 | Home-tonight attendance toggle and storage mapping | component | `npm test -- --runInBand src/__tests__/calendar-ui.test.ts src/__tests__/phase3-flows.test.ts` | ❌ Wave 3/5 |
+| CALD-07 | Day/week/month/agenda selector and agenda fallback | integration | `npm test -- --runInBand src/__tests__/calendar-ui.test.ts src/__tests__/calendar-projection.test.ts` | ❌ Wave 4 |
 
 ### Sampling Rate
-- **Per task commit:** `npm test -- <target>`
-- **Per wave merge:** `npm test`
+- **Per task commit:** `npm test -- --runInBand <target>`
+- **Per wave merge:** `npm run test:coverage -- --runInBand`
 - **Phase gate:** Full suite green before `/gsd:verify-work`
 
 ### Wave 0 Gaps
-- [ ] `src/__tests__/recurrence.test.ts` — recurrence generation, parsing, timezone safety
-- [ ] `src/__tests__/condition.test.ts` — condition threshold math
-- [ ] `src/__tests__/fairness.test.ts` — effort/task fairness calculations
-- [ ] `src/__tests__/chore-rotation.test.ts` — stateless rotation scoring and rebalance logic
-- [ ] `src/__tests__/calendar-projection.test.ts` — unified calendar projection mapping
-- [ ] `src/__tests__/attendance.test.ts` — `home tonight` state behavior
-- [ ] `src/__tests__/chores-screen.test.tsx` — create/complete/filter UX shell
-- [ ] `src/__tests__/calendar-screen.test.tsx` — week/month/agenda mode shell
+- [ ] `src/__tests__/chores-core.test.ts` — Wave 1 scaffold suite for recurrence and chore-domain contract coverage
+- [ ] `src/__tests__/calendar-core.test.ts` — Wave 1 scaffold suite for recurrence, attendance boundaries, and projection contracts
+- [ ] `src/__tests__/fairness-condition.test.ts` — Wave 1 scaffold suite for condition, fairness, energy, and learned-duration cases
+- [ ] `src/__tests__/chores-ui.test.ts` — Wave 3 chores screen coverage for list, filters, editor, claim, and completion flows
+- [ ] `src/__tests__/calendar-ui.test.ts` — Wave 3 and 4 coverage for event editor, RSVP, attendance, icon cues, and view controls
+- [ ] `src/__tests__/chores-stats-energy.test.ts` — Wave 4 coverage for detail/fairness, energy adaptation, and non-punitive gamification
+- [ ] `src/__tests__/calendar-projection.test.ts` — Wave 4 unified timeline and agenda rendering coverage
+- [ ] `src/__tests__/chore-rotation.test.ts` — Wave 5 stateless rotation scoring and rebalance logic, including roster changes
+- [ ] `src/__tests__/phase3-flows.test.ts` — Wave 5 rotation-apply and home/calendar sync coverage
 
 ## Sources
 

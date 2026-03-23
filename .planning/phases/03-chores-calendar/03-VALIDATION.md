@@ -38,15 +38,18 @@ created: 2026-03-22
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 03-01-01 | 01 | 0 | CHOR-01, CHOR-02, CHOR-03, CHOR-04, CHOR-09 | unit | `npm test -- --runInBand src/__tests__/chores-core.test.ts` | ❌ W0 | ⬜ pending |
-| 03-01-02 | 01 | 0 | CALD-01, CALD-02, CALD-04, CALD-06 | unit | `npm test -- --runInBand src/__tests__/calendar-core.test.ts` | ❌ W0 | ⬜ pending |
-| 03-01-03 | 01 | 0 | CHOR-04, CHOR-07, CHOR-08, AICH-05 | unit | `npm test -- --runInBand src/__tests__/fairness-condition.test.ts` | ❌ W0 | ⬜ pending |
-| 03-02-01 | 02 | 1 | CHOR-01, CHOR-02, CHOR-05, CHOR-06, CHOR-09, CHOR-10 | component | `npm test -- --runInBand src/__tests__/chores-ui.test.ts` | ❌ W0 | ⬜ pending |
-| 03-02-02 | 02 | 1 | CHOR-07, CHOR-08, CHOR-10 | component | `npm test -- --runInBand src/__tests__/chores-stats-energy.test.ts` | ❌ W0 | ⬜ pending |
-| 03-03-01 | 03 | 1 | CALD-01, CALD-03, CALD-05, CALD-06, CALD-07 | component | `npm test -- --runInBand src/__tests__/calendar-ui.test.ts` | ❌ W0 | ⬜ pending |
-| 03-03-02 | 03 | 1 | CALD-02, CALD-04, SYNC-07 | unit | `npm test -- --runInBand src/__tests__/calendar-projection.test.ts` | ❌ W0 | ⬜ pending |
-| 03-04-01 | 04 | 2 | AICH-01, AICH-02, AICH-03, AICH-04, AICH-05, SYNC-07 | unit | `npm test -- --runInBand src/__tests__/chore-rotation.test.ts` | ❌ W0 | ⬜ pending |
-| 03-04-02 | 04 | 2 | CHOR-05, CHOR-06, CALD-05, CALD-06 | integration | `npm test -- --runInBand src/__tests__/phase3-flows.test.ts` | ❌ W0 | ⬜ pending |
+| 03-01-01 | 01 | 1 | CHOR-03, CHOR-04, CHOR-07, CHOR-08, AICH-05, CALD-02, CALD-04, CALD-06 | unit | `npm test -- --runInBand src/__tests__/chores-core.test.ts src/__tests__/calendar-core.test.ts src/__tests__/fairness-condition.test.ts` | ❌ W0 | ⬜ pending |
+| 03-01-02 | 01 | 1 | CALD-04 | static | `rg -n "export interface (ChoreTemplate|ChoreFairnessStats|HouseholdCalendarItem|AttendanceStatus)|sourceType: 'event' \\| 'chore' \\| 'attendance' \\| 'meal' \\| 'maintenance' \\| 'guest' \\| 'quiet-hours' \\| 'booking'|iconKey|visualWeight" src/types/chores.ts src/types/calendar.ts` | ❌ W0 | ⬜ pending |
+| 03-05-01 | 05 | 2 | CHOR-01, CHOR-02, CHOR-05, CHOR-07, CHOR-08, CHOR-09, CALD-01, CALD-02, CALD-05, CALD-06 | schema | `rg -n "CREATE TABLE public\\.(chore_templates|chore_instances|chore_completions|calendar_events|event_rsvps|member_attendance)|CHECK \\(kind IN \\('responsibility', 'bonus'\\)\\)|CHECK \\(status IN \\('home_tonight', 'away_tonight'\\)\\)|CHECK \\(status IN \\('going', 'maybe', 'not_going'\\)\\)|CREATE OR REPLACE FUNCTION public\\.(complete_chore_instance|claim_bonus_chore|upsert_attendance_status)|ENABLE ROW LEVEL SECURITY" supabase/migrations/00004_chores_calendar.sql` | ❌ W0 | ⬜ pending |
+| 03-05-02 | 05 | 2 | CHOR-03, CHOR-04, CHOR-07, CHOR-08, AICH-05, CALD-02, CALD-04, CALD-06 | unit | `npm test -- --runInBand src/__tests__/chores-core.test.ts src/__tests__/calendar-core.test.ts src/__tests__/fairness-condition.test.ts` | ❌ W0 | ⬜ pending |
+| 03-02-01 | 02 | 3 | CHOR-01, CHOR-02, CHOR-03, CHOR-04, CHOR-05, CHOR-06, CHOR-09 | component | `npm test -- --runInBand src/__tests__/chores-ui.test.ts` | ❌ W0 | ⬜ pending |
+| 03-02-02 | 02 | 3 | CHOR-05, CHOR-09 | component | `npm test -- --runInBand src/__tests__/chores-ui.test.ts` | ❌ W0 | ⬜ pending |
+| 03-03-01 | 03 | 3 | CALD-01, CALD-02, CALD-03, CALD-05, CALD-06 | component | `npm test -- --runInBand src/__tests__/calendar-ui.test.ts` | ❌ W0 | ⬜ pending |
+| 03-06-01 | 06 | 4 | CHOR-07 | component | `npm test -- --runInBand src/__tests__/chores-stats-energy.test.ts` | ❌ W0 | ⬜ pending |
+| 03-06-02 | 06 | 4 | CHOR-08, CHOR-10 | component | `npm test -- --runInBand src/__tests__/chores-stats-energy.test.ts` | ❌ W0 | ⬜ pending |
+| 03-07-01 | 07 | 4 | CALD-03, CALD-04, CALD-07 | integration | `npm test -- --runInBand src/__tests__/calendar-ui.test.ts src/__tests__/calendar-projection.test.ts` | ❌ W0 | ⬜ pending |
+| 03-04-01 | 04 | 5 | AICH-01, AICH-02, AICH-04, AICH-05 | unit | `npm test -- --runInBand src/__tests__/chore-rotation.test.ts` | ❌ W0 | ⬜ pending |
+| 03-04-02 | 04 | 5 | AICH-03, CHOR-05, CHOR-06, CALD-05, CALD-06, SYNC-07 | integration | `npm test -- --runInBand src/__tests__/chore-rotation.test.ts src/__tests__/phase3-flows.test.ts` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -54,15 +57,15 @@ created: 2026-03-22
 
 ## Wave 0 Requirements
 
-- [ ] `src/__tests__/chores-core.test.ts` — recurrence, condition-bar, and chore template/instance coverage stubs
-- [ ] `src/__tests__/calendar-core.test.ts` — event recurrence, attendance day-boundary, and projection coverage stubs
-- [ ] `src/__tests__/fairness-condition.test.ts` — fairness rollup, energy scoring, and actual-duration learning stubs
-- [ ] `src/__tests__/chores-ui.test.ts` — chores list, filters, completion sheet, and gamification toggle coverage
-- [ ] `src/__tests__/chores-stats-energy.test.ts` — stats surface and energy-adapted list coverage
-- [ ] `src/__tests__/calendar-ui.test.ts` — week/month/agenda rendering and RSVP/attendance surface coverage
-- [ ] `src/__tests__/calendar-projection.test.ts` — unified activity timeline projection coverage
-- [ ] `src/__tests__/chore-rotation.test.ts` — stateless AI rotation scoring and rebalance coverage
-- [ ] `src/__tests__/phase3-flows.test.ts` — high-value phase flows with mocked hooks/store state
+- [ ] `src/__tests__/chores-core.test.ts` — Wave 1 scaffold suite for recurrence, condition-bar, and chore contract coverage used by Plan `03-01` then converted by `03-05`
+- [ ] `src/__tests__/calendar-core.test.ts` — Wave 1 scaffold suite for recurrence, attendance day-boundary, and calendar contract coverage used by Plan `03-01` then converted by `03-05`
+- [ ] `src/__tests__/fairness-condition.test.ts` — Wave 1 scaffold suite for fairness rollups, energy scoring, and learned-duration coverage used by Plans `03-01` and `03-05`
+- [ ] `src/__tests__/chores-ui.test.ts` — Wave 3 chores screen coverage for list layout, filters, editor flow, claim flow, and completion sheet
+- [ ] `src/__tests__/calendar-ui.test.ts` — Wave 3 and Wave 4 calendar control/render coverage for event editor, RSVP, attendance, icon cues, and day/week/month/agenda controls
+- [ ] `src/__tests__/chores-stats-energy.test.ts` — Wave 4 detail/fairness/energy/gamification coverage including non-punitive gamification behavior
+- [ ] `src/__tests__/calendar-projection.test.ts` — Wave 4 unified household timeline projection and agenda rendering coverage
+- [ ] `src/__tests__/chore-rotation.test.ts` — Wave 5 stateless rotation scoring and rebalance coverage including household roster changes
+- [ ] `src/__tests__/phase3-flows.test.ts` — Wave 5 end-to-end phase flows for apply-rotation UX and home/calendar sync
 
 ---
 

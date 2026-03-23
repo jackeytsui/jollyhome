@@ -74,12 +74,15 @@ Plans:
   3. AI generates fair chore rotation based on calendar availability, past load, and preferences -- rotation never breaks when someone misses a task, and AI rebalances when availability changes
   4. User can create household calendar events with recurring patterns, per-member color coding, and RSVP -- calendar displays all activity types (events, chores, meals, maintenance, guests, quiet hours, bookings) in day/week/month/agenda views
   5. User can indicate "home tonight" / "away tonight" for lightweight dinner attendance tracking
-**Plans**: 4 plans
+**Plans**: 7 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Shared chores/calendar foundation: dependencies, tests, recurrence/condition/fairness libs, hooks, and Supabase schema
-- [ ] 03-02-PLAN.md — Chores UX: personal-first list, create/edit/complete flows, filters, fairness, energy, and gamification surfaces
-- [ ] 03-03-PLAN.md — Calendar UX: event editor, RSVP, attendance toggles, and week-first shared calendar views
+- [ ] 03-01-PLAN.md — Phase 3 contracts and passing scaffold tests: dependencies, type interfaces, and executable placeholders
+- [ ] 03-05-PLAN.md — Shared scheduling foundation: Supabase schema, recurrence/condition/fairness/projection libs, and base hooks
+- [ ] 03-02-PLAN.md — Core chores UX: personal-first list, create/edit/complete flows, filters, and bonus claim behavior
+- [ ] 03-03-PLAN.md — Calendar controls UX: event editor, RSVP, attendance toggles, and event-type icon/color cues
+- [ ] 03-06-PLAN.md — Chores depth UX: history, fairness, energy adaptation, and optional gamification surfaces
+- [ ] 03-07-PLAN.md — Full calendar rendering: day/week/month/agenda views and projected household timeline UI
 - [ ] 03-04-PLAN.md — AI rotation and integration: stateless suggestion engine, review/apply flow, and home/calendar synchronization
 
 ### Phase 4: Shopping + Meals + Supplies
@@ -145,7 +148,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Foundation + Household | 6/8 | Gap closure | - |
 | 2. Expense Tracking + Receipt OCR | 7/7 | Complete   | 2026-03-21 |
-| 3. Chores + Calendar | 0/4 | Not started | - |
+| 3. Chores + Calendar | 0/7 | Not started | - |
 | 4. Shopping + Meals + Supplies | 0/5 | Not started | - |
 | 5. Maintenance + House Rules | 0/3 | Not started | - |
 | 6. Intelligence + Polish | 0/4 | Not started | - |
