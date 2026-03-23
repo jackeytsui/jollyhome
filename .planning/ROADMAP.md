@@ -74,13 +74,13 @@ Plans:
   3. AI generates fair chore rotation based on calendar availability, past load, and preferences -- rotation never breaks when someone misses a task, and AI rebalances when availability changes
   4. User can create household calendar events with recurring patterns, per-member color coding, and RSVP -- calendar displays all activity types (events, chores, meals, maintenance, guests, quiet hours, bookings) in day/week/month/agenda views
   5. User can indicate "home tonight" / "away tonight" for lightweight dinner attendance tracking
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
-- [ ] 03-04: TBD
+- [ ] 03-01-PLAN.md — Shared chores/calendar foundation: dependencies, tests, recurrence/condition/fairness libs, hooks, and Supabase schema
+- [ ] 03-02-PLAN.md — Chores UX: personal-first list, create/edit/complete flows, filters, fairness, energy, and gamification surfaces
+- [ ] 03-03-PLAN.md — Calendar UX: event editor, RSVP, attendance toggles, and week-first shared calendar views
+- [ ] 03-04-PLAN.md — AI rotation and integration: stateless suggestion engine, review/apply flow, and home/calendar synchronization
 
 ### Phase 4: Shopping + Meals + Supplies
 **Goal**: Users can manage shared shopping lists, track pantry inventory, plan meals with AI, and experience the "one receipt photo, three workflows" magic moment -- the food pipeline that no competitor has
