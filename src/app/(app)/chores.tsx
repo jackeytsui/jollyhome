@@ -1,257 +1,456 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
-  TextInput,
-  FlatList,
-  Pressable,
+  Text,
+  View,
 } from 'react-native';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { ChoreCard } from '@/components/chores/ChoreCard';
+import { ChoreEditorSheet, type ChoreEditorValues } from '@/components/chores/ChoreEditorSheet';
+import { ChoreFiltersBar, type ChoreFilterState } from '@/components/chores/ChoreFiltersBar';
+import { ChoreSection } from '@/components/chores/ChoreSection';
+import { getConditionProgress } from '@/lib/condition';
+import { parseRecurrenceRule } from '@/lib/recurrence';
+import { useChores } from '@/hooks/useChores';
+import { useMembers } from '@/hooks/useMembers';
 import { colors } from '@/constants/theme';
+import { useAuthStore } from '@/stores/auth';
+import { useHouseholdStore } from '@/stores/household';
 
-interface Chore {
+type DisplayChore = {
   id: string;
+  templateId: string;
   title: string;
-  done: boolean;
-  createdAt: string;
+  description: string | null;
+  area: string | null;
+  estimatedMinutes: number;
+  assigneeNames: string[];
+  assignedMemberIds: string[];
+  conditionLabel: string;
+  conditionState: 'green' | 'yellow' | 'red';
+  conditionProgress: number;
+  status: 'open' | 'claimed' | 'completed' | 'skipped';
+  kind: 'responsibility' | 'bonus';
+  scheduledFor: string | null;
+  recurrenceRule: string | null;
+  recurrenceTimezone: string;
+  recurrenceAnchor: string;
+};
+
+const DEFAULT_FILTERS: ChoreFilterState = {
+  assigneeId: 'all',
+  area: 'all',
+  status: 'all',
+  urgency: 'all',
+};
+
+function startOfTodayIso() {
+  const value = new Date();
+  value.setHours(8, 0, 0, 0);
+  return value.toISOString();
+}
+
+function toConditionLabel(state: 'green' | 'yellow' | 'red') {
+  if (state === 'red') {
+    return 'Needs attention';
+  }
+
+  if (state === 'yellow') {
+    return 'Coming up';
+  }
+
+  return 'In good shape';
+}
+
+function getTargetIntervalMinutes(recurrenceRule: string | null): number {
+  if (!recurrenceRule) {
+    return 7 * 24 * 60;
+  }
+
+  const parsed = parseRecurrenceRule(recurrenceRule);
+  if (parsed.frequency === 'daily') {
+    return parsed.interval * 24 * 60;
+  }
+
+  if (parsed.frequency === 'weekly') {
+    const weekdayCount = parsed.byWeekday.length || 1;
+    return Math.max(1, Math.round((parsed.interval * 7 * 24 * 60) / weekdayCount));
+  }
+
+  if (parsed.frequency === 'monthly') {
+    return parsed.interval * 30 * 24 * 60;
+  }
+
+  return parsed.interval * 365 * 24 * 60;
+}
+
+function sortChores(left: DisplayChore, right: DisplayChore) {
+  const urgencyRank = { red: 0, yellow: 1, green: 2 };
+  const rankDiff = urgencyRank[left.conditionState] - urgencyRank[right.conditionState];
+  if (rankDiff !== 0) {
+    return rankDiff;
+  }
+
+  const areaDiff = (left.area ?? 'zzzz').localeCompare(right.area ?? 'zzzz');
+  if (areaDiff !== 0) {
+    return areaDiff;
+  }
+
+  const assigneeDiff = (left.assigneeNames[0] ?? 'zzzz').localeCompare(right.assigneeNames[0] ?? 'zzzz');
+  if (assigneeDiff !== 0) {
+    return assigneeDiff;
+  }
+
+  return left.title.localeCompare(right.title);
+}
+
+function matchesFilters(chore: DisplayChore, filters: ChoreFilterState) {
+  if (filters.assigneeId !== 'all' && !chore.assignedMemberIds.includes(filters.assigneeId)) {
+    return false;
+  }
+
+  if (filters.area !== 'all' && (chore.area ?? 'Unassigned') !== filters.area) {
+    return false;
+  }
+
+  if (filters.status !== 'all') {
+    if (filters.status === 'bonus' && chore.kind !== 'bonus') {
+      return false;
+    }
+
+    if (filters.status !== 'bonus' && chore.status !== filters.status) {
+      return false;
+    }
+  }
+
+  if (filters.urgency !== 'all' && chore.conditionState !== filters.urgency) {
+    return false;
+  }
+
+  return true;
 }
 
 export default function ChoresScreen() {
-  const [chores, setChores] = useState<Chore[]>([]);
-  const [title, setTitle] = useState('');
+  const [filters, setFilters] = useState<ChoreFilterState>(DEFAULT_FILTERS);
+  const [editorVisible, setEditorVisible] = useState(false);
+  const [editingChore, setEditingChore] = useState<DisplayChore | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [defaultAnchor] = useState(() => startOfTodayIso());
+  const { activeHouseholdId } = useHouseholdStore();
+  const user = useAuthStore((state) => state.user);
+  const {
+    templates,
+    assignments,
+    instances,
+    completions,
+    loading,
+    error,
+    createChore,
+    updateChore,
+  } = useChores();
+  const { members, loadMembers } = useMembers(activeHouseholdId);
 
-  function handleAddChore() {
-    if (!title.trim()) {
-      return;
+  useEffect(() => {
+    if (activeHouseholdId) {
+      loadMembers();
     }
+  }, [activeHouseholdId, loadMembers]);
 
-    const newChore: Chore = {
-      id: Date.now().toString(),
-      title: title.trim(),
-      done: false,
-      createdAt: new Date().toLocaleDateString(),
+  const chores = useMemo<DisplayChore[]>(() => {
+    const memberNameMap = new Map(
+      members.map((member) => [
+        member.user_id,
+        member.profile.display_name ?? 'Housemate',
+      ])
+    );
+
+    return instances
+      .map((instance) => {
+        const template = templates.find((item) => item.id === instance.template_id);
+        if (!template) {
+          return null;
+        }
+
+        const choreAssignments = assignments.filter((assignment) => {
+          if (assignment.instance_id) {
+            return assignment.instance_id === instance.id;
+          }
+
+          return assignment.template_id === template.id;
+        });
+
+        const latestCompletion = completions.find((completion) => completion.instance_id === instance.id)
+          ?? completions.find((completion) => completion.template_id === template.id);
+
+        const progress = getConditionProgress({
+          lastCompletedAt: template.last_completed_at,
+          now: new Date().toISOString(),
+          targetIntervalMinutes: getTargetIntervalMinutes(template.recurrence_rule),
+        });
+
+        return {
+          id: instance.id,
+          templateId: template.id,
+          title: template.title,
+          description: template.description,
+          area: template.area,
+          estimatedMinutes: template.estimated_minutes,
+          assigneeNames: choreAssignments.length > 0
+            ? choreAssignments.map((assignment) => memberNameMap.get(assignment.member_user_id) ?? 'Housemate')
+            : ['Unassigned'],
+          assignedMemberIds: choreAssignments.map((assignment) => assignment.member_user_id),
+          conditionLabel: latestCompletion?.condition_state_at_completion
+            ? toConditionLabel(latestCompletion.condition_state_at_completion)
+            : toConditionLabel(progress.state),
+          conditionState: progress.state,
+          conditionProgress: progress.ratio,
+          status: instance.status,
+          kind: template.kind,
+          scheduledFor: instance.scheduled_for,
+          recurrenceRule: template.recurrence_rule,
+          recurrenceTimezone: template.recurrence_timezone,
+          recurrenceAnchor: template.recurrence_anchor,
+        };
+      })
+      .filter((item): item is DisplayChore => Boolean(item))
+      .sort(sortChores);
+  }, [assignments, completions, instances, members, templates]);
+
+  const filteredChores = useMemo(
+    () => chores.filter((chore) => matchesFilters(chore, filters)),
+    [chores, filters]
+  );
+
+  const myChores = useMemo(
+    () => filteredChores.filter((chore) => chore.assignedMemberIds.includes(user?.id ?? '') || chore.assigneeNames[0] === 'Unassigned'),
+    [filteredChores, user?.id]
+  );
+
+  const householdChores = useMemo(
+    () => filteredChores.filter((chore) => !myChores.some((candidate) => candidate.id === chore.id)),
+    [filteredChores, myChores]
+  );
+
+  const assigneeOptions = useMemo(
+    () => members
+      .filter((member) => member.status === 'active')
+      .map((member) => ({
+        label: member.profile.display_name ?? 'Housemate',
+        value: member.user_id,
+      })),
+    [members]
+  );
+
+  const areaOptions = useMemo(
+    () => Array.from(new Set(chores.map((chore) => chore.area ?? 'Unassigned'))).sort(),
+    [chores]
+  );
+
+  async function handleSave(values: ChoreEditorValues) {
+    setSubmitting(true);
+
+    const payload = {
+      title: values.title.trim(),
+      description: values.description.trim() || null,
+      estimated_minutes: values.estimatedMinutes,
+      area: values.area.trim() || null,
+      kind: values.kind,
+      recurrence_rule: values.recurrenceRule,
+      recurrence_timezone: values.recurrenceTimezone,
+      recurrence_anchor: values.recurrenceAnchor,
+      next_occurrence_at: values.nextOccurrenceAt,
+      assignedMemberIds: values.assignedMemberIds,
     };
 
-    setChores((prev) => [...prev, newChore]);
-    setTitle('');
+    try {
+      if (editingChore) {
+        await updateChore(editingChore.templateId, payload);
+      } else {
+        await createChore(payload);
+      }
+
+      setEditorVisible(false);
+      setEditingChore(null);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  function handleToggleChore(id: string) {
-    setChores((prev) =>
-      prev.map((chore) =>
-        chore.id === id ? { ...chore, done: !chore.done } : chore
-      )
-    );
+  function openCreateSheet() {
+    setEditingChore(null);
+    setEditorVisible(true);
   }
 
-  function renderChore({ item }: { item: Chore }) {
-    return (
-      <Pressable
-        style={styles.choreItem}
-        onPress={() => handleToggleChore(item.id)}
-      >
-        {/* Done indicator circle */}
-        <View style={[styles.circle, item.done && styles.circleDone]}>
-          {item.done ? <View style={styles.circleInner} /> : null}
-        </View>
-
-        {/* Chore title */}
-        <View style={styles.choreContent}>
-          <Text
-            style={[
-              styles.choreTitle,
-              item.done && styles.choreTitleDone,
-            ]}
-          >
-            {item.title}
-          </Text>
-          <Text style={styles.choreDate}>Added {item.createdAt}</Text>
-        </View>
-      </Pressable>
-    );
+  function openEditSheet(chore: DisplayChore) {
+    setEditingChore(chore);
+    setEditorVisible(true);
   }
 
-  const pendingCount = chores.filter((c) => !c.done).length;
-  const doneCount = chores.filter((c) => c.done).length;
+  const editorInitialValues: Partial<ChoreEditorValues> | undefined = editingChore
+    ? {
+        title: editingChore.title,
+        description: editingChore.description ?? '',
+        area: editingChore.area ?? '',
+        estimatedMinutes: editingChore.estimatedMinutes,
+        kind: editingChore.kind,
+        assignedMemberIds: editingChore.assignedMemberIds,
+        recurrenceRule: editingChore.recurrenceRule,
+        recurrenceTimezone: editingChore.recurrenceTimezone,
+        recurrenceAnchor: editingChore.recurrenceAnchor,
+        nextOccurrenceAt: editingChore.scheduledFor,
+      }
+    : undefined;
+
+  const totalVisible = filteredChores.length;
 
   return (
-    <SafeAreaView style={[styles.flex, styles.bgDominant]}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.heading}>My Chores</Text>
-
-        {chores.length > 0 ? (
-          <View style={styles.statsRow}>
-            <Text style={styles.statText}>
-              {pendingCount} pending · {doneCount} done
+    <SafeAreaView style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.heroRow}>
+          <View style={styles.heroCopy}>
+            <Text style={styles.heading}>Chores</Text>
+            <Text style={styles.subheading}>
+              Keep urgent work visible first, then scan the whole household below.
             </Text>
           </View>
-        ) : null}
-
-        {/* Add Chore Section */}
-        <Card style={styles.addCard}>
-          <Text style={styles.sectionTitle}>Add Chore</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="What needs to be done?"
-            placeholderTextColor={colors.textSecondary.light}
-            value={title}
-            onChangeText={setTitle}
-            returnKeyType="done"
-            onSubmitEditing={handleAddChore}
-          />
-          <View style={styles.buttonWrapper}>
-            <Button
-              label="Add Chore"
-              variant="primary"
-              onPress={handleAddChore}
-            />
+          <View style={styles.heroAction}>
+            <Button label="New chore" onPress={openCreateSheet} />
           </View>
+        </View>
+
+        <ChoreFiltersBar
+          filters={filters}
+          assigneeOptions={assigneeOptions}
+          areaOptions={areaOptions}
+          onChange={setFilters}
+        />
+
+        <Card style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>{totalVisible} chores in view</Text>
+          <Text style={styles.summaryBody}>
+            Urgent chores stay at the top, then the list settles by area and assignee.
+          </Text>
         </Card>
 
-        {/* Chore List */}
-        {chores.length === 0 ? (
+        {!activeHouseholdId ? (
           <Card>
-            <Text style={styles.emptyText}>
-              No chores yet. Add your first personal chore above.
-            </Text>
+            <Text style={styles.emptyTitle}>Choose a household to start assigning chores.</Text>
           </Card>
-        ) : (
-          <Card style={styles.listCard}>
-            <Text style={styles.sectionTitle}>Chore List</Text>
-            <FlatList
-              data={chores}
-              keyExtractor={(item) => item.id}
-              renderItem={renderChore}
-              scrollEnabled={false}
-              ItemSeparatorComponent={() => <View style={styles.separator} />}
-            />
-          </Card>
-        )}
+        ) : null}
 
-        <Text style={styles.phaseNote}>
-          Phase 1 — personal task tracking with local state. Shared chore tracking with assignments comes in Phase 3.
-        </Text>
+        {error ? (
+          <Card>
+            <Text style={styles.errorText}>{error}</Text>
+          </Card>
+        ) : null}
+
+        <ChoreSection
+          title="My chores today"
+          subtitle="Your assigned chores and anything still waiting to be claimed."
+          chores={myChores}
+          emptyText={loading ? 'Loading chores...' : 'Nothing assigned to you yet.'}
+          renderItem={(chore) => (
+            <ChoreCard
+              key={chore.id}
+              chore={chore}
+              onPress={() => openEditSheet(chore)}
+            />
+          )}
+        />
+
+        <ChoreSection
+          title="Household queue"
+          subtitle="Everything else happening across the home."
+          chores={householdChores}
+          emptyText={loading ? 'Loading household chores...' : 'The whole-household queue is clear.'}
+          renderItem={(chore) => (
+            <ChoreCard
+              key={chore.id}
+              chore={chore}
+              onPress={() => openEditSheet(chore)}
+            />
+          )}
+        />
       </ScrollView>
+
+      <ChoreEditorSheet
+        visible={editorVisible}
+        initialValues={editorInitialValues}
+        members={members
+          .filter((member) => member.status === 'active')
+          .map((member) => ({
+            id: member.user_id,
+            name: member.profile.display_name ?? 'Housemate',
+          }))}
+        loading={submitting}
+        onClose={() => {
+          setEditorVisible(false);
+          setEditingChore(null);
+        }}
+        onSubmit={handleSave}
+        defaultAnchor={defaultAnchor}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
+  screen: {
     flex: 1,
-  },
-  bgDominant: {
     backgroundColor: colors.dominant.light,
   },
-  container: {
+  content: {
     padding: 16,
     gap: 12,
   },
+  heroRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  heroCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  heroAction: {
+    minWidth: 120,
+  },
   heading: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
     color: colors.textPrimary.light,
-    lineHeight: 30,
-    marginBottom: 4,
+    lineHeight: 34,
   },
-  statsRow: {
-    marginTop: -4,
-    marginBottom: 4,
-  },
-  statText: {
-    fontSize: 14,
+  subheading: {
+    fontSize: 15,
+    lineHeight: 22,
     color: colors.textSecondary.light,
-    lineHeight: 20,
   },
-  addCard: {
-    gap: 10,
+  summaryCard: {
+    gap: 4,
   },
-  sectionTitle: {
-    fontSize: 16,
+  summaryTitle: {
+    fontSize: 15,
     fontWeight: '600',
     color: colors.textPrimary.light,
-    lineHeight: 24,
-    marginBottom: 4,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    color: colors.textPrimary.light,
-    backgroundColor: colors.dominant.light,
+  summaryBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.textSecondary.light,
   },
-  buttonWrapper: {
-    marginTop: 4,
-  },
-  listCard: {
-    gap: 8,
-  },
-  choreItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  circle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: colors.border.light,
-    marginRight: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  circleDone: {
-    borderColor: colors.success.light,
-    backgroundColor: colors.success.light,
-  },
-  circleInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FFFFFF',
-  },
-  choreContent: {
-    flex: 1,
-  },
-  choreTitle: {
+  emptyTitle: {
     fontSize: 15,
-    fontWeight: '500',
-    color: colors.textPrimary.light,
     lineHeight: 22,
-  },
-  choreTitleDone: {
-    textDecorationLine: 'line-through',
     color: colors.textSecondary.light,
   },
-  choreDate: {
-    fontSize: 13,
-    color: colors.textSecondary.light,
-    lineHeight: 18,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.border.light,
-    marginVertical: 4,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: colors.textSecondary.light,
-    lineHeight: 22,
-    textAlign: 'center',
-  },
-  phaseNote: {
-    fontSize: 12,
-    color: colors.textSecondary.light,
-    lineHeight: 18,
-    textAlign: 'center',
-    marginTop: 8,
+  errorText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.destructive.light,
   },
 });

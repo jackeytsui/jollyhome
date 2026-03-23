@@ -30,6 +30,7 @@ interface ChoreAssignmentRecord {
   id: string;
   household_id: string;
   template_id: string;
+  instance_id: string | null;
   member_user_id: string;
   assigned_for: string | null;
   assignment_status: 'suggested' | 'assigned' | 'accepted' | 'declined' | 'skipped';
@@ -84,6 +85,7 @@ interface ChoreInput {
   next_occurrence_at?: string | null;
   kind?: 'responsibility' | 'bonus';
   icon_key?: string | null;
+  assignedMemberIds?: string[];
 }
 
 interface ChoreUpdateInput extends Partial<ChoreInput> {
@@ -155,12 +157,81 @@ export function useChores() {
     }
   }, [activeHouseholdId]);
 
+  const syncAssignments = useCallback(async (
+    templateId: string,
+    memberIds: string[],
+    scheduledFor: string | null,
+    instanceId: string | null
+  ): Promise<void> => {
+    if (!activeHouseholdId) {
+      throw new Error('No active household');
+    }
+
+    const existingQuery = supabase
+      .from('chore_assignments')
+      .select('id, member_user_id, instance_id')
+      .eq('template_id', templateId);
+
+    const existingResult = instanceId
+      ? await existingQuery.eq('instance_id', instanceId)
+      : await existingQuery.is('instance_id', null);
+
+    if (existingResult.error) {
+      throw existingResult.error;
+    }
+
+    const existingAssignments = (existingResult.data as Array<{
+      id: string;
+      member_user_id: string;
+      instance_id: string | null;
+    }>) ?? [];
+
+    const keep = new Set(memberIds);
+    const toDelete = existingAssignments
+      .filter((assignment) => !keep.has(assignment.member_user_id))
+      .map((assignment) => assignment.id);
+
+    if (toDelete.length > 0) {
+      const { error: deleteError } = await supabase
+        .from('chore_assignments')
+        .delete()
+        .in('id', toDelete);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+    }
+
+    const existingMemberIds = new Set(existingAssignments.map((assignment) => assignment.member_user_id));
+    const inserts = memberIds
+      .filter((memberId) => !existingMemberIds.has(memberId))
+      .map((memberId) => ({
+        household_id: activeHouseholdId,
+        template_id: templateId,
+        instance_id: instanceId,
+        member_user_id: memberId,
+        assigned_for: scheduledFor,
+        assignment_status: 'assigned',
+        suggested_by: 'manual',
+      }));
+
+    if (inserts.length > 0) {
+      const { error: insertError } = await supabase
+        .from('chore_assignments')
+        .insert(inserts);
+
+      if (insertError) {
+        throw insertError;
+      }
+    }
+  }, [activeHouseholdId]);
+
   const createChore = useCallback(async (input: ChoreInput): Promise<void> => {
     if (!activeHouseholdId || !user) {
       throw new Error('Not authenticated or no active household');
     }
 
-    const { error: insertError } = await supabase.from('chore_templates').insert({
+    const templateInsert = await supabase.from('chore_templates').insert({
       household_id: activeHouseholdId,
       created_by: user.id,
       title: input.title,
@@ -173,24 +244,115 @@ export function useChores() {
       next_occurrence_at: input.next_occurrence_at ?? null,
       kind: input.kind ?? 'responsibility',
       icon_key: input.icon_key ?? null,
-    });
+    }).select('*').single();
 
-    if (insertError) {
-      throw insertError;
+    if (templateInsert.error) {
+      throw templateInsert.error;
+    }
+
+    const template = templateInsert.data as ChoreTemplateRecord | null;
+
+    let instanceId: string | null = null;
+    const scheduledFor = input.next_occurrence_at ?? input.recurrence_anchor;
+
+    if (template) {
+      const instanceInsert = await supabase
+        .from('chore_instances')
+        .insert({
+          household_id: activeHouseholdId,
+          template_id: template.id,
+          scheduled_for: scheduledFor,
+          due_window_end: scheduledFor,
+          status: input.kind === 'bonus' ? 'open' : 'open',
+        })
+        .select('id')
+        .single();
+
+      if (instanceInsert.error) {
+        throw instanceInsert.error;
+      }
+
+      instanceId = (instanceInsert.data as { id: string } | null)?.id ?? null;
+    }
+
+    if (template && input.assignedMemberIds && input.assignedMemberIds.length > 0) {
+      await syncAssignments(template.id, input.assignedMemberIds, scheduledFor, instanceId);
     }
 
     await loadChores();
-  }, [activeHouseholdId, loadChores, user]);
+  }, [activeHouseholdId, loadChores, syncAssignments, user]);
 
   const updateChore = useCallback(async (id: string, updates: ChoreUpdateInput): Promise<void> => {
-    const { error: updateError } = await supabase.from('chore_templates').update(updates).eq('id', id);
+    if (!activeHouseholdId) {
+      throw new Error('No active household');
+    }
+
+    const { assignedMemberIds, ...templateUpdates } = updates as ChoreUpdateInput & { assignedMemberIds?: string[] };
+    const { error: updateError } = await supabase.from('chore_templates').update(templateUpdates).eq('id', id);
 
     if (updateError) {
       throw updateError;
     }
 
+    if (assignedMemberIds) {
+      const instanceResult = await supabase
+        .from('chore_instances')
+        .select('id, scheduled_for')
+        .eq('template_id', id)
+        .neq('status', 'completed')
+        .order('scheduled_for', { ascending: true })
+        .limit(1)
+        .single();
+
+      let instanceId: string | null = null;
+      let scheduledFor = updates.next_occurrence_at ?? updates.recurrence_anchor ?? null;
+
+      if (instanceResult.error) {
+        const templateResult = await supabase
+          .from('chore_templates')
+          .select('household_id, next_occurrence_at, recurrence_anchor')
+          .eq('id', id)
+          .single();
+
+        if (templateResult.error) {
+          throw templateResult.error;
+        }
+
+        const templateData = templateResult.data as {
+          household_id: string;
+          next_occurrence_at: string | null;
+          recurrence_anchor: string;
+        };
+
+        scheduledFor = scheduledFor ?? templateData.next_occurrence_at ?? templateData.recurrence_anchor;
+
+        const newInstance = await supabase
+          .from('chore_instances')
+          .insert({
+            household_id: templateData.household_id,
+            template_id: id,
+            scheduled_for: scheduledFor,
+            due_window_end: scheduledFor,
+          })
+          .select('id')
+          .single();
+
+        if (newInstance.error) {
+          throw newInstance.error;
+        }
+
+        instanceId = (newInstance.data as { id: string } | null)?.id ?? null;
+      } else {
+        const instanceData = instanceResult.data as { id: string; scheduled_for: string | null };
+        instanceId = instanceData.id;
+        scheduledFor = instanceData.scheduled_for;
+      }
+
+      await syncAssignments(id, assignedMemberIds, scheduledFor, instanceId);
+    }
+
     await loadChores();
-  }, [loadChores]);
+  }, [activeHouseholdId, loadChores, syncAssignments]);
 
   const completeChore = useCallback(async (
     instanceId: string,
