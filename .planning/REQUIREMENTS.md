@@ -68,10 +68,10 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 
 ### AI Chores (no competitor has this)
 
-- [ ] **AICH-01**: AI generates fair chore rotation based on member availability (from calendar), past load, preferences, and estimated effort
-- [ ] **AICH-02**: Rotation algorithm is stateless — never breaks when someone misses a task (fixes OurHome's #1 bug)
-- [ ] **AICH-03**: User can accept or adjust AI-suggested chore assignments
-- [ ] **AICH-04**: AI rebalances rotation when a member marks unavailability or household composition changes
+- [x] **AICH-01**: AI generates fair chore rotation based on member availability (from calendar), past load, preferences, and estimated effort
+- [x] **AICH-02**: Rotation algorithm is stateless — never breaks when someone misses a task (fixes OurHome's #1 bug)
+- [x] **AICH-03**: User can accept or adjust AI-suggested chore assignments
+- [x] **AICH-04**: AI rebalances rotation when a member marks unavailability or household composition changes
 - [x] **AICH-05**: AI learns per-person task durations over time to improve effort estimation and fairness scoring
 
 ### Calendar (beats Cozi — unified household timeline)
@@ -284,10 +284,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHOR-08 | Phase 3 | Complete |
 | CHOR-09 | Phase 3 | Complete |
 | CHOR-10 | Phase 3 | Complete |
-| AICH-01 | Phase 3 | Pending |
-| AICH-02 | Phase 3 | Pending |
-| AICH-03 | Phase 3 | Pending |
-| AICH-04 | Phase 3 | Pending |
+| AICH-01 | Phase 3 | Complete |
+| AICH-02 | Phase 3 | Complete |
+| AICH-03 | Phase 3 | Complete |
+| AICH-04 | Phase 3 | Complete |
 | AICH-05 | Phase 3 | Complete |
 | CALD-01 | Phase 3 | Complete |
 | CALD-02 | Phase 3 | Complete |
