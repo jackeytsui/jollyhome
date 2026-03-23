@@ -12,9 +12,9 @@ HomeOS delivers a unified household management platform in six phases, ordered b
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation + Household** - Auth, household creation, member invites, profiles, and solo-first value (gap closure in progress)
+- [x] **Phase 1: Foundation + Household** - Auth, household creation, member invites, profiles, and solo-first value (completed 2026-03-20)
 - [x] **Phase 2: Expense Tracking + Receipt OCR** - Full expense splitting, balances, debt simplification, and AI receipt scanning (completed 2026-03-21)
-- [ ] **Phase 3: Chores + Calendar** - Condition-based chore management, AI rotation, and unified household calendar
+- [x] **Phase 3: Chores + Calendar** - Condition-based chore management, AI rotation, and unified household calendar (completed 2026-03-23)
 - [ ] **Phase 4: Shopping + Meals + Supplies** - Real-time shopping lists, pantry tracking, meal planning, AI meal suggestions, and the receipt-to-everything pipeline
 - [ ] **Phase 5: Maintenance + House Rules** - Maintenance request lifecycle, house rules, shared space scheduling, and maintenance-expense-calendar synergies
 - [ ] **Phase 6: Intelligence + Polish** - Notifications, dashboards, AI assistant, spending insights, cross-feature synergies, and onboarding flow
@@ -40,8 +40,8 @@ Plans:
 - [x] 01-03-PLAN.md — Household creation, invite system (QR + deep link + share), join flow
 - [x] 01-04-PLAN.md — Member directory, profiles with dietary prefs, household settings, leave/remove, TOTP 2FA
 - [x] 01-05-PLAN.md — Solo-first sandbox demo mode, RevenueCat monetization, AI credit meter
-- [ ] 01-06-PLAN.md — Gap closure: solo-first personal screens (finances + chores), dark mode wiring, home screen navigation
-- [ ] 01-07-PLAN.md — Gap closure: balance settlement prompts for leave/remove member dialogs
+- [x] 01-06-PLAN.md — Gap closure: solo-first personal screens (finances + chores), dark mode wiring, home screen navigation
+- [x] 01-07-PLAN.md — Gap closure: balance settlement prompts for leave/remove member dialogs
 
 ### Phase 2: Expense Tracking + Receipt OCR
 **Goal**: Users can track shared expenses, view balances with debt simplification, and scan receipts with AI -- replacing Splitwise entirely
@@ -148,9 +148,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Household | 6/8 | Gap closure | - |
+| 1. Foundation + Household | 8/8 | Complete | 2026-03-20 |
 | 2. Expense Tracking + Receipt OCR | 7/7 | Complete   | 2026-03-21 |
-| 3. Chores + Calendar | 7/9 | Gap closure | - |
+| 3. Chores + Calendar | 9/9 | Complete | 2026-03-23 |
 | 4. Shopping + Meals + Supplies | 0/5 | Not started | - |
 | 5. Maintenance + House Rules | 0/3 | Not started | - |
 | 6. Intelligence + Polish | 0/4 | Not started | - |
