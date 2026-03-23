@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-23T02:33:29.372Z"
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-03-23T03:38:59.189Z"
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 22
-  completed_plans: 16
+  completed_plans: 17
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 03 (chores-calendar) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Plan: 2 of 7
 | Phase 02-expense-tracking-receipt-ocr P07 | 4 | 2 tasks | 6 files |
 | Phase 02-expense-tracking-receipt-ocr P06 | 6 | 2 tasks | 8 files |
 | Phase 03-chores-calendar P01 | 3 min | 2 tasks | 7 files |
+| Phase 03-chores-calendar P05 | 60 min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,8 @@ Recent decisions affecting current work:
 - [Phase 03-chores-calendar]: Pinned Phase 3 scheduling packages to exact research-backed versions for stable downstream work
 - [Phase 03-chores-calendar]: Reserved future chore, calendar, fairness, and attendance behaviors with passing it.todo scaffold suites
 - [Phase 03-chores-calendar]: Kept HouseholdCalendarItem.sourceType as an explicit future-facing union to avoid timeline contract churn
+- [Phase 03-chores-calendar]: All Phase 3 base hooks share the channel name household:{activeHouseholdId}:chores-calendar so downstream screens can subscribe consistently.
+- [Phase 03-chores-calendar]: Non-event calendar projections use visualWeight secondary and explicit activityType/sourceType mappings to keep events visually dominant without changing contracts later.
 
 ### Pending Todos
 
@@ -129,6 +132,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T02:33:29.369Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-23T03:38:59.186Z
+Stopped at: Completed 03-05-PLAN.md
 Resume file: None

@@ -78,7 +78,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Phase 3 contracts and passing scaffold tests: dependencies, type interfaces, and executable placeholders
-- [ ] 03-05-PLAN.md — Shared scheduling foundation: Supabase schema, recurrence/condition/fairness/projection libs, and base hooks
+- [x] 03-05-PLAN.md — Shared scheduling foundation: Supabase schema, recurrence/condition/fairness/projection libs, and base hooks
 - [ ] 03-02-PLAN.md — Core chores UX: personal-first list, create/edit/complete flows, filters, and bonus claim behavior
 - [ ] 03-03-PLAN.md — Calendar controls UX: event editor, RSVP, attendance toggles, and event-type icon/color cues
 - [ ] 03-06-PLAN.md — Chores depth UX: history, fairness, energy adaptation, and optional gamification surfaces
