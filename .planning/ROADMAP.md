@@ -97,14 +97,16 @@ Plans:
   3. User can plan meals on a weekly calendar with drag-and-drop, add/import recipes from URL, and meal plans auto-populate shopping lists with pantry deduction (only buy what is missing)
   4. AI generates weekly meal plans factoring in member preferences, dietary needs, budget, pantry contents, who is home which nights, and prep time -- user can accept, swap, or regenerate individual meals
   5. Scanning a grocery receipt simultaneously creates an expense split, adds purchased items to pantry inventory, and checks off matching shopping list items -- one photo, three workflows
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
-- [ ] 04-03: TBD
-- [ ] 04-04: TBD
-- [ ] 04-05: TBD
+- [ ] 04-01-PLAN.md — Contracts, dependencies, and scaffold validation for the unified food domain
+- [ ] 04-02-PLAN.md — Food schema, normalization, pantry-diff, and meal-planning core helpers
+- [ ] 04-03-PLAN.md — Shared food hooks, realtime orchestration, and meal projection into the calendar pipeline
+- [ ] 04-04-PLAN.md — Shopping lists, pantry inventory, thresholds, barcode scanning, and low-stock UX
+- [ ] 04-05-PLAN.md — Recipe CRUD/import plus weekly meal board, shopping generation, and cooked-meal flow
+- [ ] 04-06-PLAN.md — AI meal planning, replenishment prediction, and pantry-photo review flows
+- [ ] 04-07-PLAN.md — Atomic grocery receipt commit for expense + pantry + shopping synchronization
 
 ### Phase 5: Maintenance + House Rules
 **Goal**: Users can track the full maintenance request lifecycle and coordinate shared living through house rules, quiet hours, shared space scheduling, and guest management
@@ -151,7 +153,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Foundation + Household | 8/8 | Complete | 2026-03-20 |
 | 2. Expense Tracking + Receipt OCR | 7/7 | Complete   | 2026-03-21 |
 | 3. Chores + Calendar | 9/9 | Complete | 2026-03-23 |
-| 4. Shopping + Meals + Supplies | 0/5 | Not started | - |
+| 4. Shopping + Meals + Supplies | 0/7 | Not started | - |
 | 5. Maintenance + House Rules | 0/3 | Not started | - |
 | 6. Intelligence + Polish | 0/4 | Not started | - |
 
