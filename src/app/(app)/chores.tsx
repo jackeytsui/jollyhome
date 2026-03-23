@@ -15,7 +15,9 @@ import { ChoreFiltersBar, type ChoreFilterState } from '@/components/chores/Chor
 import { ChoreSection } from '@/components/chores/ChoreSection';
 import { CompleteChoreSheet, type CompleteChoreValues } from '@/components/chores/CompleteChoreSheet';
 import { FairnessSummaryCard } from '@/components/chores/FairnessSummaryCard';
-import { getConditionProgress } from '@/lib/condition';
+import { EnergyLevelCard } from '@/components/chores/EnergyLevelCard';
+import { GamificationCard } from '@/components/chores/GamificationCard';
+import { getConditionProgress, rankChoresForEnergy } from '@/lib/condition';
 import { buildFairnessStats, getRollingAverageMinutes } from '@/lib/fairness';
 import { parseRecurrenceRule } from '@/lib/recurrence';
 import { useChores } from '@/hooks/useChores';
@@ -146,6 +148,8 @@ export default function ChoresScreen() {
   const [completingChore, setCompletingChore] = useState<DisplayChore | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [energySaving, setEnergySaving] = useState(false);
+  const [gamificationSaving, setGamificationSaving] = useState(false);
   const [defaultAnchor] = useState(() => startOfTodayIso());
   const { activeHouseholdId } = useHouseholdStore();
   const user = useAuthStore((state) => state.user);
@@ -154,12 +158,16 @@ export default function ChoresScreen() {
     assignments,
     instances,
     completions,
+    energyEntries,
+    settings,
     loading,
     error,
     createChore,
     updateChore,
     completeChore,
     claimBonusChore,
+    upsertEnergyEntry,
+    updateHouseholdSettings,
   } = useChores();
   const { members, loadMembers } = useMembers(activeHouseholdId);
 
@@ -235,10 +243,41 @@ export default function ChoresScreen() {
     [chores, filters]
   );
 
-  const myChores = useMemo(
-    () => filteredChores.filter((chore) => chore.assignedMemberIds.includes(user?.id ?? '') || chore.assigneeNames[0] === 'Unassigned'),
-    [filteredChores, user?.id]
-  );
+  const currentEnergyLevel = useMemo(() => {
+    if (!user?.id) {
+      return 'medium' as const;
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const todaysEntry = energyEntries.find(
+      (entry) => entry.member_user_id === user.id && entry.effective_date === today
+    );
+
+    return todaysEntry?.energy_level ?? 'medium';
+  }, [energyEntries, user?.id]);
+
+  const myChores = useMemo(() => {
+    const personal = filteredChores.filter(
+      (chore) => chore.assignedMemberIds.includes(user?.id ?? '') || chore.assigneeNames[0] === 'Unassigned'
+    );
+
+    const ranking = rankChoresForEnergy(
+      personal.map((chore) => ({
+        id: chore.id,
+        title: chore.title,
+        estimatedMinutes: chore.estimatedMinutes,
+        conditionState: chore.conditionState,
+        conditionScore: chore.conditionProgress,
+      })),
+      currentEnergyLevel
+    );
+
+    const rankedIds = new Map(ranking.map((item, index) => [item.id, index]));
+
+    return [...personal].sort(
+      (left, right) => (rankedIds.get(left.id) ?? Number.MAX_SAFE_INTEGER) - (rankedIds.get(right.id) ?? Number.MAX_SAFE_INTEGER)
+    );
+  }, [currentEnergyLevel, filteredChores, user?.id]);
 
   const householdChores = useMemo(
     () => filteredChores.filter((chore) => !myChores.some((candidate) => candidate.id === chore.id)),
@@ -296,6 +335,35 @@ export default function ChoresScreen() {
     }));
   }, [activeHouseholdId, completions, members]);
 
+  const gamificationEnabled = Boolean(
+    settings?.gamification_enabled && settings?.streaks_enabled && settings?.leaderboard_enabled
+  );
+
+  const leaderboard = useMemo(() => {
+    const memberNameMap = new Map(
+      members.map((member) => [member.user_id, member.profile.display_name ?? 'Housemate'])
+    );
+    const completionsByMember = new Map<string, Array<typeof completions[number]>>();
+
+    for (const completion of completions) {
+      const existing = completionsByMember.get(completion.completed_by) ?? [];
+      existing.push(completion);
+      completionsByMember.set(completion.completed_by, existing);
+    }
+
+    return [...completionsByMember.entries()]
+      .map(([memberId, memberCompletions]) => ({
+        memberId,
+        memberName: memberNameMap.get(memberId) ?? 'Housemate',
+        points: memberCompletions.reduce(
+          (sum, completion) => sum + 10 + Math.round((completion.actual_minutes ?? 0) / 5),
+          0
+        ),
+        streakDays: new Set(memberCompletions.map((completion) => completion.completed_at.slice(0, 10))).size,
+      }))
+      .sort((left, right) => right.points - left.points);
+  }, [completions, members]);
+
   async function handleSave(values: ChoreEditorValues) {
     setSubmitting(true);
 
@@ -331,11 +399,6 @@ export default function ChoresScreen() {
     setEditorVisible(true);
   }
 
-  function openEditSheet(chore: DisplayChore) {
-    setEditingChore(chore);
-    setEditorVisible(true);
-  }
-
   async function handleClaimBonus(instanceId: string) {
     setClaimingId(instanceId);
 
@@ -364,6 +427,33 @@ export default function ChoresScreen() {
       setCompletingChore(null);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleEnergyChange(value: 'low' | 'medium' | 'high') {
+    setEnergySaving(true);
+
+    try {
+      await upsertEnergyEntry({
+        energy_level: value,
+        effective_date: new Date().toISOString().slice(0, 10),
+      });
+    } finally {
+      setEnergySaving(false);
+    }
+  }
+
+  async function handleGamificationToggle(enabled: boolean) {
+    setGamificationSaving(true);
+
+    try {
+      await updateHouseholdSettings({
+        gamification_enabled: enabled,
+        streaks_enabled: enabled,
+        leaderboard_enabled: enabled,
+      });
+    } finally {
+      setGamificationSaving(false);
     }
   }
 
@@ -413,7 +503,20 @@ export default function ChoresScreen() {
           </Text>
         </Card>
 
+        <EnergyLevelCard
+          value={currentEnergyLevel}
+          loading={energySaving}
+          onChange={handleEnergyChange}
+        />
+
         <FairnessSummaryCard members={fairnessMembers} />
+
+        <GamificationCard
+          enabled={gamificationEnabled}
+          loading={gamificationSaving}
+          leaderboard={leaderboard}
+          onToggle={handleGamificationToggle}
+        />
 
         {!activeHouseholdId ? (
           <Card>

@@ -123,6 +123,8 @@ function normalizedText(node: renderer.ReactTestRendererJSON | renderer.ReactTes
 
 describe('chores stats and detail screens', () => {
   let state: MockState;
+  let upsertEnergyEntryMock: jest.Mock;
+  let updateHouseholdSettingsMock: jest.Mock;
 
   async function renderElement(element: React.ReactElement) {
     let tree: renderer.ReactTestRenderer;
@@ -232,18 +234,34 @@ describe('chores stats and detail screens', () => {
       ],
     };
 
+    upsertEnergyEntryMock = jest.fn();
+    updateHouseholdSettingsMock = jest.fn();
+
     mockUseChores.mockImplementation(() => ({
       templates: state.templates,
       assignments: state.assignments,
       instances: state.instances,
       completions: state.completions,
+      energyEntries: [
+        {
+          id: 'energy-1',
+          household_id: 'household-1',
+          member_user_id: 'user-1',
+          energy_level: 'low',
+          effective_date: new Date().toISOString().slice(0, 10),
+          note: null,
+          created_at: '2026-03-22T08:00:00.000Z',
+        },
+      ],
+      settings: null,
       loading: false,
       error: null,
       createChore: jest.fn(),
       updateChore: jest.fn(),
       completeChore: jest.fn(),
       claimBonusChore: jest.fn(),
-      upsertEnergyEntry: jest.fn(),
+      upsertEnergyEntry: upsertEnergyEntryMock,
+      updateHouseholdSettings: updateHouseholdSettingsMock,
     }));
 
     mockUseMembers.mockImplementation(() => ({
@@ -284,6 +302,42 @@ describe('chores stats and detail screens', () => {
     });
 
     expect(mockRouterPush).toHaveBeenCalledWith('/chores/template-1');
+  });
+
+  it('adapts the personal list for low energy and hides gamification surfaces when disabled', async () => {
+    state.assignments.push({
+      id: 'assignment-3',
+      template_id: 'template-2',
+      instance_id: 'instance-2',
+      member_user_id: 'user-1',
+    });
+    state.templates = state.templates.map((template) => ({
+      ...template,
+      last_completed_at: '2026-03-15T08:00:00.000Z',
+    }));
+
+    const tree = await renderElement(React.createElement(ChoresScreen));
+    const text = normalizedText(tree.toJSON());
+
+    expect(text).toContain('Energy level');
+    expect(text.indexOf('Take out trash')).toBeLessThan(text.indexOf('Bathroom reset'));
+    expect(text).toContain('Gamification');
+    expect(text).not.toContain('Leaderboard');
+    expect(text).not.toContain('points');
+    expect(text).not.toContain('streak');
+    expect(text).not.toContain('Penalty');
+    expect(text).not.toContain('Late fee');
+    expect(text).not.toContain('Missed-task punishment');
+
+    await act(async () => {
+      tree.root.findByProps({ accessibilityLabel: 'high' }).props.onPress();
+    });
+
+    expect(upsertEnergyEntryMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        energy_level: 'high',
+      })
+    );
   });
 
   it('renders completion history and both task-count and minute-based fairness metrics on the detail screen', async () => {

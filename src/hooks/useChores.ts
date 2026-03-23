@@ -74,6 +74,26 @@ interface EnergyEntryInput {
   note?: string | null;
 }
 
+interface MemberEnergyEntryRecord {
+  id: string;
+  household_id: string;
+  member_user_id: string;
+  energy_level: 'low' | 'medium' | 'high';
+  effective_date: string;
+  note: string | null;
+  created_at: string;
+}
+
+interface HouseholdChoreSettingsRecord {
+  household_id: string;
+  gamification_enabled: boolean;
+  streaks_enabled: boolean;
+  leaderboard_enabled: boolean;
+  bonus_claim_window_hours: number;
+  created_at: string;
+  updated_at: string;
+}
+
 interface ChoreInput {
   title: string;
   description?: string | null;
@@ -97,6 +117,8 @@ export function useChores() {
   const [assignments, setAssignments] = useState<ChoreAssignmentRecord[]>([]);
   const [instances, setInstances] = useState<ChoreInstanceRecord[]>([]);
   const [completions, setCompletions] = useState<ChoreCompletionRecord[]>([]);
+  const [energyEntries, setEnergyEntries] = useState<MemberEnergyEntryRecord[]>([]);
+  const [settings, setSettings] = useState<HouseholdChoreSettingsRecord | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,6 +131,8 @@ export function useChores() {
       setAssignments([]);
       setInstances([]);
       setCompletions([]);
+      setEnergyEntries([]);
+      setSettings(null);
       return;
     }
 
@@ -116,7 +140,7 @@ export function useChores() {
     setError(null);
 
     try {
-      const [templatesResult, assignmentsResult, instancesResult, completionsResult] = await Promise.all([
+      const [templatesResult, assignmentsResult, instancesResult, completionsResult, energyEntriesResult, settingsResult] = await Promise.all([
         supabase
           .from('chore_templates')
           .select('*')
@@ -139,17 +163,31 @@ export function useChores() {
           .eq('household_id', activeHouseholdId)
           .order('completed_at', { ascending: false })
           .limit(100),
+        supabase
+          .from('member_energy_entries')
+          .select('*')
+          .eq('household_id', activeHouseholdId)
+          .order('effective_date', { ascending: false }),
+        supabase
+          .from('household_chore_settings')
+          .select('*')
+          .eq('household_id', activeHouseholdId)
+          .maybeSingle(),
       ]);
 
       if (templatesResult.error) throw templatesResult.error;
       if (assignmentsResult.error) throw assignmentsResult.error;
       if (instancesResult.error) throw instancesResult.error;
       if (completionsResult.error) throw completionsResult.error;
+      if (energyEntriesResult.error) throw energyEntriesResult.error;
+      if (settingsResult.error) throw settingsResult.error;
 
       setTemplates((templatesResult.data as ChoreTemplateRecord[]) ?? []);
       setAssignments((assignmentsResult.data as ChoreAssignmentRecord[]) ?? []);
       setInstances((instancesResult.data as ChoreInstanceRecord[]) ?? []);
       setCompletions((completionsResult.data as ChoreCompletionRecord[]) ?? []);
+      setEnergyEntries((energyEntriesResult.data as MemberEnergyEntryRecord[]) ?? []);
+      setSettings((settingsResult.data as HouseholdChoreSettingsRecord | null) ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load chores');
     } finally {
@@ -406,7 +444,33 @@ export function useChores() {
     if (upsertError) {
       throw upsertError;
     }
-  }, [activeHouseholdId, user]);
+
+    await loadChores();
+  }, [activeHouseholdId, loadChores, user]);
+
+  const updateHouseholdSettings = useCallback(async (
+    updates: Partial<Pick<
+      HouseholdChoreSettingsRecord,
+      'gamification_enabled' | 'streaks_enabled' | 'leaderboard_enabled' | 'bonus_claim_window_hours'
+    >>
+  ): Promise<void> => {
+    if (!activeHouseholdId) {
+      throw new Error('No active household');
+    }
+
+    const { error: upsertError } = await supabase
+      .from('household_chore_settings')
+      .upsert({
+        household_id: activeHouseholdId,
+        ...updates,
+      });
+
+    if (upsertError) {
+      throw upsertError;
+    }
+
+    await loadChores();
+  }, [activeHouseholdId, loadChores]);
 
   useEffect(() => {
     if (!activeHouseholdId) {
@@ -421,6 +485,8 @@ export function useChores() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chore_assignments', filter: `household_id=eq.${activeHouseholdId}` }, loadChores)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chore_instances', filter: `household_id=eq.${activeHouseholdId}` }, loadChores)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chore_completions', filter: `household_id=eq.${activeHouseholdId}` }, loadChores)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'member_energy_entries', filter: `household_id=eq.${activeHouseholdId}` }, loadChores)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'household_chore_settings', filter: `household_id=eq.${activeHouseholdId}` }, loadChores)
       .subscribe();
 
     return () => {
@@ -433,6 +499,8 @@ export function useChores() {
     assignments,
     instances,
     completions,
+    energyEntries,
+    settings,
     loading,
     error,
     loadChores,
@@ -441,5 +509,6 @@ export function useChores() {
     completeChore,
     claimBonusChore,
     upsertEnergyEntry,
+    updateHouseholdSettings,
   };
 }
