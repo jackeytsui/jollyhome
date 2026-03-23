@@ -78,7 +78,7 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 
 - [x] **CALD-01**: User can create household events with title, date/time, location, and description
 - [x] **CALD-02**: User can set events as recurring with flexible patterns (daily, weekly, monthly, custom)
-- [ ] **CALD-03**: User can view shared calendar with per-member color coding and event-type icons
+- [x] **CALD-03**: User can view shared calendar with per-member color coding and event-type icons
 - [x] **CALD-04**: Calendar displays all household activity types in one view: events, chore due dates, meal plans, maintenance, guest visits, quiet hours, shared space bookings
 - [x] **CALD-05**: User can RSVP to household events
 - [x] **CALD-06**: User can indicate "home tonight" / "away tonight" for dinner planning (lightweight attendance)
@@ -291,7 +291,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AICH-05 | Phase 3 | Complete |
 | CALD-01 | Phase 3 | Complete |
 | CALD-02 | Phase 3 | Complete |
-| CALD-03 | Phase 3 | Pending |
+| CALD-03 | Phase 3 | Complete |
 | CALD-04 | Phase 3 | Complete |
 | CALD-05 | Phase 3 | Complete |
 | CALD-06 | Phase 3 | Complete |
