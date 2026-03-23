@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { colors } from '@/constants/theme';
 import { useCalendar } from '@/hooks/useCalendar';
+import { buildRecurrenceRule, parseRecurrenceRule, type RecurrenceFrequency, type RecurrenceWeekday } from '@/lib/recurrence';
 import type { CalendarActivityType, CalendarEvent } from '@/types/calendar';
 
 export interface ActivityTypeOption {
@@ -33,6 +35,33 @@ export const ACTIVITY_TYPE_OPTIONS: ActivityTypeOption[] = [
   { label: 'Booking', value: 'booking' },
 ];
 
+type RecurrencePreset = 'none' | 'daily' | 'weekly' | 'monthly' | 'custom';
+
+const RECURRENCE_PRESETS: Array<{ key: RecurrencePreset; label: string }> = [
+  { key: 'none', label: 'Does not repeat' },
+  { key: 'daily', label: 'Daily' },
+  { key: 'weekly', label: 'Weekly' },
+  { key: 'monthly', label: 'Monthly' },
+  { key: 'custom', label: 'Custom' },
+];
+
+const CUSTOM_FREQUENCY_OPTIONS: Array<{ key: RecurrenceFrequency; label: string }> = [
+  { key: 'daily', label: 'Days' },
+  { key: 'weekly', label: 'Weeks' },
+  { key: 'monthly', label: 'Months' },
+  { key: 'yearly', label: 'Years' },
+];
+
+const WEEKDAY_OPTIONS: Array<{ value: RecurrenceWeekday; label: string }> = [
+  { value: 'MO', label: 'Mon' },
+  { value: 'TU', label: 'Tue' },
+  { value: 'WE', label: 'Wed' },
+  { value: 'TH', label: 'Thu' },
+  { value: 'FR', label: 'Fri' },
+  { value: 'SA', label: 'Sat' },
+  { value: 'SU', label: 'Sun' },
+];
+
 interface EventEditorSheetProps {
   visible: boolean;
   mode?: 'create' | 'edit';
@@ -49,35 +78,116 @@ interface EventEditorFormState {
   endsAt: string;
   location: string;
   description: string;
-  recurrenceRule: string;
+  recurrencePreset: RecurrencePreset;
+  recurrenceWeekdays: RecurrenceWeekday[];
+  recurrenceMonthDay: string;
+  customInterval: string;
+  customFrequency: RecurrenceFrequency;
   selectedMemberId: string | null;
+}
+
+interface BuiltRecurrenceState {
+  recurrenceRule: string | null;
+  recurrenceAnchor: string;
+  recurrenceTimezone: string;
+}
+
+function getDefaultMonthDay(value: string): string {
+  return String(new Date(value).getUTCDate());
+}
+
+function getTimezoneFromEvent(event: CalendarEvent | null): string {
+  return event?.recurrenceTimezone ?? event?.timezone ?? 'UTC';
 }
 
 function createDefaultFormState(memberOptions: MemberOption[]): EventEditorFormState {
   const start = new Date();
   const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const startsAt = start.toISOString().slice(0, 16);
 
   return {
     activityType: 'event',
     title: '',
-    startsAt: start.toISOString().slice(0, 16),
+    startsAt,
     endsAt: end.toISOString().slice(0, 16),
     location: '',
     description: '',
-    recurrenceRule: '',
+    recurrencePreset: 'none',
+    recurrenceWeekdays: ['MO'],
+    recurrenceMonthDay: getDefaultMonthDay(startsAt),
+    customInterval: '2',
+    customFrequency: 'weekly',
     selectedMemberId: memberOptions[0]?.id ?? null,
   };
 }
 
 function mapEventToFormState(event: CalendarEvent, memberOptions: MemberOption[]): EventEditorFormState {
+  const startsAt = event.startsAt.slice(0, 16);
+  const timezone = getTimezoneFromEvent(event);
+  const parsed = event.recurrenceRule ? parseRecurrenceRule(event.recurrenceRule, timezone) : null;
+
+  const recurrenceState = (() => {
+    if (!parsed) {
+      return {
+        preset: 'none' as RecurrencePreset,
+        recurrenceWeekdays: ['MO'] as RecurrenceWeekday[],
+        recurrenceMonthDay: getDefaultMonthDay(startsAt),
+        customInterval: '2',
+        customFrequency: 'weekly' as RecurrenceFrequency,
+      };
+    }
+
+    if (parsed.frequency === 'daily' && parsed.interval === 1) {
+      return {
+        preset: 'daily' as RecurrencePreset,
+        recurrenceWeekdays: ['MO'] as RecurrenceWeekday[],
+        recurrenceMonthDay: getDefaultMonthDay(startsAt),
+        customInterval: '2',
+        customFrequency: 'weekly' as RecurrenceFrequency,
+      };
+    }
+
+    if (parsed.frequency === 'weekly' && parsed.interval === 1) {
+      return {
+        preset: 'weekly' as RecurrencePreset,
+        recurrenceWeekdays: parsed.byWeekday.length > 0 ? parsed.byWeekday : ['MO'],
+        recurrenceMonthDay: getDefaultMonthDay(startsAt),
+        customInterval: '2',
+        customFrequency: 'weekly' as RecurrenceFrequency,
+      };
+    }
+
+    if (parsed.frequency === 'monthly' && parsed.interval === 1) {
+      return {
+        preset: 'monthly' as RecurrencePreset,
+        recurrenceWeekdays: ['MO'] as RecurrenceWeekday[],
+        recurrenceMonthDay: String(parsed.byMonthDay[0] ?? getDefaultMonthDay(startsAt)),
+        customInterval: '2',
+        customFrequency: 'monthly' as RecurrenceFrequency,
+      };
+    }
+
+    return {
+      preset: 'custom' as RecurrencePreset,
+      recurrenceWeekdays: parsed.byWeekday.length > 0 ? parsed.byWeekday : ['MO'],
+      recurrenceMonthDay: String(parsed.byMonthDay[0] ?? getDefaultMonthDay(startsAt)),
+      customInterval: String(parsed.interval),
+      customFrequency: parsed.frequency,
+    };
+  })();
+
   return {
     activityType: event.activityType,
     title: event.title,
-    startsAt: event.startsAt.slice(0, 16),
+    startsAt,
     endsAt: event.endsAt.slice(0, 16),
     location: event.location ?? '',
     description: event.description ?? '',
-    recurrenceRule: event.recurrenceRule ?? '',
+    recurrencePreset: recurrenceState.preset,
+    recurrenceWeekdays: recurrenceState.recurrenceWeekdays,
+    recurrenceMonthDay: recurrenceState.recurrenceMonthDay,
+    customInterval: recurrenceState.customInterval,
+    customFrequency: recurrenceState.customFrequency,
     selectedMemberId: event.memberOwnerIds[0] ?? memberOptions[0]?.id ?? null,
   };
 }
@@ -88,6 +198,85 @@ function toIsoDateTime(value: string): string {
   }
 
   return new Date(value).toISOString();
+}
+
+function normalizeMonthDay(value: string, fallback: string): number {
+  return Math.max(1, Math.min(31, Number(value) || Number(fallback) || 1));
+}
+
+function buildRecurrenceState(formState: EventEditorFormState, timezone: string): BuiltRecurrenceState {
+  const recurrenceAnchor = toIsoDateTime(formState.startsAt);
+
+  if (formState.recurrencePreset === 'none') {
+    return {
+      recurrenceRule: null,
+      recurrenceAnchor,
+      recurrenceTimezone: timezone,
+    };
+  }
+
+  if (formState.recurrencePreset === 'daily') {
+    const recurrence = buildRecurrenceRule({
+      frequency: 'daily',
+      startsAt: recurrenceAnchor,
+      timezone,
+    });
+
+    return {
+      recurrenceRule: recurrence.rule,
+      recurrenceAnchor: recurrence.startsAt,
+      recurrenceTimezone: recurrence.timezone,
+    };
+  }
+
+  if (formState.recurrencePreset === 'weekly') {
+    const recurrence = buildRecurrenceRule({
+      frequency: 'weekly',
+      byWeekday: formState.recurrenceWeekdays.length > 0 ? formState.recurrenceWeekdays : ['MO'],
+      startsAt: recurrenceAnchor,
+      timezone,
+    });
+
+    return {
+      recurrenceRule: recurrence.rule,
+      recurrenceAnchor: recurrence.startsAt,
+      recurrenceTimezone: recurrence.timezone,
+    };
+  }
+
+  if (formState.recurrencePreset === 'monthly') {
+    const recurrence = buildRecurrenceRule({
+      frequency: 'monthly',
+      byMonthDay: [normalizeMonthDay(formState.recurrenceMonthDay, getDefaultMonthDay(formState.startsAt))],
+      startsAt: recurrenceAnchor,
+      timezone,
+    });
+
+    return {
+      recurrenceRule: recurrence.rule,
+      recurrenceAnchor: recurrence.startsAt,
+      recurrenceTimezone: recurrence.timezone,
+    };
+  }
+
+  const recurrence = buildRecurrenceRule({
+    frequency: formState.customFrequency,
+    interval: Math.max(1, Number(formState.customInterval) || 1),
+    byWeekday: formState.customFrequency === 'weekly'
+      ? (formState.recurrenceWeekdays.length > 0 ? formState.recurrenceWeekdays : ['MO'])
+      : undefined,
+    byMonthDay: formState.customFrequency === 'monthly'
+      ? [normalizeMonthDay(formState.recurrenceMonthDay, getDefaultMonthDay(formState.startsAt))]
+      : undefined,
+    startsAt: recurrenceAnchor,
+    timezone,
+  });
+
+  return {
+    recurrenceRule: recurrence.rule,
+    recurrenceAnchor: recurrence.startsAt,
+    recurrenceTimezone: recurrence.timezone,
+  };
 }
 
 export function EventEditorSheet({
@@ -124,6 +313,23 @@ export function EventEditorSheet({
     setFormState((current) => ({ ...current, [field]: value }));
   }
 
+  function toggleWeekday(weekday: RecurrenceWeekday) {
+    setFormState((current) => {
+      const hasWeekday = current.recurrenceWeekdays.includes(weekday);
+
+      if (hasWeekday && current.recurrenceWeekdays.length === 1) {
+        return current;
+      }
+
+      return {
+        ...current,
+        recurrenceWeekdays: hasWeekday
+          ? current.recurrenceWeekdays.filter((value) => value !== weekday)
+          : [...current.recurrenceWeekdays, weekday],
+      };
+    });
+  }
+
   async function handleSave() {
     if (!formState.title.trim()) {
       Alert.alert('Missing title', 'Add a title before saving the event.');
@@ -133,6 +339,10 @@ export function EventEditorSheet({
     setSaving(true);
 
     try {
+      const { recurrenceRule, recurrenceAnchor, recurrenceTimezone } = buildRecurrenceState(
+        formState,
+        getTimezoneFromEvent(event)
+      );
       const payload = {
         activity_type: formState.activityType,
         title: formState.title.trim(),
@@ -140,8 +350,9 @@ export function EventEditorSheet({
         ends_at: toIsoDateTime(formState.endsAt),
         location: formState.location.trim() || null,
         description: formState.description.trim() || null,
-        recurrence_rule: formState.recurrenceRule.trim() || null,
-        recurrence_anchor: toIsoDateTime(formState.startsAt),
+        recurrence_rule: recurrenceRule,
+        recurrence_timezone: recurrenceTimezone,
+        recurrence_anchor: recurrenceAnchor,
         owner_member_user_ids: formState.selectedMemberId ? [formState.selectedMemberId] : [],
       };
 
@@ -245,13 +456,100 @@ export function EventEditorSheet({
           />
         </View>
 
-        <Input
-          label="Recurrence rule"
-          value={formState.recurrenceRule}
-          onChangeText={(value) => updateField('recurrenceRule', value)}
-          placeholder="RRULE:FREQ=WEEKLY;BYDAY=MO"
-          autoCapitalize="none"
-        />
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Recurrence</Text>
+          <Text style={styles.sectionCaption}>
+            Pick a pattern and the editor will store the RRULE for you.
+          </Text>
+          <View style={styles.chipWrap}>
+            {RECURRENCE_PRESETS.map((preset) => {
+              const active = formState.recurrencePreset === preset.key;
+
+              return (
+                <Pressable
+                  key={preset.key}
+                  onPress={() => updateField('recurrencePreset', preset.key)}
+                  style={[styles.choiceChip, active && styles.choiceChipActive]}
+                >
+                  <Text style={[styles.choiceText, active && styles.choiceTextActive]}>
+                    {preset.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {(formState.recurrencePreset === 'weekly'
+          || (formState.recurrencePreset === 'custom' && formState.customFrequency === 'weekly')) ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Weekday(s)</Text>
+            <View style={styles.chipWrap}>
+              {WEEKDAY_OPTIONS.map((option) => {
+                const active = formState.recurrenceWeekdays.includes(option.value);
+
+                return (
+                  <Pressable
+                    key={option.value}
+                    onPress={() => toggleWeekday(option.value)}
+                    style={[styles.choiceChip, active && styles.choiceChipActive]}
+                  >
+                    <Text style={[styles.choiceText, active && styles.choiceTextActive]}>
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
+
+        {(formState.recurrencePreset === 'monthly'
+          || (formState.recurrencePreset === 'custom' && formState.customFrequency === 'monthly')) ? (
+          <View style={styles.section}>
+            <Input
+              label="Day of month"
+              value={formState.recurrenceMonthDay}
+              onChangeText={(value) => updateField('recurrenceMonthDay', value)}
+              keyboardType="number-pad"
+            />
+          </View>
+        ) : null}
+
+        {formState.recurrencePreset === 'custom' ? (
+          <View style={styles.section}>
+            <View style={styles.twoUp}>
+              <View style={styles.half}>
+                <Input
+                  label="Repeat every"
+                  value={formState.customInterval}
+                  onChangeText={(value) => updateField('customInterval', value)}
+                  keyboardType="number-pad"
+                />
+              </View>
+              <View style={styles.half}>
+                <Text style={styles.sectionLabel}>Unit</Text>
+                <View style={styles.chipWrap}>
+                  {CUSTOM_FREQUENCY_OPTIONS.map((option) => {
+                    const active = formState.customFrequency === option.key;
+
+                    return (
+                      <Pressable
+                        key={option.key}
+                        onPress={() => updateField('customFrequency', option.key)}
+                        style={[styles.choiceChip, active && styles.choiceChipActive]}
+                      >
+                        <Text style={[styles.choiceText, active && styles.choiceTextActive]}>
+                          {option.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            </View>
+          </View>
+        ) : null}
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Member color association</Text>
@@ -320,7 +618,17 @@ const styles = StyleSheet.create({
     color: colors.textPrimary.light,
     lineHeight: 20,
   },
+  sectionCaption: {
+    fontSize: 13,
+    color: colors.textSecondary.light,
+    lineHeight: 18,
+  },
   optionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chipWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
@@ -353,6 +661,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  choiceChip: {
+    minHeight: 38,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.secondary.light,
+  },
+  choiceChipActive: {
+    backgroundColor: colors.accent.light,
+    borderColor: colors.accent.light,
+  },
+  choiceText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
+    color: colors.textSecondary.light,
+  },
+  choiceTextActive: {
+    color: colors.dominant.light,
   },
   memberSwatch: {
     width: 14,
