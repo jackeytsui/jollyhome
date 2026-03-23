@@ -24,6 +24,10 @@ jest.mock('@/stores/household', () => ({
   useHouseholdStore: () => mockUseHouseholdStore(),
 }));
 
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
 jest.mock('@/components/ui/Button', () => {
   const ReactLocal = require('react');
   const { Pressable, Text } = require('react-native');
@@ -79,8 +83,13 @@ type MockState = {
     member_user_id: string;
   }>;
   completions: Array<{
+    id?: string;
+    household_id?: string;
     instance_id: string;
     template_id: string;
+    completed_by?: string;
+    completed_at?: string;
+    actual_minutes?: number | null;
     condition_state_at_completion: 'green' | 'yellow' | 'red';
     note: string | null;
     photo_path: string | null;
@@ -238,8 +247,13 @@ describe('chores UI', () => {
           : instance
       );
       state.completions.push({
+        id: `completion-${instanceId}`,
+        household_id: 'household-1',
         instance_id: instanceId,
         template_id: state.instances.find((instance) => instance.id === instanceId)?.template_id ?? '',
+        completed_by: 'user-1',
+        completed_at: new Date().toISOString(),
+        actual_minutes: null,
         condition_state_at_completion: 'yellow',
         note: payload.note ?? null,
         photo_path: payload.photo_path ?? null,
@@ -264,12 +278,15 @@ describe('chores UI', () => {
       assignments: state.assignments,
       instances: state.instances,
       completions: state.completions,
+      energyEntries: [],
+      settings: null,
       loading: false,
       error: null,
       createChore: createChoreMock,
       updateChore: updateChoreMock,
       completeChore: completeChoreMock,
       claimBonusChore: claimBonusChoreMock,
+      loadChores: jest.fn(),
     }));
 
     mockUseMembers.mockImplementation(() => ({

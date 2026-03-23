@@ -143,6 +143,28 @@ function matchesFilters(chore: DisplayChore, filters: ChoreFilterState) {
   return true;
 }
 
+function areRotationDraftsEqual(left: RotationReviewItem[], right: RotationReviewItem[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((item, index) => {
+    const candidate = right[index];
+    if (!candidate) {
+      return false;
+    }
+
+    return (
+      item.choreInstanceId === candidate.choreInstanceId &&
+      item.templateId === candidate.templateId &&
+      item.title === candidate.title &&
+      item.recommendedMemberId === candidate.recommendedMemberId &&
+      item.estimatedEffortMinutes === candidate.estimatedEffortMinutes &&
+      item.rationale.join('|') === candidate.rationale.join('|')
+    );
+  });
+}
+
 export default function ChoresScreen() {
   const router = useRouter();
   const [filters, setFilters] = useState<ChoreFilterState>(DEFAULT_FILTERS);
@@ -321,7 +343,7 @@ export default function ChoresScreen() {
   );
 
   useEffect(() => {
-    setRotationDraft(rotationItems);
+    setRotationDraft((current) => (areRotationDraftsEqual(current, rotationItems) ? current : rotationItems));
   }, [rotationItems]);
 
   const areaOptions = useMemo(

@@ -31,9 +31,15 @@ jest.mock(
         update: jest.fn().mockReturnThis(),
         delete: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({ data: null, error: null }),
       }),
       rpc: jest.fn().mockResolvedValue({ data: null, error: null }),
+      channel: jest.fn().mockReturnValue({
+        on: jest.fn().mockReturnThis(),
+        subscribe: jest.fn().mockReturnValue({ unsubscribe: jest.fn() }),
+      }),
+      removeChannel: jest.fn(),
     },
   }),
   { virtual: true }
