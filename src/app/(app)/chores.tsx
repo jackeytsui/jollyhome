@@ -17,9 +17,12 @@ import { CompleteChoreSheet, type CompleteChoreValues } from '@/components/chore
 import { FairnessSummaryCard } from '@/components/chores/FairnessSummaryCard';
 import { EnergyLevelCard } from '@/components/chores/EnergyLevelCard';
 import { GamificationCard } from '@/components/chores/GamificationCard';
+import { RotationReviewSheet, type RotationReviewItem } from '@/components/chores/RotationReviewSheet';
+import { RotationSuggestionCard } from '@/components/chores/RotationSuggestionCard';
 import { getConditionProgress, rankChoresForEnergy } from '@/lib/condition';
 import { buildFairnessStats, getRollingAverageMinutes } from '@/lib/fairness';
 import { parseRecurrenceRule } from '@/lib/recurrence';
+import { useChoreRotation } from '@/hooks/useChoreRotation';
 import { useChores } from '@/hooks/useChores';
 import { useMembers } from '@/hooks/useMembers';
 import { colors } from '@/constants/theme';
@@ -150,6 +153,10 @@ export default function ChoresScreen() {
   const [claimingId, setClaimingId] = useState<string | null>(null);
   const [energySaving, setEnergySaving] = useState(false);
   const [gamificationSaving, setGamificationSaving] = useState(false);
+  const [rotationReviewVisible, setRotationReviewVisible] = useState(false);
+  const [rotationApplying, setRotationApplying] = useState(false);
+  const [rotationRefreshing, setRotationRefreshing] = useState(false);
+  const [rotationDraft, setRotationDraft] = useState<RotationReviewItem[]>([]);
   const [defaultAnchor] = useState(() => startOfTodayIso());
   const { activeHouseholdId } = useHouseholdStore();
   const user = useAuthStore((state) => state.user);
@@ -170,6 +177,7 @@ export default function ChoresScreen() {
     updateHouseholdSettings,
   } = useChores();
   const { members, loadMembers } = useMembers(activeHouseholdId);
+  const { suggestions, refreshSuggestions, applySuggestions } = useChoreRotation();
 
   useEffect(() => {
     if (activeHouseholdId) {
@@ -293,6 +301,28 @@ export default function ChoresScreen() {
       })),
     [members]
   );
+
+  const memberNameMap = useMemo(
+    () => new Map(members.map((member) => [member.user_id, member.profile.display_name ?? 'Housemate'])),
+    [members]
+  );
+
+  const rotationItems = useMemo<RotationReviewItem[]>(
+    () =>
+      suggestions.map((suggestion) => ({
+        choreInstanceId: suggestion.choreInstanceId,
+        templateId: suggestion.templateId,
+        title: suggestion.title,
+        recommendedMemberId: suggestion.recommendedMemberId,
+        estimatedEffortMinutes: suggestion.estimatedEffortMinutes,
+        rationale: suggestion.rationale,
+      })),
+    [suggestions]
+  );
+
+  useEffect(() => {
+    setRotationDraft(rotationItems);
+  }, [rotationItems]);
 
   const areaOptions = useMemo(
     () => Array.from(new Set(chores.map((chore) => chore.area ?? 'Unassigned'))).sort(),
@@ -457,6 +487,42 @@ export default function ChoresScreen() {
     }
   }
 
+  function openRotationReview() {
+    setRotationDraft(rotationItems);
+    setRotationReviewVisible(true);
+  }
+
+  function handleRotationAssigneeChange(choreInstanceId: string, memberId: string) {
+    setRotationDraft((current) =>
+      current.map((item) =>
+        item.choreInstanceId === choreInstanceId
+          ? { ...item, recommendedMemberId: memberId }
+          : item
+      )
+    );
+  }
+
+  async function handleRotationRefresh() {
+    setRotationRefreshing(true);
+
+    try {
+      await refreshSuggestions();
+    } finally {
+      setRotationRefreshing(false);
+    }
+  }
+
+  async function handleRotationConfirm() {
+    setRotationApplying(true);
+
+    try {
+      await applySuggestions(rotationDraft);
+      setRotationReviewVisible(false);
+    } finally {
+      setRotationApplying(false);
+    }
+  }
+
   const editorInitialValues: Partial<ChoreEditorValues> | undefined = editingChore
     ? {
         title: editingChore.title,
@@ -502,6 +568,33 @@ export default function ChoresScreen() {
             Urgent chores stay at the top, then the list settles by area and assignee.
           </Text>
         </Card>
+
+        {rotationDraft.length > 0 ? (
+          <>
+            <View style={styles.rotationHeader}>
+              <View style={styles.rotationHeaderCopy}>
+                <Text style={styles.rotationTitle}>Assistive rotation</Text>
+                <Text style={styles.rotationBody}>
+                  Suggestions rebalance from live availability, attendance, learned duration, and active roster changes.
+                </Text>
+              </View>
+              <View style={styles.rotationHeaderAction}>
+                <Button label="Review AI rotation" variant="secondary" onPress={openRotationReview} />
+              </View>
+            </View>
+
+            {rotationDraft.slice(0, 2).map((item) => (
+              <RotationSuggestionCard
+                key={item.choreInstanceId}
+                title={item.title}
+                assigneeName={memberNameMap.get(item.recommendedMemberId ?? '') ?? 'Unassigned'}
+                estimatedEffortMinutes={item.estimatedEffortMinutes}
+                rationale={item.rationale}
+                onPress={openRotationReview}
+              />
+            ))}
+          </>
+        ) : null}
 
         <EnergyLevelCard
           value={currentEnergyLevel}
@@ -619,6 +712,21 @@ export default function ChoresScreen() {
         onClose={() => setCompletingChore(null)}
         onSubmit={handleComplete}
       />
+      <RotationReviewSheet
+        visible={rotationReviewVisible}
+        items={rotationDraft}
+        memberOptions={assigneeOptions}
+        loading={rotationApplying}
+        refreshing={rotationRefreshing}
+        onClose={() => setRotationReviewVisible(false)}
+        onChangeAssignee={handleRotationAssigneeChange}
+        onRefresh={() => {
+          void handleRotationRefresh();
+        }}
+        onConfirm={() => {
+          void handleRotationConfirm();
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -665,6 +773,30 @@ const styles = StyleSheet.create({
     color: colors.textPrimary.light,
   },
   summaryBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.textSecondary.light,
+  },
+  rotationHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  rotationHeaderCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  rotationHeaderAction: {
+    minWidth: 148,
+  },
+  rotationTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 24,
+    color: colors.textPrimary.light,
+  },
+  rotationBody: {
     fontSize: 14,
     lineHeight: 20,
     color: colors.textSecondary.light,

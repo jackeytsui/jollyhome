@@ -15,6 +15,8 @@ import { Card } from '@/components/ui/Card';
 import { HouseholdHeader } from '@/components/household/HouseholdHeader';
 import { InviteSheet } from '@/components/household/InviteSheet';
 import { SandboxBanner } from '@/components/household/SandboxBanner';
+import { useCalendar } from '@/hooks/useCalendar';
+import { useChores } from '@/hooks/useChores';
 import { useHousehold } from '@/hooks/useHousehold';
 import { useSandbox } from '@/hooks/useSandbox';
 import { useHouseholdStore } from '@/stores/household';
@@ -33,6 +35,8 @@ export default function HouseholdHomeScreen() {
   const { loadActiveHousehold, isLoading } = useHousehold();
   const { activeHouseholdId, householdName, memberCount } = useHouseholdStore();
   const inviteSheetRef = useRef<BottomSheetModal>(null);
+  const { items: calendarItems } = useCalendar();
+  const { templates, instances } = useChores();
 
   const {
     isSandboxActive,
@@ -97,6 +101,20 @@ export default function HouseholdHomeScreen() {
   }
 
   const isSolo = memberCount <= 1;
+  const urgentChores = instances
+    .filter((instance) => instance.status === 'open' || instance.status === 'claimed')
+    .map((instance) => {
+      const template = templates.find((item) => item.id === instance.template_id);
+      return {
+        id: instance.id,
+        title: template?.title ?? 'Chore',
+        area: template?.area ?? 'Home',
+      };
+    })
+    .slice(0, 3);
+  const upcomingEvents = [...calendarItems]
+    .sort((left, right) => new Date(left.startsAt).getTime() - new Date(right.startsAt).getTime())
+    .slice(0, 3);
 
   return (
     <SafeAreaView style={[styles.flex, styles.bgDominant]}>
@@ -195,6 +213,29 @@ export default function HouseholdHomeScreen() {
         {/* Quick Access feature cards — shown when not in sandbox mode */}
         {!isSandboxActive ? (
           <>
+            <Text style={styles.sectionLabel}>Tonight</Text>
+            <Card style={styles.featureCard}>
+              <View style={styles.featureInfo}>
+                <Text style={styles.featureLabel}>Urgent chores</Text>
+                <Text style={styles.featureDescription}>
+                  {urgentChores.length > 0
+                    ? urgentChores.map((chore) => `${chore.title} (${chore.area})`).join(' • ')
+                    : 'No urgent chores are open right now.'}
+                </Text>
+              </View>
+            </Card>
+
+            <Card style={styles.featureCard}>
+              <View style={styles.featureInfo}>
+                <Text style={styles.featureLabel}>Upcoming events</Text>
+                <Text style={styles.featureDescription}>
+                  {upcomingEvents.length > 0
+                    ? upcomingEvents.map((item) => item.title).join(' • ')
+                    : 'Nothing upcoming on the household timeline yet.'}
+                </Text>
+              </View>
+            </Card>
+
             <Text style={styles.sectionLabel}>Quick Access</Text>
             {FEATURE_CARDS.map((feature) => (
               feature.route ? (

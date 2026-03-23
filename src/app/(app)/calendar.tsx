@@ -31,6 +31,7 @@ import { RSVPChips } from '@/components/calendar/RSVPChips';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { colors } from '@/constants/theme';
+import { useChoreRotation } from '@/hooks/useChoreRotation';
 import { CALENDAR_SOURCE_ICON_MAP, useCalendar } from '@/hooks/useCalendar';
 import { useHouseholdStore } from '@/stores/household';
 import { useMembers } from '@/hooks/useMembers';
@@ -206,12 +207,14 @@ export default function CalendarScreen() {
   const activeHouseholdId = useHouseholdStore((state) => state.activeHouseholdId);
   const { members, loadMembers } = useMembers(activeHouseholdId);
   const { items, rsvps, loading, error, loadCalendar, upsertRsvp } = useCalendar();
+  const { suggestions, refreshSuggestions } = useChoreRotation();
 
   const [selectedView, setSelectedView] = useState<CalendarViewMode>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedItem, setSelectedItem] = useState<HouseholdCalendarItem | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [savingRsvp, setSavingRsvp] = useState(false);
+  const [lastRotationSync, setLastRotationSync] = useState<string | null>(null);
 
   useEffect(() => {
     void loadCalendar();
@@ -257,6 +260,11 @@ export default function CalendarScreen() {
     return rsvps.find((rsvp) => rsvp.eventId === selectedItem.sourceId)?.status ?? null;
   }, [rsvps, selectedItem]);
 
+  const activeMemberKey = useMemo(
+    () => members.filter((member) => member.status === 'active').map((member) => member.user_id).join('|'),
+    [members]
+  );
+
   const headerLabel = formatRangeLabel(
     selectedView === 'agenda' ? 'week' : selectedView,
     currentDate
@@ -271,6 +279,8 @@ export default function CalendarScreen() {
 
     try {
       await upsertRsvp(selectedItem.sourceId, status);
+      await refreshSuggestions();
+      setLastRotationSync(new Date().toISOString());
     } catch (rsvpError) {
       const message = rsvpError instanceof Error ? rsvpError.message : 'Failed to update RSVP';
       Alert.alert('RSVP failed', message);
@@ -283,6 +293,19 @@ export default function CalendarScreen() {
     setSelectedItem(null);
     setIsEditorOpen(true);
   }
+
+  async function handleTimelineRotationSync() {
+    await refreshSuggestions();
+    setLastRotationSync(new Date().toISOString());
+  }
+
+  useEffect(() => {
+    if (!activeMemberKey) {
+      return;
+    }
+
+    void handleTimelineRotationSync();
+  }, [activeMemberKey]);
 
   function renderTimeline() {
     if (selectedView === 'agenda') {
@@ -338,7 +361,32 @@ export default function CalendarScreen() {
           <Button label="Add event" onPress={openComposer} />
         </View>
 
-        <AttendanceToggleStrip />
+        <AttendanceToggleStrip
+          onSaved={() => {
+            void handleTimelineRotationSync();
+          }}
+        />
+
+        <Card style={styles.syncCard}>
+          <Text style={styles.syncTitle}>Rotation sync</Text>
+          <Text style={styles.syncBody}>
+            Suggestions refresh from attendance, RSVP, and active-member changes so chores and timeline stay aligned.
+          </Text>
+          <Text style={styles.syncMeta}>
+            {lastRotationSync
+              ? `Last refreshed ${new Date(lastRotationSync).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
+              : 'Not refreshed yet this session.'}
+          </Text>
+          <Text style={styles.syncMeta}>{suggestions.length} open chore suggestions in scope.</Text>
+          <Button
+            label="Refresh rotation suggestions"
+            size="sm"
+            variant="secondary"
+            onPress={() => {
+              void handleTimelineRotationSync();
+            }}
+          />
+        </Card>
 
         <Card style={styles.timelineCard}>
           <View style={styles.toolbar}>
@@ -490,6 +538,25 @@ const styles = StyleSheet.create({
   },
   timelineCard: {
     gap: 16,
+  },
+  syncCard: {
+    gap: 8,
+  },
+  syncTitle: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '700',
+    color: colors.textPrimary.light,
+  },
+  syncBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.textSecondary.light,
+  },
+  syncMeta: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.textSecondary.light,
   },
   toolbar: {
     gap: 12,
