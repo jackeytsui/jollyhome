@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 02-06-PLAN.md
-last_updated: "2026-03-21T13:26:59.369Z"
+status: Ready to execute
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-23T02:33:29.372Z"
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 22
+  completed_plans: 16
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Eliminate the friction of shared living by giving every household a single, intelligent hub where money, tasks, supplies, and coordination just work.
-**Current focus:** Phase 02 — expense-tracking-receipt-ocr
+**Current focus:** Phase 03 — chores-calendar
 
 ## Current Position
 
-Phase: 02 (expense-tracking-receipt-ocr) — EXECUTING
-Plan: 1 of 7
+Phase: 03 (chores-calendar) — EXECUTING
+Plan: 2 of 7
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Plan: 1 of 7
 | Phase 02-expense-tracking-receipt-ocr P05 | 4 min | 2 tasks | 5 files |
 | Phase 02-expense-tracking-receipt-ocr P07 | 4 | 2 tasks | 6 files |
 | Phase 02-expense-tracking-receipt-ocr P06 | 6 | 2 tasks | 8 files |
+| Phase 03-chores-calendar P01 | 3 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,9 @@ Recent decisions affecting current work:
 - [Phase 02-expense-tracking-receipt-ocr]: Receipt scan flow rendered as Modal overlay in finances.tsx — avoids Expo Router modal presentation issues with @gorhom/bottom-sheet gesture handler context
 - [Phase 02-expense-tracking-receipt-ocr]: processReceipt triggered via useEffect watching showReceiptReview + images.length — decouples state update from callback chain
 - [Phase 02-expense-tracking-receipt-ocr]: Edge Function validates OpenAI response shape before returning (fills missing fields with defaults: tax_cents:0, tip_cents:0, date:null)
+- [Phase 03-chores-calendar]: Pinned Phase 3 scheduling packages to exact research-backed versions for stable downstream work
+- [Phase 03-chores-calendar]: Reserved future chore, calendar, fairness, and attendance behaviors with passing it.todo scaffold suites
+- [Phase 03-chores-calendar]: Kept HouseholdCalendarItem.sourceType as an explicit future-facing union to avoid timeline contract churn
 
 ### Pending Todos
 
@@ -125,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T13:20:30.539Z
-Stopped at: Completed 02-06-PLAN.md
+Last session: 2026-03-23T02:33:29.369Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None

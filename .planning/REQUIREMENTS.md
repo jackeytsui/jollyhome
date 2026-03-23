@@ -57,12 +57,12 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 
 - [ ] **CHOR-01**: User can create a chore with title, description, estimated duration, and area of the house
 - [ ] **CHOR-02**: User can assign a chore to one or more household members
-- [ ] **CHOR-03**: User can set a chore as recurring with flexible scheduling (daily, specific weekdays, weekly, biweekly, monthly, custom interval)
-- [ ] **CHOR-04**: Chores display condition bars (green->yellow->red) showing time since last done, not pass/fail deadlines
+- [x] **CHOR-03**: User can set a chore as recurring with flexible scheduling (daily, specific weekdays, weekly, biweekly, monthly, custom interval)
+- [x] **CHOR-04**: Chores display condition bars (green->yellow->red) showing time since last done, not pass/fail deadlines
 - [ ] **CHOR-05**: Assigned user can mark a chore as complete (with optional photo proof)
 - [ ] **CHOR-06**: User can view all chores filtered by assignee, area, status, or urgency (condition level)
-- [ ] **CHOR-07**: User can view chore completion history and fairness stats per member (hours contributed, tasks completed)
-- [ ] **CHOR-08**: User can indicate daily energy level ("How much energy today?") and get an adapted task list prioritized by urgency and effort
+- [x] **CHOR-07**: User can view chore completion history and fairness stats per member (hours contributed, tasks completed)
+- [x] **CHOR-08**: User can indicate daily energy level ("How much energy today?") and get an adapted task list prioritized by urgency and effort
 - [ ] **CHOR-09**: Chores distinguish between "responsibilities" (assigned rotation) and "bonus tasks" (anyone can claim for credit)
 - [ ] **CHOR-10**: Household can toggle gamification on/off (points, streaks, leaderboard — great for families, optional for adults)
 
@@ -72,16 +72,16 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [ ] **AICH-02**: Rotation algorithm is stateless — never breaks when someone misses a task (fixes OurHome's #1 bug)
 - [ ] **AICH-03**: User can accept or adjust AI-suggested chore assignments
 - [ ] **AICH-04**: AI rebalances rotation when a member marks unavailability or household composition changes
-- [ ] **AICH-05**: AI learns per-person task durations over time to improve effort estimation and fairness scoring
+- [x] **AICH-05**: AI learns per-person task durations over time to improve effort estimation and fairness scoring
 
 ### Calendar (beats Cozi — unified household timeline)
 
 - [ ] **CALD-01**: User can create household events with title, date/time, location, and description
-- [ ] **CALD-02**: User can set events as recurring with flexible patterns (daily, weekly, monthly, custom)
+- [x] **CALD-02**: User can set events as recurring with flexible patterns (daily, weekly, monthly, custom)
 - [ ] **CALD-03**: User can view shared calendar with per-member color coding and event-type icons
-- [ ] **CALD-04**: Calendar displays all household activity types in one view: events, chore due dates, meal plans, maintenance, guest visits, quiet hours, shared space bookings
+- [x] **CALD-04**: Calendar displays all household activity types in one view: events, chore due dates, meal plans, maintenance, guest visits, quiet hours, shared space bookings
 - [ ] **CALD-05**: User can RSVP to household events
-- [ ] **CALD-06**: User can indicate "home tonight" / "away tonight" for dinner planning (lightweight attendance)
+- [x] **CALD-06**: User can indicate "home tonight" / "away tonight" for dinner planning (lightweight attendance)
 - [ ] **CALD-07**: Calendar supports day, week, and month views with agenda list option
 
 ### Shopping & Supplies (AnyList's polish + Grocy's intelligence)
@@ -276,25 +276,25 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AIEX-06 | Phase 6 | Pending |
 | CHOR-01 | Phase 3 | Pending |
 | CHOR-02 | Phase 3 | Pending |
-| CHOR-03 | Phase 3 | Pending |
-| CHOR-04 | Phase 3 | Pending |
+| CHOR-03 | Phase 3 | Complete |
+| CHOR-04 | Phase 3 | Complete |
 | CHOR-05 | Phase 3 | Pending |
 | CHOR-06 | Phase 3 | Pending |
-| CHOR-07 | Phase 3 | Pending |
-| CHOR-08 | Phase 3 | Pending |
+| CHOR-07 | Phase 3 | Complete |
+| CHOR-08 | Phase 3 | Complete |
 | CHOR-09 | Phase 3 | Pending |
 | CHOR-10 | Phase 3 | Pending |
 | AICH-01 | Phase 3 | Pending |
 | AICH-02 | Phase 3 | Pending |
 | AICH-03 | Phase 3 | Pending |
 | AICH-04 | Phase 3 | Pending |
-| AICH-05 | Phase 3 | Pending |
+| AICH-05 | Phase 3 | Complete |
 | CALD-01 | Phase 3 | Pending |
-| CALD-02 | Phase 3 | Pending |
+| CALD-02 | Phase 3 | Complete |
 | CALD-03 | Phase 3 | Pending |
-| CALD-04 | Phase 3 | Pending |
+| CALD-04 | Phase 3 | Complete |
 | CALD-05 | Phase 3 | Pending |
-| CALD-06 | Phase 3 | Pending |
+| CALD-06 | Phase 3 | Complete |
 | CALD-07 | Phase 3 | Pending |
 | SHOP-01 | Phase 4 | Pending |
 | SHOP-02 | Phase 4 | Pending |
