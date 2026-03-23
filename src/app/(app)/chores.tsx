@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ChoreCard } from '@/components/chores/ChoreCard';
@@ -13,7 +14,9 @@ import { ChoreEditorSheet, type ChoreEditorValues } from '@/components/chores/Ch
 import { ChoreFiltersBar, type ChoreFilterState } from '@/components/chores/ChoreFiltersBar';
 import { ChoreSection } from '@/components/chores/ChoreSection';
 import { CompleteChoreSheet, type CompleteChoreValues } from '@/components/chores/CompleteChoreSheet';
+import { FairnessSummaryCard } from '@/components/chores/FairnessSummaryCard';
 import { getConditionProgress } from '@/lib/condition';
+import { buildFairnessStats, getRollingAverageMinutes } from '@/lib/fairness';
 import { parseRecurrenceRule } from '@/lib/recurrence';
 import { useChores } from '@/hooks/useChores';
 import { useMembers } from '@/hooks/useMembers';
@@ -136,6 +139,7 @@ function matchesFilters(chore: DisplayChore, filters: ChoreFilterState) {
 }
 
 export default function ChoresScreen() {
+  const router = useRouter();
   const [filters, setFilters] = useState<ChoreFilterState>(DEFAULT_FILTERS);
   const [editorVisible, setEditorVisible] = useState(false);
   const [editingChore, setEditingChore] = useState<DisplayChore | null>(null);
@@ -256,6 +260,42 @@ export default function ChoresScreen() {
     [chores]
   );
 
+  const fairnessMembers = useMemo(() => {
+    if (!activeHouseholdId) {
+      return [];
+    }
+
+    const memberNameMap = new Map(
+      members.map((member) => [member.user_id, member.profile.display_name ?? 'Housemate'])
+    );
+    const stats = buildFairnessStats({
+      householdId: activeHouseholdId,
+      windowEnd: new Date().toISOString(),
+      completions: completions.map((completion) => ({
+        householdId: completion.household_id,
+        templateId: completion.template_id,
+        completedBy: completion.completed_by,
+        completedAt: completion.completed_at,
+        actualMinutes: completion.actual_minutes,
+      })),
+    });
+    const totalTasks = stats.reduce((sum, stat) => sum + stat.completedTaskCount, 0);
+    const averageTaskCount = stats.length > 0 ? totalTasks / stats.length : 0;
+
+    return stats.map((stat) => ({
+      memberId: stat.memberId,
+      memberName: memberNameMap.get(stat.memberId) ?? 'Housemate',
+      completedTaskCount: stat.completedTaskCount,
+      completedMinutes: stat.completedMinutes,
+      averageMinutes: getRollingAverageMinutes(stats, {
+        memberId: stat.memberId,
+        window: '30d',
+      }),
+      taskDelta: Math.round(stat.completedTaskCount - averageTaskCount),
+      minuteDelta: Math.round(stat.fairnessDelta),
+    }));
+  }, [activeHouseholdId, completions, members]);
+
   async function handleSave(values: ChoreEditorValues) {
     setSubmitting(true);
 
@@ -373,6 +413,8 @@ export default function ChoresScreen() {
           </Text>
         </Card>
 
+        <FairnessSummaryCard members={fairnessMembers} />
+
         {!activeHouseholdId ? (
           <Card>
             <Text style={styles.emptyTitle}>Choose a household to start assigning chores.</Text>
@@ -394,7 +436,7 @@ export default function ChoresScreen() {
             <ChoreCard
               key={chore.id}
               chore={chore}
-              onPress={() => openEditSheet(chore)}
+              onPress={() => router.push(`/chores/${chore.templateId}`)}
               footer={(
                 <View style={styles.cardActions}>
                   {chore.kind === 'bonus' && chore.status === 'open' ? (
@@ -426,7 +468,7 @@ export default function ChoresScreen() {
             <ChoreCard
               key={chore.id}
               chore={chore}
-              onPress={() => openEditSheet(chore)}
+              onPress={() => router.push(`/chores/${chore.templateId}`)}
               footer={(
                 <View style={styles.cardActions}>
                   {chore.kind === 'bonus' && chore.status === 'open' ? (
