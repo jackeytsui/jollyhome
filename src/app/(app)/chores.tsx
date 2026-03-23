@@ -12,6 +12,7 @@ import { ChoreCard } from '@/components/chores/ChoreCard';
 import { ChoreEditorSheet, type ChoreEditorValues } from '@/components/chores/ChoreEditorSheet';
 import { ChoreFiltersBar, type ChoreFilterState } from '@/components/chores/ChoreFiltersBar';
 import { ChoreSection } from '@/components/chores/ChoreSection';
+import { CompleteChoreSheet, type CompleteChoreValues } from '@/components/chores/CompleteChoreSheet';
 import { getConditionProgress } from '@/lib/condition';
 import { parseRecurrenceRule } from '@/lib/recurrence';
 import { useChores } from '@/hooks/useChores';
@@ -34,6 +35,7 @@ type DisplayChore = {
   conditionProgress: number;
   status: 'open' | 'claimed' | 'completed' | 'skipped';
   kind: 'responsibility' | 'bonus';
+  claimedBy: string | null;
   scheduledFor: string | null;
   recurrenceRule: string | null;
   recurrenceTimezone: string;
@@ -137,7 +139,9 @@ export default function ChoresScreen() {
   const [filters, setFilters] = useState<ChoreFilterState>(DEFAULT_FILTERS);
   const [editorVisible, setEditorVisible] = useState(false);
   const [editingChore, setEditingChore] = useState<DisplayChore | null>(null);
+  const [completingChore, setCompletingChore] = useState<DisplayChore | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [claimingId, setClaimingId] = useState<string | null>(null);
   const [defaultAnchor] = useState(() => startOfTodayIso());
   const { activeHouseholdId } = useHouseholdStore();
   const user = useAuthStore((state) => state.user);
@@ -150,6 +154,8 @@ export default function ChoresScreen() {
     error,
     createChore,
     updateChore,
+    completeChore,
+    claimBonusChore,
   } = useChores();
   const { members, loadMembers } = useMembers(activeHouseholdId);
 
@@ -209,6 +215,7 @@ export default function ChoresScreen() {
           conditionProgress: progress.ratio,
           status: instance.status,
           kind: template.kind,
+          claimedBy: instance.claimed_by,
           scheduledFor: instance.scheduled_for,
           recurrenceRule: template.recurrence_rule,
           recurrenceTimezone: template.recurrence_timezone,
@@ -289,6 +296,37 @@ export default function ChoresScreen() {
     setEditorVisible(true);
   }
 
+  async function handleClaimBonus(instanceId: string) {
+    setClaimingId(instanceId);
+
+    try {
+      await claimBonusChore(instanceId);
+    } finally {
+      setClaimingId(null);
+    }
+  }
+
+  async function handleComplete(values: CompleteChoreValues) {
+    if (!completingChore) {
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      await completeChore(completingChore.id, {
+        actual_minutes: values.actualMinutes,
+        note: values.note || null,
+        photo_path: values.photoPath || null,
+        condition_state: completingChore.conditionState,
+      });
+
+      setCompletingChore(null);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   const editorInitialValues: Partial<ChoreEditorValues> | undefined = editingChore
     ? {
         title: editingChore.title,
@@ -357,6 +395,24 @@ export default function ChoresScreen() {
               key={chore.id}
               chore={chore}
               onPress={() => openEditSheet(chore)}
+              footer={(
+                <View style={styles.cardActions}>
+                  {chore.kind === 'bonus' && chore.status === 'open' ? (
+                    <Button
+                      label="Claim bonus"
+                      variant="secondary"
+                      loading={claimingId === chore.id}
+                      onPress={() => handleClaimBonus(chore.id)}
+                    />
+                  ) : null}
+                  {(chore.kind !== 'bonus' || chore.claimedBy === user?.id || chore.status !== 'open') && chore.status !== 'completed' ? (
+                    <Button
+                      label="Complete"
+                      onPress={() => setCompletingChore(chore)}
+                    />
+                  ) : null}
+                </View>
+              )}
             />
           )}
         />
@@ -371,6 +427,24 @@ export default function ChoresScreen() {
               key={chore.id}
               chore={chore}
               onPress={() => openEditSheet(chore)}
+              footer={(
+                <View style={styles.cardActions}>
+                  {chore.kind === 'bonus' && chore.status === 'open' ? (
+                    <Button
+                      label="Claim bonus"
+                      variant="secondary"
+                      loading={claimingId === chore.id}
+                      onPress={() => handleClaimBonus(chore.id)}
+                    />
+                  ) : null}
+                  {(chore.kind !== 'bonus' || chore.claimedBy === user?.id || chore.status !== 'open') && chore.status !== 'completed' ? (
+                    <Button
+                      label="Complete"
+                      onPress={() => setCompletingChore(chore)}
+                    />
+                  ) : null}
+                </View>
+              )}
             />
           )}
         />
@@ -392,6 +466,13 @@ export default function ChoresScreen() {
         }}
         onSubmit={handleSave}
         defaultAnchor={defaultAnchor}
+      />
+      <CompleteChoreSheet
+        visible={Boolean(completingChore)}
+        choreTitle={completingChore?.title ?? ''}
+        loading={submitting}
+        onClose={() => setCompletingChore(null)}
+        onSubmit={handleComplete}
       />
     </SafeAreaView>
   );
@@ -452,5 +533,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: colors.destructive.light,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'flex-end',
   },
 });

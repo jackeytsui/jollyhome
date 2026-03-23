@@ -48,6 +48,10 @@ jest.mock('@/components/ui/Card', () => {
   };
 });
 
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
+}));
+
 type MockState = {
   templates: Array<{
     id: string;
@@ -73,6 +77,13 @@ type MockState = {
     template_id: string;
     instance_id: string | null;
     member_user_id: string;
+  }>;
+  completions: Array<{
+    instance_id: string;
+    template_id: string;
+    condition_state_at_completion: 'green' | 'yellow' | 'red';
+    note: string | null;
+    photo_path: string | null;
   }>;
 };
 
@@ -136,6 +147,19 @@ describe('chores UI', () => {
           last_completed_at: '2026-03-21T08:00:00.000Z',
           kind: 'responsibility',
         },
+        {
+          id: 'template-3',
+          title: 'Vacuum entryway',
+          description: 'Quick bonus reset',
+          area: 'Entryway',
+          estimated_minutes: 10,
+          recurrence_rule: 'DTSTART:20260321T080000Z\nRRULE:FREQ=WEEKLY;BYDAY=FR',
+          recurrence_timezone: 'UTC',
+          recurrence_anchor: '2026-03-21T08:00:00.000Z',
+          next_occurrence_at: '2026-03-28T08:00:00.000Z',
+          last_completed_at: '2026-03-21T08:00:00.000Z',
+          kind: 'bonus',
+        },
       ],
       instances: [
         {
@@ -149,6 +173,13 @@ describe('chores UI', () => {
           template_id: 'template-2',
           scheduled_for: '2026-03-27T08:00:00.000Z',
           status: 'open',
+        },
+        {
+          id: 'instance-3',
+          template_id: 'template-3',
+          scheduled_for: '2026-03-28T08:00:00.000Z',
+          status: 'open',
+          claimed_by: null,
         },
       ],
       assignments: [
@@ -165,11 +196,12 @@ describe('chores UI', () => {
           member_user_id: 'user-2',
         },
       ],
+      completions: [],
     };
 
     createChoreMock = jest.fn(async (payload) => {
       state.templates.push({
-        id: 'template-3',
+        id: 'template-4',
         title: payload.title,
         description: payload.description,
         area: payload.area,
@@ -182,32 +214,62 @@ describe('chores UI', () => {
         kind: payload.kind,
       });
       state.instances.push({
-        id: 'instance-3',
-        template_id: 'template-3',
+        id: 'instance-4',
+        template_id: 'template-4',
         scheduled_for: payload.next_occurrence_at,
         status: 'open',
+        claimed_by: null,
       });
       state.assignments.push(
         ...payload.assignedMemberIds.map((memberId: string, index: number) => ({
           id: `assignment-new-${index}`,
-          template_id: 'template-3',
-          instance_id: 'instance-3',
+          template_id: 'template-4',
+          instance_id: 'instance-4',
           member_user_id: memberId,
         }))
       );
     });
 
     updateChoreMock = jest.fn();
+    const completeChoreMock = jest.fn(async (instanceId, payload) => {
+      state.instances = state.instances.map((instance) =>
+        instance.id === instanceId
+          ? { ...instance, status: 'completed', claimed_by: instance.claimed_by ?? 'user-1' }
+          : instance
+      );
+      state.completions.push({
+        instance_id: instanceId,
+        template_id: state.instances.find((instance) => instance.id === instanceId)?.template_id ?? '',
+        condition_state_at_completion: 'yellow',
+        note: payload.note ?? null,
+        photo_path: payload.photo_path ?? null,
+      });
+    });
+    const claimBonusChoreMock = jest.fn(async (instanceId) => {
+      state.instances = state.instances.map((instance) =>
+        instance.id === instanceId
+          ? { ...instance, status: 'claimed', claimed_by: 'user-1' }
+          : instance
+      );
+      state.assignments.push({
+        id: 'assignment-claim',
+        template_id: 'template-3',
+        instance_id: instanceId,
+        member_user_id: 'user-1',
+      });
+    });
 
     mockUseChores.mockImplementation(() => ({
       templates: state.templates,
       assignments: state.assignments,
       instances: state.instances,
-      completions: [],
+      completions: state.completions,
       loading: false,
       error: null,
       createChore: createChoreMock,
       updateChore: updateChoreMock,
+      completeChore: completeChoreMock,
+      claimBonusChore: claimBonusChoreMock,
     }));
 
     mockUseMembers.mockImplementation(() => ({
@@ -245,6 +307,7 @@ describe('chores UI', () => {
     expect(text).toContain('Urgency');
     expect(text).toContain('Take out trash');
     expect(text).toContain('Bathroom reset');
+    expect(text).toContain('Vacuum entryway');
   });
 
   it('creates an assigned chore through the editor flow and filters by assignee', async () => {
@@ -295,5 +358,42 @@ describe('chores UI', () => {
 
     expect(flattenText(tree.toJSON())).not.toContain('Wipe counters');
     expect(flattenText(tree.toJSON())).toContain('Bathroom reset');
+  });
+
+  it('renders the completion sheet, allows no-photo completion, and exposes a separate bonus claim action', async () => {
+    const tree = await renderScreen();
+
+    expect(flattenText(tree.toJSON())).toContain('Claim bonus');
+
+    await act(async () => {
+      tree.root.findAllByProps({ accessibilityLabel: 'Claim bonus' })[0].props.onPress();
+    });
+
+    await act(async () => {
+      tree.update(React.createElement(ChoresScreen));
+    });
+
+    expect(flattenText(tree.toJSON())).toContain('Complete');
+
+    await act(async () => {
+      tree.root.findAllByProps({ accessibilityLabel: 'Complete' })[0].props.onPress();
+    });
+
+    expect(flattenText(tree.toJSON())).toContain('Optional photo proof');
+    expect(flattenText(tree.toJSON())).toContain('No photo attached');
+
+    await act(async () => {
+      tree.root.findByProps({ testID: 'complete-note-input' }).props.onChangeText('Done without a photo');
+    });
+
+    await act(async () => {
+      tree.root.findByProps({ accessibilityLabel: 'Mark complete' }).props.onPress();
+    });
+
+    await act(async () => {
+      tree.update(React.createElement(ChoresScreen));
+    });
+
+    expect(flattenText(tree.toJSON())).toContain('Vacuum entryway');
   });
 });
