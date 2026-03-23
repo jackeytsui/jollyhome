@@ -18,6 +18,34 @@ describe('calendar UI contracts', () => {
     expect(source).toContain("{ label: 'Booking', value: 'booking' }");
   });
 
+  it('replaces raw RRULE entry with explicit recurrence presets and helper translation', () => {
+    const editorSource = read('src/components/calendar/EventEditorSheet.tsx');
+    const recurrenceSource = read('src/lib/recurrence.ts');
+
+    expect(editorSource).toContain("{ key: 'daily', label: 'Daily' }");
+    expect(editorSource).toContain("{ key: 'weekly', label: 'Weekly' }");
+    expect(editorSource).toContain("{ key: 'monthly', label: 'Monthly' }");
+    expect(editorSource).toContain("{ key: 'custom', label: 'Custom' }");
+    expect(editorSource).toContain('buildRecurrenceRule');
+    expect(editorSource).toContain('parseRecurrenceRule');
+    expect(editorSource).not.toContain('label="Recurrence rule"');
+    expect(editorSource).toContain('recurrence_rule: recurrenceRule');
+    expect(editorSource).toContain('recurrence_anchor: recurrenceAnchor');
+    expect(recurrenceSource).toContain('export function buildRecurrenceRule');
+    expect(recurrenceSource).toContain('export function parseRecurrenceRule');
+  });
+
+  it('hydrates weekly, monthly, and custom recurrence controls from saved RRULE values', () => {
+    const source = read('src/components/calendar/EventEditorSheet.tsx');
+
+    expect(source).toContain("preset: 'weekly'");
+    expect(source).toContain("preset: 'monthly'");
+    expect(source).toContain("preset: 'custom'");
+    expect(source).toContain('byWeekday');
+    expect(source).toContain('byMonthDay');
+    expect(source).toContain('customInterval');
+  });
+
   it('defines RSVP chips with not going mapped to not_going', () => {
     const source = read('src/components/calendar/RSVPChips.tsx');
 
