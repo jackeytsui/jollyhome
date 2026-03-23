@@ -1,35 +1,123 @@
-describe('fairness and condition scaffolds', () => {
-  it('captures fairness totals by task count and effort for future stateless rebalancing', () => {
-    const stats = {
-      householdId: 'household-1',
-      memberId: 'member-1',
-      completedTaskCount: 8,
-      completedMinutes: 195,
-      rolling14DayTaskCount: 3,
-      rolling14DayMinutes: 82,
-      rolling30DayTaskCount: 6,
-      rolling30DayMinutes: 156,
-      fairnessDelta: -0.12,
-      lastCompletedAt: '2026-03-22T09:00:00.000Z',
-    };
+import { getConditionState, getConditionProgress, rankChoresForEnergy } from '@/lib/condition';
+import { buildFairnessStats, getRollingAverageMinutes, summarizeMemberLoad } from '@/lib/fairness';
 
-    expect(stats.completedMinutes).toBeGreaterThan(stats.rolling14DayMinutes);
+describe('fairness and condition', () => {
+  it('computes elapsed-time condition states and progress without deadline semantics', () => {
+    expect(
+      getConditionState({
+        lastCompletedAt: '2026-03-22T08:00:00.000Z',
+        now: '2026-03-23T02:00:00.000Z',
+        targetIntervalMinutes: 24 * 60,
+      })
+    ).toBe('green');
+
+    expect(
+      getConditionState({
+        lastCompletedAt: '2026-03-22T08:00:00.000Z',
+        now: '2026-03-23T14:00:00.000Z',
+        targetIntervalMinutes: 24 * 60,
+      })
+    ).toBe('yellow');
+
+    expect(
+      getConditionProgress({
+        lastCompletedAt: '2026-03-22T08:00:00.000Z',
+        now: '2026-03-24T08:00:00.000Z',
+        targetIntervalMinutes: 24 * 60,
+      })
+    ).toMatchObject({
+      elapsedMinutes: 2880,
+      ratio: 1,
+      state: 'red',
+    });
   });
 
-  it('captures daily energy input without coupling it to gamification state', () => {
-    const energy = {
-      householdId: 'household-1',
-      memberId: 'member-1',
-      energyLevel: 'medium',
-      effectiveDate: '2026-03-23',
-      note: null,
-      createdAt: '2026-03-23T07:00:00.000Z',
-    };
+  it('ranks chores by urgency while adapting effort to daily energy', () => {
+    const ranked = rankChoresForEnergy(
+      [
+        {
+          id: 'bathroom',
+          title: 'Bathroom scrub',
+          estimatedMinutes: 40,
+          conditionState: 'red',
+          conditionScore: 1,
+        },
+        {
+          id: 'dishes',
+          title: 'Dishes',
+          estimatedMinutes: 12,
+          conditionState: 'yellow',
+          conditionScore: 0.7,
+        },
+        {
+          id: 'trash',
+          title: 'Take out trash',
+          estimatedMinutes: 8,
+          conditionState: 'red',
+          conditionScore: 0.92,
+        },
+      ],
+      'low'
+    );
 
-    expect(energy.energyLevel).toBe('medium');
+    expect(ranked.map((item) => item.id)).toEqual(['trash', 'bathroom', 'dishes']);
   });
 
-  it.todo('reserves D-11 stateless rebalancing fairness calculations after missed chores');
-  it.todo('reserves D-22 fairness and urgency behavior when gamification is turned off');
-  it.todo('reserves AICH-05 learned-duration weighting in fairness scoring over rolling windows');
+  it('builds fairness rollups with rolling averages and member summaries', () => {
+    const stats = buildFairnessStats({
+      householdId: 'household-1',
+      windowEnd: '2026-03-23T12:00:00.000Z',
+      completions: [
+        {
+          householdId: 'household-1',
+          templateId: 'kitchen-reset',
+          completedBy: 'member-1',
+          completedAt: '2026-03-22T08:00:00.000Z',
+          actualMinutes: 24,
+        },
+        {
+          householdId: 'household-1',
+          templateId: 'kitchen-reset',
+          completedBy: 'member-1',
+          completedAt: '2026-03-10T08:00:00.000Z',
+          actualMinutes: 18,
+        },
+        {
+          householdId: 'household-1',
+          templateId: 'bathroom',
+          completedBy: 'member-2',
+          completedAt: '2026-03-21T08:00:00.000Z',
+          actualMinutes: 40,
+        },
+      ],
+    });
+
+    expect(stats).toEqual([
+      expect.objectContaining({
+        memberId: 'member-1',
+        completedTaskCount: 2,
+        completedMinutes: 42,
+        rolling14DayTaskCount: 2,
+        rolling14DayMinutes: 42,
+      }),
+      expect.objectContaining({
+        memberId: 'member-2',
+        completedTaskCount: 1,
+        completedMinutes: 40,
+      }),
+    ]);
+
+    expect(
+      getRollingAverageMinutes(stats, {
+        memberId: 'member-1',
+        window: '14d',
+      })
+    ).toBe(21);
+
+    expect(summarizeMemberLoad(stats)).toEqual({
+      totalTasks: 3,
+      totalMinutes: 82,
+      averageFairnessDelta: 0,
+    });
+  });
 });

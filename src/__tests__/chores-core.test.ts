@@ -1,64 +1,64 @@
+import {
+  buildRecurrenceRule,
+  parseRecurrenceRule,
+  getNextOccurrence,
+  expandOccurrencesInRange,
+} from '@/lib/recurrence';
+import { useChores } from '@/hooks/useChores';
+
 describe('chores core contracts', () => {
-  it('exposes recurring chore template fields for schedule and condition scaffolding', () => {
-    const template = {
-      id: 'template-1',
-      householdId: 'household-1',
-      title: 'Kitchen reset',
-      description: 'Wipe counters and sweep the floor',
-      area: 'kitchen',
-      estimatedMinutes: 20,
-      recurrenceRule: 'FREQ=DAILY',
-      recurrenceTimezone: 'America/Toronto',
-      recurrenceAnchor: '2026-03-22T08:00:00.000Z',
-      nextOccurrenceAt: '2026-03-23T08:00:00.000Z',
-      conditionState: 'yellow',
-      conditionScore: 0.6,
-      lastCompletedAt: '2026-03-21T08:00:00.000Z',
-      kind: 'responsibility',
-      createdBy: 'member-1',
-      isArchived: false,
-      iconKey: 'sparkles',
-      visualWeight: 'medium',
-      createdAt: '2026-03-22T08:00:00.000Z',
-      updatedAt: '2026-03-22T08:00:00.000Z',
-    };
+  it('builds and parses weekly recurrence rules with timezone metadata intact', () => {
+    const recurrence = buildRecurrenceRule({
+      frequency: 'weekly',
+      interval: 1,
+      byWeekday: ['MO', 'WE'],
+      startsAt: '2026-03-23T18:00:00.000Z',
+      timezone: 'America/Toronto',
+    });
 
-    expect(template.conditionState).toBe('yellow');
+    expect(recurrence.rule).toContain('FREQ=WEEKLY');
+    expect(recurrence.rule).toContain('BYDAY=MO,WE');
+
+    expect(parseRecurrenceRule(recurrence.rule, recurrence.timezone)).toMatchObject({
+      frequency: 'weekly',
+      interval: 1,
+      byWeekday: ['MO', 'WE'],
+      timezone: 'America/Toronto',
+    });
   });
 
-  it('keeps chore instances and completions aligned for future history and duration learning', () => {
-    const instance = {
-      id: 'instance-1',
-      templateId: 'template-1',
-      householdId: 'household-1',
-      scheduledFor: '2026-03-23T08:00:00.000Z',
-      dueWindowEnd: '2026-03-23T12:00:00.000Z',
-      status: 'open',
-      assignedMemberIds: ['member-1'],
-      assignmentIds: ['assignment-1'],
-      conditionState: 'yellow',
-      projectedFromRecurrence: true,
-      createdAt: '2026-03-22T08:00:00.000Z',
-      updatedAt: '2026-03-22T08:00:00.000Z',
-    };
-    const completion = {
-      id: 'completion-1',
-      householdId: 'household-1',
-      templateId: 'template-1',
-      instanceId: instance.id,
-      completedBy: 'member-1',
-      completedAt: '2026-03-23T08:30:00.000Z',
-      actualMinutes: 24,
-      note: 'Done before breakfast',
-      photoUrl: null,
-      conditionStateAtCompletion: 'green',
-      createdAt: '2026-03-23T08:30:00.000Z',
-    };
+  it('finds and expands future occurrences in a bounded range', () => {
+    const recurrence = buildRecurrenceRule({
+      frequency: 'daily',
+      interval: 2,
+      startsAt: '2026-03-22T08:00:00.000Z',
+      timezone: 'America/Toronto',
+    });
 
-    expect(completion.instanceId).toBe(instance.id);
+    expect(
+      getNextOccurrence({
+        rule: recurrence.rule,
+        timezone: recurrence.timezone,
+        after: '2026-03-23T12:00:00.000Z',
+      })
+    ).toBe('2026-03-24T08:00:00.000Z');
+
+    expect(
+      expandOccurrencesInRange({
+        rule: recurrence.rule,
+        timezone: recurrence.timezone,
+        rangeStart: '2026-03-22T00:00:00.000Z',
+        rangeEnd: '2026-03-28T23:59:59.999Z',
+      })
+    ).toEqual([
+      '2026-03-22T08:00:00.000Z',
+      '2026-03-24T08:00:00.000Z',
+      '2026-03-26T08:00:00.000Z',
+      '2026-03-28T08:00:00.000Z',
+    ]);
   });
 
-  it.todo('reserves D-05 condition color thresholds across green, yellow, and red transitions');
-  it.todo('reserves D-22 core chore usability coverage when gamification is fully disabled');
-  it.todo('reserves AICH-05 learned duration rollups per member from immutable completion history');
+  it('exports the household chores hook contract for downstream screens', () => {
+    expect(typeof useChores).toBe('function');
+  });
 });
