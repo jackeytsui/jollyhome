@@ -12,22 +12,31 @@ import { useTranslation } from 'react-i18next';
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { DailyDigestPreviewCard } from '@/components/home/DailyDigestPreviewCard';
 import { HouseholdHeader } from '@/components/household/HouseholdHeader';
 import { InviteSheet } from '@/components/household/InviteSheet';
+import { NotificationPreferencesCard } from '@/components/home/NotificationPreferencesCard';
 import { SandboxBanner } from '@/components/household/SandboxBanner';
+import { useBalances } from '@/hooks/useBalances';
 import { useCalendar } from '@/hooks/useCalendar';
 import { useChores } from '@/hooks/useChores';
 import { useHousehold } from '@/hooks/useHousehold';
+import { useInventory } from '@/hooks/useInventory';
+import { buildDailyDigestPreview, useNotifications } from '@/hooks/useNotifications';
+import { useExpenses } from '@/hooks/useExpenses';
+import { useMaintenance } from '@/hooks/useMaintenance';
+import { useMealPlans } from '@/hooks/useMealPlans';
 import { useSandbox } from '@/hooks/useSandbox';
 import { useHouseholdStore } from '@/stores/household';
+import type { NotificationReference } from '@/types/notifications';
 import { colors } from '@/constants/theme';
 
 const FEATURE_CARDS = [
   { key: 'finances', label: 'Finances', description: 'Track your personal expenses.', route: '/(app)/finances' as const },
   { key: 'chores', label: 'Chores', description: 'Manage your personal tasks.', route: '/(app)/chores' as const },
   { key: 'calendar', label: 'Calendar', description: 'View your schedule.', route: '/(app)/calendar' as const },
-  { key: 'shopping', label: 'Shopping', description: 'Shared shopping lists.', route: null },
-  { key: 'meals', label: 'Meals', description: 'Plan meals for the week.', route: null },
+  { key: 'shopping', label: 'Shopping', description: 'Shared shopping lists.', route: '/(app)/shopping' as const },
+  { key: 'meals', label: 'Meals', description: 'Plan meals for the week.', route: '/(app)/meals' as const },
 ];
 
 export default function HouseholdHomeScreen() {
@@ -37,6 +46,12 @@ export default function HouseholdHomeScreen() {
   const inviteSheetRef = useRef<BottomSheetModal>(null);
   const { items: calendarItems } = useCalendar();
   const { templates, instances } = useChores();
+  const { expenses } = useExpenses();
+  const { simplifiedDebts } = useBalances();
+  const { lowStockAlerts } = useInventory();
+  const { mealPlans } = useMealPlans();
+  const { activeRequests } = useMaintenance();
+  const { preferences, saving, updateCategoryMode, updateDigestTiming } = useNotifications();
 
   const {
     isSandboxActive,
@@ -115,6 +130,34 @@ export default function HouseholdHomeScreen() {
   const upcomingEvents = [...calendarItems]
     .sort((left, right) => new Date(left.startsAt).getTime() - new Date(right.startsAt).getTime())
     .slice(0, 3);
+  const digestPreview = buildDailyDigestPreview({
+    householdName,
+    expenses: expenses.slice(0, 3),
+    choreInstances: instances.map((instance) => ({
+      id: instance.id,
+      templateId: instance.template_id,
+      status: instance.status,
+      scheduledFor: instance.scheduled_for,
+      dueWindowEnd: instance.due_window_end,
+    })),
+    choreTemplates: templates,
+    calendarItems,
+    mealPlans,
+    lowStockAlerts,
+    simplifiedDebts,
+    maintenanceRequests: activeRequests,
+  });
+
+  function handleNotificationReferencePress(reference: NotificationReference) {
+    router.push(reference.route);
+  }
+
+  function cycleDigestHour() {
+    const nextHour = preferences ? (preferences.digestHour + 2) % 24 : 18;
+    updateDigestTiming(nextHour).catch(() => {
+      // Keep the last local state if the save fails.
+    });
+  }
 
   return (
     <SafeAreaView style={[styles.flex, styles.bgDominant]}>
@@ -213,6 +256,22 @@ export default function HouseholdHomeScreen() {
         {/* Quick Access feature cards — shown when not in sandbox mode */}
         {!isSandboxActive ? (
           <>
+            <Text style={styles.sectionLabel}>Household Pulse</Text>
+            <DailyDigestPreviewCard
+              digest={digestPreview}
+              onReferencePress={handleNotificationReferencePress}
+            />
+            <NotificationPreferencesCard
+              preferences={preferences}
+              saving={saving}
+              onModeChange={(category, mode) => {
+                updateCategoryMode(category, mode).catch(() => {
+                  // Preserve optimistic UI state and surface errors later.
+                });
+              }}
+              onDigestHourCycle={cycleDigestHour}
+            />
+
             <Text style={styles.sectionLabel}>Tonight</Text>
             <Card style={styles.featureCard}>
               <View style={styles.featureInfo}>
@@ -238,36 +297,22 @@ export default function HouseholdHomeScreen() {
 
             <Text style={styles.sectionLabel}>Quick Access</Text>
             {FEATURE_CARDS.map((feature) => (
-              feature.route ? (
-                <Pressable
-                  key={feature.key}
-                  onPress={() => router.push(feature.route!)}
-                >
-                  <Card style={styles.featureCard}>
-                    <View style={styles.featureRow}>
-                      <View style={styles.featureInfo}>
-                        <Text style={styles.featureLabel}>{feature.label}</Text>
-                        <Text style={styles.featureDescription}>{feature.description}</Text>
-                      </View>
-                      <View style={styles.chevron}>
-                        <Text style={styles.chevronText}>›</Text>
-                      </View>
-                    </View>
-                  </Card>
-                </Pressable>
-              ) : (
-                <Card key={feature.key} style={styles.featureCard}>
+              <Pressable
+                key={feature.key}
+                onPress={() => router.push(feature.route)}
+              >
+                <Card style={styles.featureCard}>
                   <View style={styles.featureRow}>
                     <View style={styles.featureInfo}>
                       <Text style={styles.featureLabel}>{feature.label}</Text>
                       <Text style={styles.featureDescription}>{feature.description}</Text>
                     </View>
-                    <View style={styles.phase2Badge}>
-                      <Text style={styles.phase2Text}>Phase 2+</Text>
+                    <View style={styles.chevron}>
+                      <Text style={styles.chevronText}>›</Text>
                     </View>
                   </View>
                 </Card>
-              )
+              </Pressable>
             ))}
           </>
         ) : null}
@@ -430,19 +475,5 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.textSecondary.light,
     lineHeight: 26,
-  },
-  phase2Badge: {
-    backgroundColor: colors.secondary.light,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-  },
-  phase2Text: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textSecondary.light,
-    lineHeight: 16,
   },
 });
