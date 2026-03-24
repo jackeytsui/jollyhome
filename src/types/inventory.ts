@@ -14,14 +14,11 @@ export type InventoryUnit =
   | 'can'
   | 'box';
 export type InventoryEventSource =
+  | 'receipt_purchase'
+  | 'meal_cooked'
   | 'manual_adjustment'
-  | 'purchase'
-  | 'consumption'
-  | 'waste'
-  | 'recipe_cook'
-  | 'receipt_commit'
-  | 'pantry_photo_review'
-  | 'restock_generation';
+  | 'pantry_scan_seed'
+  | 'restock_prediction';
 export type InventoryAlertType = 'low_stock' | 'expiring_soon' | 'out_of_stock';
 export type InventoryAlertStatus = 'open' | 'dismissed' | 'resolved';
 

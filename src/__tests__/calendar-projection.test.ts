@@ -109,6 +109,27 @@ describe('projectCalendarItems', () => {
           note: 'Late shift',
         },
       ],
+      mealPlanEntries: [
+        {
+          id: 'planned-meal-1',
+          householdId: 'household-1',
+          recipeId: 'recipe-1',
+          suggestionRunId: 'run-1',
+          suggestionId: 'suggestion-1',
+          calendarItemId: null,
+          title: 'Projected pasta night',
+          slot: 'dinner',
+          plannedForDate: '2026-03-22',
+          startsAt: '2026-03-22T19:30:00.000Z',
+          endsAt: '2026-03-22T20:15:00.000Z',
+          status: 'planned',
+          servings: 3,
+          servingSource: 'attendance',
+          attendanceMemberIds: ['user-1', 'user-2', 'user-3'],
+          attendanceSnapshotDate: '2026-03-22',
+          notes: 'Use pantry tomatoes first',
+        },
+      ],
     });
 
     const bySourceType = Object.fromEntries(projected.map((item) => [item.sourceType, item]));
@@ -125,6 +146,13 @@ describe('projectCalendarItems', () => {
     expect(bySourceType.chore.iconKey).toBeNull();
     expect(bySourceType.attendance.iconKey).toBeNull();
     expect(bySourceType.meal.iconKey).toBe(CALENDAR_SOURCE_ICON_MAP.meal);
+    expect(bySourceType.meal.metadata).toEqual(
+      expect.objectContaining({
+        recipeId: 'recipe-1',
+        servings: 3,
+        attendanceMemberIds: ['user-1', 'user-2', 'user-3'],
+      })
+    );
   });
 
   it('groups agenda items by day in chronological order', () => {
@@ -153,6 +181,7 @@ describe('projectCalendarItems', () => {
       ],
       choreInstances: [],
       attendanceEntries: [],
+      mealPlanEntries: [],
     });
 
     const groups = groupAgendaItemsByDay(projected, 'UTC');

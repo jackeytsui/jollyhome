@@ -65,7 +65,11 @@ interface ProjectedChoreRow {
     title: string;
     description: string | null;
     icon_key: string | null;
-  } | null;
+  } | Array<{
+    title: string;
+    description: string | null;
+    icon_key: string | null;
+  }> | null;
   assignments: Array<{
     member_user_id: string;
   }> | null;
@@ -78,6 +82,34 @@ interface AttendanceRow {
   attendance_date: string;
   status: 'home_tonight' | 'away_tonight';
   note: string | null;
+}
+
+interface MealPlanEntryRow {
+  id: string;
+  household_id: string;
+  recipe_id: string | null;
+  suggestion_run_id: string | null;
+  suggestion_id: string | null;
+  calendar_item_id: string | null;
+  title: string;
+  slot_key: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  slot_date: string;
+  starts_at: string | null;
+  ends_at: string | null;
+  status: 'planned' | 'cooked' | 'skipped';
+  servings_planned: number | string;
+  serving_source: 'manual' | 'attendance' | 'recipe_default';
+  attendance_member_ids: string[] | null;
+  attendance_snapshot_date: string | null;
+  notes: string | null;
+}
+
+function toNumber(value: number | string | null | undefined): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const parsed = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function mapCalendarEvent(row: {
@@ -147,7 +179,7 @@ export function useCalendar() {
     setError(null);
 
     try {
-      const [eventsResult, rsvpsResult, choreResult, attendanceResult] = await Promise.all([
+      const [eventsResult, rsvpsResult, choreResult, attendanceResult, mealPlanResult] = await Promise.all([
         supabase
           .from('calendar_events')
           .select('*')
@@ -166,15 +198,21 @@ export function useCalendar() {
           .from('member_attendance')
           .select('*')
           .eq('household_id', activeHouseholdId),
+        supabase
+          .from('meal_plan_entries')
+          .select('*')
+          .eq('household_id', activeHouseholdId)
+          .neq('status', 'skipped'),
       ]);
 
       if (eventsResult.error) throw eventsResult.error;
       if (rsvpsResult.error) throw rsvpsResult.error;
       if (choreResult.error) throw choreResult.error;
       if (attendanceResult.error) throw attendanceResult.error;
+      if (mealPlanResult.error) throw mealPlanResult.error;
 
       const mappedEvents = ((eventsResult.data ?? []) as Array<Parameters<typeof mapCalendarEvent>[0]>).map(mapCalendarEvent);
-      const choreRows = (choreResult.data ?? []) as ProjectedChoreRow[];
+      const choreRows = (choreResult.data ?? []) as unknown as ProjectedChoreRow[];
       const attendanceRows = (attendanceResult.data ?? []) as AttendanceRow[];
 
       setEvents(mappedEvents);
@@ -198,18 +236,22 @@ export function useCalendar() {
       setItems(
         projectCalendarItems({
           events: mappedEvents,
-          choreInstances: choreRows.map((row) => ({
-            id: row.id,
-            householdId: row.household_id,
-            templateId: row.template_id,
-            title: row.template?.title ?? 'Chore',
-            details: row.template?.description ?? null,
-            startsAt: row.scheduled_for ?? row.due_window_end ?? new Date().toISOString(),
-            endsAt: row.due_window_end ?? row.scheduled_for ?? new Date().toISOString(),
-            iconKey: row.template?.icon_key ?? null,
-            memberOwnerIds: row.assignments?.map((assignment) => assignment.member_user_id) ?? [],
-            memberColorKey: null,
-          })),
+          choreInstances: choreRows.map((row) => {
+            const template = Array.isArray(row.template) ? row.template[0] ?? null : row.template;
+
+            return {
+              id: row.id,
+              householdId: row.household_id,
+              templateId: row.template_id,
+              title: template?.title ?? 'Chore',
+              details: template?.description ?? null,
+              startsAt: row.scheduled_for ?? row.due_window_end ?? new Date().toISOString(),
+              endsAt: row.due_window_end ?? row.scheduled_for ?? new Date().toISOString(),
+              iconKey: template?.icon_key ?? null,
+              memberOwnerIds: row.assignments?.map((assignment) => assignment.member_user_id) ?? [],
+              memberColorKey: null,
+            };
+          }),
           attendanceEntries: attendanceRows.map((row) => ({
             id: row.id,
             householdId: row.household_id,
@@ -217,6 +259,25 @@ export function useCalendar() {
             attendanceDate: row.attendance_date,
             status: row.status,
             note: row.note,
+          })),
+          mealPlanEntries: ((mealPlanResult.data ?? []) as MealPlanEntryRow[]).map((row) => ({
+            id: row.id,
+            householdId: row.household_id,
+            recipeId: row.recipe_id,
+            suggestionRunId: row.suggestion_run_id,
+            suggestionId: row.suggestion_id,
+            calendarItemId: row.calendar_item_id,
+            title: row.title,
+            slot: row.slot_key,
+            plannedForDate: row.slot_date,
+            startsAt: row.starts_at,
+            endsAt: row.ends_at,
+            status: row.status,
+            servings: toNumber(row.servings_planned) ?? 1,
+            servingSource: row.serving_source,
+            attendanceMemberIds: row.attendance_member_ids ?? [],
+            attendanceSnapshotDate: row.attendance_snapshot_date,
+            notes: row.notes,
           })),
         })
           .map((item) => ({
@@ -323,6 +384,7 @@ export function useCalendar() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'event_rsvps', filter: `household_id=eq.${activeHouseholdId}` }, loadCalendar)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chore_instances', filter: `household_id=eq.${activeHouseholdId}` }, loadCalendar)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'member_attendance', filter: `household_id=eq.${activeHouseholdId}` }, loadCalendar)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'meal_plan_entries', filter: `household_id=eq.${activeHouseholdId}` }, loadCalendar)
       .subscribe();
 
     return () => {

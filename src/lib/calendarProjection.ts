@@ -30,10 +30,31 @@ interface ProjectedAttendanceEntry {
   note: string | null;
 }
 
+interface ProjectedMealPlanEntry {
+  id: string;
+  householdId: string;
+  recipeId: string | null;
+  suggestionRunId: string | null;
+  suggestionId: string | null;
+  calendarItemId: string | null;
+  title: string;
+  slot: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  plannedForDate: string;
+  startsAt: string | null;
+  endsAt: string | null;
+  status: 'planned' | 'cooked' | 'skipped';
+  servings: number;
+  servingSource: 'manual' | 'attendance' | 'recipe_default';
+  attendanceMemberIds: string[];
+  attendanceSnapshotDate: string | null;
+  notes: string | null;
+}
+
 interface ProjectCalendarItemsInput {
   events: CalendarEvent[];
   choreInstances: ProjectedChoreInstance[];
   attendanceEntries: ProjectedAttendanceEntry[];
+  mealPlanEntries?: ProjectedMealPlanEntry[];
 }
 
 interface AgendaGroup {
@@ -165,7 +186,42 @@ export function projectCalendarItems(input: ProjectCalendarItemsInput): Househol
     metadata: null,
   }));
 
-  return [...choreItems, ...eventItems, ...attendanceItems].sort((left, right) => {
+  const mealItems = (input.mealPlanEntries ?? [])
+    .filter((meal) => meal.status !== 'skipped')
+    .map<HouseholdCalendarItem>((meal) => ({
+      id: `meal:${meal.id}`,
+      householdId: meal.householdId,
+      sourceId: meal.id,
+      sourceType: 'meal',
+      title: meal.title,
+      details: meal.notes,
+      startsAt: meal.startsAt ?? `${meal.plannedForDate}T18:00:00.000Z`,
+      endsAt: meal.endsAt ?? `${meal.plannedForDate}T19:00:00.000Z`,
+      allDay: false,
+      iconKey: 'utensils',
+      visualWeight: 'secondary',
+      memberOwnerIds: meal.attendanceMemberIds,
+      memberColorKey: null,
+      recurrenceRule: null,
+      recurrenceTimezone: null,
+      recurrenceAnchor: null,
+      attendanceStatus: null,
+      isProjected: true,
+      metadata: {
+        recipeId: meal.recipeId,
+        suggestionRunId: meal.suggestionRunId,
+        suggestionId: meal.suggestionId,
+        calendarItemId: meal.calendarItemId,
+        slot: meal.slot,
+        status: meal.status,
+        servings: meal.servings,
+        servingSource: meal.servingSource,
+        attendanceMemberIds: meal.attendanceMemberIds,
+        attendanceSnapshotDate: meal.attendanceSnapshotDate,
+      },
+    }));
+
+  return [...choreItems, ...eventItems, ...mealItems, ...attendanceItems].sort((left, right) => {
     const sourcePriority = getSourcePriority(left.sourceType) - getSourcePriority(right.sourceType);
     if (sourcePriority !== 0) {
       return sourcePriority;
