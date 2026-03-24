@@ -119,12 +119,11 @@ Plans:
   3. Household can create and maintain house rules with version history, members acknowledge rules on joining, and quiet hours display on the calendar
   4. User can schedule shared space usage via calendar booking and post guest notices that appear on the calendar
   5. Completing a cleaning chore prompts about low supplies, and low cleaning supplies show a warning on related chores
-**Plans**: TBD
-
-Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
-- [ ] 05-03: TBD
+**Plans**:
+- [ ] 05-RESEARCH.md — Existing code seams, schema strategy, and integration risks for maintenance, rules, bookings, and repair-expense sync
+- [ ] 05-01-PLAN.md — Maintenance lifecycle, history, and calendar-aware appointment tracking
+- [ ] 05-02-PLAN.md — House rules, acknowledgements, quiet hours, guest notices, and shared-space bookings
+- [ ] 05-03-PLAN.md — Repair receipt sync, expense prefill, and chore-supply coordination warnings
 
 ### Phase 6: Intelligence + Polish
 **Goal**: Users experience HomeOS as a single intelligent system -- smart notifications, at-a-glance dashboards, a conversational AI assistant, and cross-feature synergies that make the whole greater than the sum of parts
