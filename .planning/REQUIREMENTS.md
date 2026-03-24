@@ -49,7 +49,7 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [x] **AIEX-01**: User can scan a receipt with camera and AI extracts store name, date, line items, prices, tax, and total (< 4 seconds, 95%+ accuracy)
 - [x] **AIEX-02**: AI suggests which items are personal vs shared based on item names and household patterns
 - [x] **AIEX-03**: User can review, edit, and confirm AI-extracted data before saving (mandatory confirmation step)
-- [ ] **AIEX-04**: Receipt scan simultaneously creates expense split + updates pantry inventory + checks off shopping list items (one photo, three workflows)
+- [x] **AIEX-04**: Receipt scan simultaneously creates expense split + updates pantry inventory + checks off shopping list items (one photo, three workflows)
 - [ ] **AIEX-05**: User can view AI-generated spending pattern insights after 30+ days (trends, anomalies, category breakdown)
 - [ ] **AIEX-06**: AI suggests budget optimizations ("You spent 40% more on dining this month — here are meal plans that could save $X")
 
@@ -90,34 +90,34 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [ ] **SHOP-02**: User can add items with quantity, category, and optional notes
 - [ ] **SHOP-03**: Shopping list syncs in real-time across all household members (< 1 second)
 - [ ] **SHOP-04**: User can check off items while shopping (checked items move to bottom, not disappear)
-- [ ] **SHOP-05**: Shopping list auto-groups items by store aisle/category for efficient shopping
-- [ ] **SHOP-06**: User can track household supply inventory with current stock levels
+- [x] **SHOP-05**: Shopping list auto-groups items by store aisle/category for efficient shopping
+- [x] **SHOP-06**: User can track household supply inventory with current stock levels
 - [ ] **SHOP-07**: User can set minimum-stock thresholds per item that auto-add to shopping list when reached
 - [ ] **SHOP-08**: User can scan product barcodes to add items to inventory or shopping list
-- [ ] **SHOP-09**: User can import recipe ingredients directly to shopping list (with pantry deduction — only add what's missing)
+- [x] **SHOP-09**: User can import recipe ingredients directly to shopping list (with pantry deduction — only add what's missing)
 
 ### AI Shopping & Supplies
 
-- [ ] **AISH-01**: AI predicts when supplies will run low based on household consumption patterns and auto-suggests restocking
+- [x] **AISH-01**: AI predicts when supplies will run low based on household consumption patterns and auto-suggests restocking
 - [ ] **AISH-02**: AI auto-generates shopping list items from low-stock predictions and upcoming meal plans
 - [ ] **AISH-03**: User can photograph fridge/pantry and AI identifies items present (onboarding shortcut for initial inventory setup)
 
 ### Meal Planning (Plan to Eat's pipeline + Paprika's recipes + AI intelligence)
 
-- [ ] **MEAL-01**: User can plan meals on a weekly calendar view with drag-and-drop
+- [x] **MEAL-01**: User can plan meals on a weekly calendar view with drag-and-drop
 - [ ] **MEAL-02**: User can add recipes with ingredients, instructions, and photos
 - [ ] **MEAL-03**: User can import recipes from URL (web clipper extracts ingredients and steps automatically)
-- [ ] **MEAL-04**: Meal plan auto-populates shopping list with needed ingredients, deducting what's already in pantry
+- [x] **MEAL-04**: Meal plan auto-populates shopping list with needed ingredients, deducting what's already in pantry
 - [ ] **MEAL-05**: User can set dietary preferences and restrictions per member (allergies, vegetarian, cultural, etc.)
-- [ ] **MEAL-06**: Meal portions auto-adjust based on "who's home tonight" calendar attendance
+- [x] **MEAL-06**: Meal portions auto-adjust based on "who's home tonight" calendar attendance
 - [ ] **MEAL-07**: User can save favorite meals and tag them (quick, batch-cook, guest-worthy, budget, etc.)
 
 ### AI Meal Planning (the differentiator — no competitor does this well)
 
 - [ ] **AIML-01**: AI generates weekly meal plans factoring in: member preferences, dietary needs, budget, what's in the pantry, who's home which nights, and prep time available (from calendar)
 - [ ] **AIML-02**: AI suggests meals that share ingredients across the week to reduce waste and cost
-- [ ] **AIML-03**: User can accept, swap, or regenerate individual AI-suggested meals
-- [ ] **AIML-04**: AI learns from accepted/rejected suggestions and household cooking history to improve over time
+- [x] **AIML-03**: User can accept, swap, or regenerate individual AI-suggested meals
+- [x] **AIML-04**: AI learns from accepted/rejected suggestions and household cooking history to improve over time
 - [ ] **AIML-05**: AI suggests time-appropriate meals based on calendar (slow cooker on late nights, quick meals on busy days)
 
 ### Maintenance (full lifecycle — no consumer app does this)
@@ -163,17 +163,17 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 These requirements define how features connect to create a coherent product experience — the reason to use one app instead of five.
 
 **Receipt -> Everything Pipeline**
-- [ ] **SYNC-01**: Scanning a grocery receipt simultaneously: (a) creates an expense split, (b) adds purchased items to pantry inventory, (c) checks off matching shopping list items — one action, three updates
+- [x] **SYNC-01**: Scanning a grocery receipt simultaneously: (a) creates an expense split, (b) adds purchased items to pantry inventory, (c) checks off matching shopping list items — one action, three updates
 - [ ] **SYNC-02**: Scanning a home repair receipt auto-creates an expense split AND links it to the related maintenance request
 
 **Meals <-> Shopping <-> Pantry Pipeline**
-- [ ] **SYNC-03**: Planning meals for the week auto-generates a shopping list that deducts what's already in the pantry (only buy what you need)
-- [ ] **SYNC-04**: Checking off a recipe as "cooked" auto-deducts used ingredients from pantry inventory
-- [ ] **SYNC-05**: When pantry items hit low-stock threshold, they appear both as a notification AND auto-add to the active shopping list
+- [x] **SYNC-03**: Planning meals for the week auto-generates a shopping list that deducts what's already in the pantry (only buy what you need)
+- [x] **SYNC-04**: Checking off a recipe as "cooked" auto-deducts used ingredients from pantry inventory
+- [x] **SYNC-05**: When pantry items hit low-stock threshold, they appear both as a notification AND auto-add to the active shopping list
 
 **Calendar <-> Everything Integration**
 - [ ] **SYNC-06**: Calendar is the unified timeline — one view shows events, chore condition bars, meal plans, maintenance appointments, guest visits, quiet hours, and shared space bookings
-- [ ] **SYNC-07**: "Home tonight" attendance on the calendar feeds into: meal portion sizing, chore availability for AI rotation, and expense relevance ("only split dinner among people who were home")
+- [x] **SYNC-07**: "Home tonight" attendance on the calendar feeds into: meal portion sizing, chore availability for AI rotation, and expense relevance ("only split dinner among people who were home")
 - [ ] **SYNC-08**: AI reads the calendar to suggest context-appropriate actions: slow cooker meals on busy evenings, deep clean suggestions on free weekends, grocery runs before guests arrive
 
 **Expenses <-> Chores Fairness**
@@ -271,7 +271,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AIEX-01 | Phase 2 | Complete |
 | AIEX-02 | Phase 2 | Complete |
 | AIEX-03 | Phase 2 | Complete |
-| AIEX-04 | Phase 4 | Pending |
+| AIEX-04 | Phase 4 | Complete |
 | AIEX-05 | Phase 6 | Pending |
 | AIEX-06 | Phase 6 | Pending |
 | CHOR-01 | Phase 3 | Complete |
@@ -300,25 +300,25 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SHOP-02 | Phase 4 | Pending |
 | SHOP-03 | Phase 4 | Pending |
 | SHOP-04 | Phase 4 | Pending |
-| SHOP-05 | Phase 4 | Pending |
-| SHOP-06 | Phase 4 | Pending |
+| SHOP-05 | Phase 4 | Complete |
+| SHOP-06 | Phase 4 | Complete |
 | SHOP-07 | Phase 4 | Pending |
 | SHOP-08 | Phase 4 | Pending |
-| SHOP-09 | Phase 4 | Pending |
-| AISH-01 | Phase 4 | Pending |
+| SHOP-09 | Phase 4 | Complete |
+| AISH-01 | Phase 4 | Complete |
 | AISH-02 | Phase 4 | Pending |
 | AISH-03 | Phase 4 | Pending |
-| MEAL-01 | Phase 4 | Pending |
+| MEAL-01 | Phase 4 | Complete |
 | MEAL-02 | Phase 4 | Pending |
 | MEAL-03 | Phase 4 | Pending |
-| MEAL-04 | Phase 4 | Pending |
+| MEAL-04 | Phase 4 | Complete |
 | MEAL-05 | Phase 4 | Pending |
-| MEAL-06 | Phase 4 | Pending |
+| MEAL-06 | Phase 4 | Complete |
 | MEAL-07 | Phase 4 | Pending |
 | AIML-01 | Phase 4 | Pending |
 | AIML-02 | Phase 4 | Pending |
-| AIML-03 | Phase 4 | Pending |
-| AIML-04 | Phase 4 | Pending |
+| AIML-03 | Phase 4 | Complete |
+| AIML-04 | Phase 4 | Complete |
 | AIML-05 | Phase 4 | Pending |
 | MANT-01 | Phase 5 | Pending |
 | MANT-02 | Phase 5 | Pending |
@@ -343,13 +343,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ASST-01 | Phase 6 | Pending |
 | ASST-02 | Phase 6 | Pending |
 | ASST-03 | Phase 6 | Pending |
-| SYNC-01 | Phase 4 | Pending |
+| SYNC-01 | Phase 4 | Complete |
 | SYNC-02 | Phase 5 | Pending |
-| SYNC-03 | Phase 4 | Pending |
-| SYNC-04 | Phase 4 | Pending |
-| SYNC-05 | Phase 4 | Pending |
+| SYNC-03 | Phase 4 | Complete |
+| SYNC-04 | Phase 4 | Complete |
+| SYNC-05 | Phase 4 | Complete |
 | SYNC-06 | Phase 6 | Pending |
-| SYNC-07 | Phase 4 | Pending |
+| SYNC-07 | Phase 4 | Complete |
 | SYNC-08 | Phase 6 | Pending |
 | SYNC-09 | Phase 6 | Pending |
 | SYNC-10 | Phase 6 | Pending |

@@ -100,7 +100,7 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Contracts, dependencies, and scaffold validation for the unified food domain
+- [x] 04-01-PLAN.md — Contracts, dependencies, and scaffold validation for the unified food domain
 - [ ] 04-02-PLAN.md — Food schema, normalization, pantry-diff, and meal-planning core helpers
 - [ ] 04-03-PLAN.md — Shared food hooks, realtime orchestration, and meal projection into the calendar pipeline
 - [ ] 04-04-PLAN.md — Shopping lists, pantry inventory, thresholds, barcode scanning, and low-stock UX
