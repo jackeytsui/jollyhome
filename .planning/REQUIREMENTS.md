@@ -92,14 +92,14 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 - [ ] **SHOP-04**: User can check off items while shopping (checked items move to bottom, not disappear)
 - [x] **SHOP-05**: Shopping list auto-groups items by store aisle/category for efficient shopping
 - [x] **SHOP-06**: User can track household supply inventory with current stock levels
-- [ ] **SHOP-07**: User can set minimum-stock thresholds per item that auto-add to shopping list when reached
+- [x] **SHOP-07**: User can set minimum-stock thresholds per item that auto-add to shopping list when reached
 - [ ] **SHOP-08**: User can scan product barcodes to add items to inventory or shopping list
 - [x] **SHOP-09**: User can import recipe ingredients directly to shopping list (with pantry deduction — only add what's missing)
 
 ### AI Shopping & Supplies
 
 - [x] **AISH-01**: AI predicts when supplies will run low based on household consumption patterns and auto-suggests restocking
-- [ ] **AISH-02**: AI auto-generates shopping list items from low-stock predictions and upcoming meal plans
+- [x] **AISH-02**: AI auto-generates shopping list items from low-stock predictions and upcoming meal plans
 - [ ] **AISH-03**: User can photograph fridge/pantry and AI identifies items present (onboarding shortcut for initial inventory setup)
 
 ### Meal Planning (Plan to Eat's pipeline + Paprika's recipes + AI intelligence)
@@ -114,11 +114,11 @@ Target: < 15 seconds to add a standard expense. Unlimited free. No paywalls.
 
 ### AI Meal Planning (the differentiator — no competitor does this well)
 
-- [ ] **AIML-01**: AI generates weekly meal plans factoring in: member preferences, dietary needs, budget, what's in the pantry, who's home which nights, and prep time available (from calendar)
-- [ ] **AIML-02**: AI suggests meals that share ingredients across the week to reduce waste and cost
+- [x] **AIML-01**: AI generates weekly meal plans factoring in: member preferences, dietary needs, budget, what's in the pantry, who's home which nights, and prep time available (from calendar)
+- [x] **AIML-02**: AI suggests meals that share ingredients across the week to reduce waste and cost
 - [x] **AIML-03**: User can accept, swap, or regenerate individual AI-suggested meals
 - [x] **AIML-04**: AI learns from accepted/rejected suggestions and household cooking history to improve over time
-- [ ] **AIML-05**: AI suggests time-appropriate meals based on calendar (slow cooker on late nights, quick meals on busy days)
+- [x] **AIML-05**: AI suggests time-appropriate meals based on calendar (slow cooker on late nights, quick meals on busy days)
 
 ### Maintenance (full lifecycle — no consumer app does this)
 
@@ -302,11 +302,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SHOP-04 | Phase 4 | Pending |
 | SHOP-05 | Phase 4 | Complete |
 | SHOP-06 | Phase 4 | Complete |
-| SHOP-07 | Phase 4 | Pending |
+| SHOP-07 | Phase 4 | Complete |
 | SHOP-08 | Phase 4 | Pending |
 | SHOP-09 | Phase 4 | Complete |
 | AISH-01 | Phase 4 | Complete |
-| AISH-02 | Phase 4 | Pending |
+| AISH-02 | Phase 4 | Complete |
 | AISH-03 | Phase 4 | Pending |
 | MEAL-01 | Phase 4 | Complete |
 | MEAL-02 | Phase 4 | Pending |
@@ -315,11 +315,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MEAL-05 | Phase 4 | Pending |
 | MEAL-06 | Phase 4 | Complete |
 | MEAL-07 | Phase 4 | Pending |
-| AIML-01 | Phase 4 | Pending |
-| AIML-02 | Phase 4 | Pending |
+| AIML-01 | Phase 4 | Complete |
+| AIML-02 | Phase 4 | Complete |
 | AIML-03 | Phase 4 | Complete |
 | AIML-04 | Phase 4 | Complete |
-| AIML-05 | Phase 4 | Pending |
+| AIML-05 | Phase 4 | Complete |
 | MANT-01 | Phase 5 | Pending |
 | MANT-02 | Phase 5 | Pending |
 | MANT-03 | Phase 5 | Pending |
