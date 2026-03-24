@@ -1,8 +1,12 @@
 import { useState, useCallback } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import { stageGroceryReceiptReview, isLikelyGroceryReceipt } from '@/lib/receiptWorkflow';
 import { supabase } from '@/lib/supabase';
 import { useHouseholdStore } from '@/stores/household';
 import { useAuthStore } from '@/stores/auth';
+import type { FoodCatalogItem, InventoryUnit } from '@/types/inventory';
+import type { ShoppingCategoryKey } from '@/types/shopping';
+import type { GroceryReceiptReview, ReceiptShoppingCandidate } from '@/lib/receiptWorkflow';
 
 // ============================================================
 // Types
@@ -34,11 +38,93 @@ export interface ReceiptData {
 export function useReceipt() {
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const [images, setImages] = useState<string[]>([]);
+  const [receiptStoragePaths, setReceiptStoragePaths] = useState<string[]>([]);
+  const [groceryReview, setGroceryReview] = useState<GroceryReceiptReview | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const { activeHouseholdId } = useHouseholdStore();
   const { user } = useAuthStore();
+
+  const hydrateGroceryReview = useCallback(async (parsed: ReceiptData, storagePaths: string[]) => {
+    if (!activeHouseholdId || !isLikelyGroceryReceipt(parsed)) {
+      setGroceryReview(null);
+      return;
+    }
+
+    const [catalogResult, shoppingResult] = await Promise.all([
+      supabase
+        .from('food_catalog_items')
+        .select('id, household_id, canonical_name, display_name, normalized_name, barcode, category_key, default_unit, synonyms, source, created_at, updated_at')
+        .or(`household_id.eq.${activeHouseholdId},household_id.is.null`)
+        .order('display_name', { ascending: true }),
+      supabase
+        .from('shopping_list_items')
+        .select('id, title, category_key, unit, catalog_item_id, status')
+        .eq('household_id', activeHouseholdId)
+        .eq('status', 'pending'),
+    ]);
+
+    if (catalogResult.error) {
+      throw catalogResult.error;
+    }
+    if (shoppingResult.error) {
+      throw shoppingResult.error;
+    }
+
+    const catalogItems: FoodCatalogItem[] = (catalogResult.data ?? []).map((row: {
+      id: string;
+      household_id: string | null;
+      canonical_name: string;
+      display_name: string;
+      normalized_name: string;
+      barcode: string | null;
+      category_key: ShoppingCategoryKey;
+      default_unit: InventoryUnit;
+      synonyms: string[] | null;
+      source: FoodCatalogItem['source'];
+      created_at: string;
+      updated_at: string;
+    }) => ({
+      id: row.id,
+      householdId: row.household_id,
+      canonicalName: row.canonical_name,
+      displayName: row.display_name,
+      normalizedName: row.normalized_name,
+      barcode: row.barcode,
+      category: row.category_key,
+      defaultUnit: row.default_unit,
+      synonyms: row.synonyms ?? [],
+      source: row.source,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+
+    const shoppingItems: ReceiptShoppingCandidate[] = (shoppingResult.data ?? []).map((row: {
+      id: string;
+      title: string;
+      category_key: ShoppingCategoryKey;
+      unit: string | null;
+      catalog_item_id: string | null;
+      status: 'pending' | 'purchased' | 'skipped';
+    }) => ({
+      id: row.id,
+      title: row.title,
+      category: row.category_key,
+      unit: row.unit,
+      catalogItemId: row.catalog_item_id,
+      status: row.status,
+    }));
+
+    // Reviewed OCR payload gets extended here before commit-grocery-receipt persistence.
+    setGroceryReview(stageGroceryReceiptReview({
+      receiptData: parsed,
+      householdId: activeHouseholdId,
+      storagePaths,
+      catalog: catalogItems,
+      shoppingItems,
+    }));
+  }, [activeHouseholdId]);
 
   /**
    * Add a single captured image URI (replaces the list for single-page flow).
@@ -137,8 +223,10 @@ export function useReceipt() {
         .eq('household_id', activeHouseholdId)
         .eq('status', 'active');
 
-      const member_names: string[] = (membersData ?? [])
-        .map((m: { profile: { display_name: string | null } | null }) =>
+      const member_names: string[] = ((membersData ?? []) as unknown as Array<{
+        profile: { display_name: string | null } | null;
+      }>)
+        .map((m) =>
           m.profile?.display_name ?? null
         )
         .filter((name): name is string => name !== null);
@@ -162,6 +250,8 @@ export function useReceipt() {
 
       const parsed = data as ReceiptData;
       setReceiptData(parsed);
+      setReceiptStoragePaths(storage_paths);
+      await hydrateGroceryReview(parsed, storage_paths);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to process receipt. Please try again.';
       setError(message);
@@ -176,6 +266,8 @@ export function useReceipt() {
   const clearReceipt = useCallback(() => {
     setImages([]);
     setReceiptData(null);
+    setReceiptStoragePaths([]);
+    setGroceryReview(null);
     setError(null);
     setLoading(false);
   }, []);
@@ -183,6 +275,8 @@ export function useReceipt() {
   return {
     receiptData,
     images,
+    receiptStoragePaths,
+    groceryReview,
     loading,
     error,
     captureImage,

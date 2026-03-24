@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,17 +12,21 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '@/constants/theme';
 import { ItemClassificationTag } from './ItemClassificationTag';
 import { SplitSummaryPreview } from './SplitSummaryPreview';
-import { suggestCategory } from '@/lib/expenseMath';
 import type { ReceiptData, ReceiptItem } from '@/hooks/useReceipt';
 import type { Member } from '@/hooks/useMembers';
 import type { CreateExpenseInput } from '@/types/expenses';
+import {
+  buildReceiptExpenseInput,
+  type GroceryReceiptReview,
+} from '@/lib/receiptWorkflow';
 
 interface ReceiptReviewCardProps {
   receiptData: ReceiptData;
   members: Member[];
   currentUserId: string;
   householdId: string;
-  onConfirm: (input: CreateExpenseInput) => void;
+  groceryReview?: GroceryReceiptReview | null;
+  onConfirm: (input: { expenseInput: CreateExpenseInput; groceryReview: GroceryReceiptReview | null }) => void;
   onCancel: () => void;
   loading: boolean;
 }
@@ -42,6 +46,7 @@ export function ReceiptReviewCard({
   members,
   currentUserId,
   householdId,
+  groceryReview = null,
   onConfirm,
   onCancel,
   loading,
@@ -52,6 +57,12 @@ export function ReceiptReviewCard({
   const [taxStr, setTaxStr] = useState(formatCentsToString(receiptData.tax_cents));
   const [tipStr, setTipStr] = useState(formatCentsToString(receiptData.tip_cents));
   const [totalStr, setTotalStr] = useState(formatCentsToString(receiptData.total_cents));
+  const [groceryItems, setGroceryItems] = useState(groceryReview?.items ?? []);
+
+  useEffect(() => {
+    setItems(receiptData.items);
+    setGroceryItems(groceryReview?.items ?? []);
+  }, [receiptData, groceryReview]);
 
   const taxCents = parseCentsFromString(taxStr);
   const tipCents = parseCentsFromString(tipStr);
@@ -85,82 +96,37 @@ export function ReceiptReviewCard({
   const handleConfirm = useCallback(async () => {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    // Build per-member splits from classification
-    const activeMembers = members.filter((m) => m.status === 'active');
-    const memberCount = activeMembers.length || 1;
-
-    // Compute per-member item totals
-    const itemTotalsByUser: Record<string, number> = {};
-    activeMembers.forEach((m) => { itemTotalsByUser[m.user_id] = 0; });
-
-    const sharedItems = items.filter((item) => item.classification === 'shared');
-    const personalItems = items.filter((item) => item.classification === 'personal');
-
-    const sharedTotal = sharedItems.reduce((sum, item) => sum + item.price_cents, 0);
-    const sharedPerPerson = Math.floor(sharedTotal / memberCount);
-    const sharedRemainder = sharedTotal - sharedPerPerson * memberCount;
-
-    activeMembers.forEach((member, index) => {
-      itemTotalsByUser[member.user_id] =
-        (itemTotalsByUser[member.user_id] ?? 0) + sharedPerPerson + (index < sharedRemainder ? 1 : 0);
+    const expenseInput = buildReceiptExpenseInput({
+      receiptData,
+      items,
+      taxCents,
+      tipCents,
+      totalCents: editedTotalCents || computedTotal,
+      storeName,
+      date,
+      members,
+      currentUserId,
+      householdId,
     });
 
-    personalItems.forEach((item) => {
-      const ownerId = item.suggested_owner;
-      if (ownerId && itemTotalsByUser[ownerId] !== undefined) {
-        itemTotalsByUser[ownerId] += item.price_cents;
-      } else {
-        // Unassigned personal items split equally
-        activeMembers.forEach((member, index) => {
-          const perPerson = Math.floor(item.price_cents / memberCount);
-          const extra = index < item.price_cents - perPerson * memberCount ? 1 : 0;
-          itemTotalsByUser[member.user_id] = (itemTotalsByUser[member.user_id] ?? 0) + perPerson + extra;
-        });
-      }
-    });
+    const finalGroceryReview = groceryReview ? {
+      ...groceryReview,
+      storeName,
+      date,
+      items: groceryItems.map((groceryItem, index) => ({
+        ...groceryItem,
+        receiptItemName: items[index]?.name ?? groceryItem.receiptItemName,
+        displayName: groceryItem.displayName.trim() || items[index]?.name || groceryItem.receiptItemName,
+        priceCents: items[index]?.price_cents ?? groceryItem.priceCents,
+        classification: items[index]?.classification ?? groceryItem.classification,
+        suggestedOwner: items[index]?.suggested_owner ?? groceryItem.suggestedOwner,
+        matchedShoppingItemIds: groceryItem.includeShoppingMatches ? groceryItem.matchedShoppingItemIds : [],
+      })),
+    } : null;
 
-    // Distribute tax proportionally
-    const grandItemTotal = Object.values(itemTotalsByUser).reduce((a, b) => a + b, 0);
-    const splits: { user_id: string; amount_cents: number }[] = [];
-    let distributedTax = 0;
-    let distributedTip = 0;
-
-    activeMembers.forEach((member, index) => {
-      const userId = member.user_id;
-      const itemAmt = itemTotalsByUser[userId] ?? 0;
-
-      let total: number;
-      if (index === activeMembers.length - 1) {
-        total = itemAmt + (taxCents - distributedTax) + (tipCents - distributedTip);
-      } else {
-        const ratio = grandItemTotal > 0 ? itemAmt / grandItemTotal : 1 / memberCount;
-        const userTax = Math.floor(taxCents * ratio);
-        const userTip = Math.floor(tipCents * ratio);
-        total = itemAmt + userTax + userTip;
-        distributedTax += userTax;
-        distributedTip += userTip;
-      }
-
-      splits.push({ user_id: userId, amount_cents: total });
-    });
-
-    const finalTotalCents = editedTotalCents || computedTotal;
-
-    const input: CreateExpenseInput = {
-      household_id: householdId,
-      description: storeName,
-      amount_cents: finalTotalCents,
-      category: suggestCategory(storeName),
-      paid_by: currentUserId,
-      split_type: 'exact',
-      splits,
-      tax_cents: taxCents,
-      tip_cents: tipCents,
-      expense_date: date || new Date().toISOString().split('T')[0],
-    };
-
-    onConfirm(input);
+    onConfirm({ expenseInput, groceryReview: finalGroceryReview });
   }, [
+    receiptData,
     items,
     storeName,
     date,
@@ -171,8 +137,16 @@ export function ReceiptReviewCard({
     members,
     currentUserId,
     householdId,
+    groceryItems,
+    groceryReview,
     onConfirm,
   ]);
+
+  const updateGroceryItem = useCallback((index: number, updates: Partial<(typeof groceryItems)[number]>) => {
+    setGroceryItems((prev) => prev.map((item, itemIndex) => (
+      itemIndex === index ? { ...item, ...updates } : item
+    )));
+  }, []);
 
   if (loading) {
     return (
@@ -294,6 +268,69 @@ export function ReceiptReviewCard({
 
       {/* Divider */}
       <View style={styles.divider} />
+
+      {groceryReview ? (
+        <>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Pantry + Shopping Sync</Text>
+            {groceryItems.map((item, index) => (
+              <View key={`grocery-${index}`} style={styles.groceryCard}>
+                <Text style={styles.groceryLabel}>Pantry item name</Text>
+                <TextInput
+                  style={styles.groceryInput}
+                  value={item.displayName}
+                  onChangeText={(value) => updateGroceryItem(index, { displayName: value })}
+                  accessibilityLabel={`Pantry item ${index + 1} name`}
+                />
+                <View style={styles.groceryMetaRow}>
+                  <View style={styles.groceryMetaBlock}>
+                    <Text style={styles.groceryMetaLabel}>Qty</Text>
+                    <TextInput
+                      style={styles.groceryQtyInput}
+                      value={String(item.quantity)}
+                      onChangeText={(value) => updateGroceryItem(index, { quantity: Math.max(0, Number(value) || 0) })}
+                      keyboardType="decimal-pad"
+                      accessibilityLabel={`Pantry item ${index + 1} quantity`}
+                    />
+                  </View>
+                  <View style={styles.groceryMetaBlockWide}>
+                    <Text style={styles.groceryMetaLabel}>Unit / Category</Text>
+                    <Text style={styles.groceryMetaValue}>{item.unit} • {item.categoryKey}</Text>
+                  </View>
+                </View>
+                <View style={styles.toggleRow}>
+                  <Pressable
+                    style={[styles.togglePill, item.shouldAddToPantry && styles.togglePillActive]}
+                    onPress={() => updateGroceryItem(index, { shouldAddToPantry: !item.shouldAddToPantry })}
+                  >
+                    <Text style={[styles.togglePillText, item.shouldAddToPantry && styles.togglePillTextActive]}>
+                      {item.shouldAddToPantry ? 'Add to pantry' : 'Skip pantry'}
+                    </Text>
+                  </Pressable>
+                  {item.matchedShoppingItemLabels.length > 0 ? (
+                    <Pressable
+                      style={[styles.togglePill, item.includeShoppingMatches && styles.togglePillActive]}
+                      onPress={() => updateGroceryItem(index, { includeShoppingMatches: !item.includeShoppingMatches })}
+                    >
+                      <Text style={[styles.togglePillText, item.includeShoppingMatches && styles.togglePillTextActive]}>
+                        {item.includeShoppingMatches ? 'Match shopping items' : 'Skip shopping match'}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+                {item.matchedShoppingItemLabels.length > 0 ? (
+                  <Text style={styles.groceryMatchText}>
+                    Shopping matches: {item.matchedShoppingItemLabels.join(', ')}
+                  </Text>
+                ) : (
+                  <Text style={styles.groceryMatchText}>No pending shopping match found.</Text>
+                )}
+              </View>
+            ))}
+          </View>
+          <View style={styles.divider} />
+        </>
+      ) : null}
 
       {/* Split Summary Preview */}
       <SplitSummaryPreview
@@ -438,6 +475,93 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: 'right',
     paddingVertical: 4,
+  },
+  groceryCard: {
+    backgroundColor: colors.secondary.light,
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
+  },
+  groceryLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textSecondary.light,
+    lineHeight: 16,
+    textTransform: 'uppercase',
+  },
+  groceryInput: {
+    fontSize: 14,
+    color: colors.textPrimary.light,
+    lineHeight: 20,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  groceryMetaRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  groceryMetaBlock: {
+    width: 92,
+    gap: 4,
+  },
+  groceryMetaBlockWide: {
+    flex: 1,
+    gap: 4,
+  },
+  groceryMetaLabel: {
+    fontSize: 12,
+    color: colors.textSecondary.light,
+    lineHeight: 16,
+  },
+  groceryMetaValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textPrimary.light,
+    lineHeight: 20,
+  },
+  groceryQtyInput: {
+    fontSize: 14,
+    color: colors.textPrimary.light,
+    lineHeight: 20,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  togglePill: {
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  togglePillActive: {
+    backgroundColor: colors.accent.light,
+    borderColor: colors.accent.light,
+  },
+  togglePillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textSecondary.light,
+    lineHeight: 16,
+  },
+  togglePillTextActive: {
+    color: '#FFFFFF',
+  },
+  groceryMatchText: {
+    fontSize: 12,
+    color: colors.textSecondary.light,
+    lineHeight: 16,
   },
   summaryRow: {
     flexDirection: 'row',

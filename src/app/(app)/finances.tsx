@@ -30,6 +30,7 @@ import { RecurringExpenseRow } from '@/components/expenses/RecurringExpenseRow';
 import { JollyNLInput } from '@/components/expenses/JollyNLInput';
 import { ReceiptCameraView } from '@/components/receipt/ReceiptCameraView';
 import { ReceiptReviewCard } from '@/components/receipt/ReceiptReviewCard';
+import { commitGroceryReceipt } from '@/lib/receiptWorkflow';
 import type { CreateExpenseInput } from '@/types/expenses';
 import type { ExpenseWithSplits } from '@/hooks/useExpenses';
 
@@ -57,6 +58,8 @@ export default function FinancesScreen() {
   const {
     receiptData,
     images,
+    receiptStoragePaths,
+    groceryReview,
     loading: receiptLoading,
     error: receiptError,
     captureImage,
@@ -119,19 +122,37 @@ export default function FinancesScreen() {
     setShowReceiptReview(true);
   }, [pickFromGallery]);
 
-  const handleReceiptConfirm = useCallback(async (input: CreateExpenseInput) => {
+  const handleReceiptConfirm = useCallback(async (input: {
+    expenseInput: CreateExpenseInput;
+    groceryReview: NonNullable<typeof groceryReview> | null;
+  }) => {
     try {
-      await createExpense(input);
+      const expenseInput = {
+        ...input.expenseInput,
+        receipt_url: receiptStoragePaths[0] ?? input.expenseInput.receipt_url ?? null,
+      };
+
+      if (input.groceryReview) {
+        await commitGroceryReceipt({
+          expenseInput,
+          review: input.groceryReview,
+        });
+      } else {
+        await createExpense(expenseInput);
+      }
+
       setShowReceiptReview(false);
       clearReceipt();
       loadExpenses();
       loadBalances();
-      Alert.alert('Saved!', 'Expense created from receipt.');
+      Alert.alert('Saved!', input.groceryReview
+        ? 'Receipt synced to expenses, pantry, and shopping.'
+        : 'Expense created from receipt.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save expense';
       Alert.alert('Error', message);
     }
-  }, [createExpense, clearReceipt, loadExpenses, loadBalances]);
+  }, [createExpense, clearReceipt, loadExpenses, loadBalances, receiptStoragePaths]);
 
   const handleReceiptCancel = useCallback(() => {
     setShowReceiptReview(false);
@@ -405,6 +426,7 @@ export default function FinancesScreen() {
               members={members}
               currentUserId={user?.id ?? ''}
               householdId={activeHouseholdId ?? ''}
+              groceryReview={groceryReview}
               onConfirm={handleReceiptConfirm}
               onCancel={handleReceiptCancel}
               loading={false}
@@ -425,6 +447,7 @@ export default function FinancesScreen() {
               members={members}
               currentUserId={user?.id ?? ''}
               householdId={activeHouseholdId ?? ''}
+              groceryReview={groceryReview}
               onConfirm={handleReceiptConfirm}
               onCancel={handleReceiptCancel}
               loading={receiptLoading}
