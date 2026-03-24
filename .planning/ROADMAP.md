@@ -135,13 +135,12 @@ Plans:
   3. User can ask the AI assistant natural language questions about any household data ("What should we cook tonight?", "Who owes the most?", "When was the bathroom last cleaned?") and the AI can take actions from conversation
   4. AI generates spending pattern insights after 30+ days and suggests budget optimizations based on trends
   5. Calendar shows the true unified timeline with all event types, notifications reference related features across domains, and new member onboarding introduces all features as one connected system
-**Plans**: TBD
-
-Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
-- [ ] 06-03: TBD
-- [ ] 06-04: TBD
+**Plans**:
+- [ ] 06-RESEARCH.md — Cross-domain notification, dashboard, assistant, and onboarding integration strategy
+- [ ] 06-01-PLAN.md — Notification preferences, push categories, and cross-feature digest/reference flows
+- [ ] 06-02-PLAN.md — Household dashboard, fairness analytics, monthly report, and spending insights surfaces
+- [ ] 06-03-PLAN.md — Household AI assistant queries, cross-domain answers, and safe action execution
+- [ ] 06-04-PLAN.md — Unified timeline polish, context-aware AI suggestions, and connected onboarding flow
 
 ## Progress
 
