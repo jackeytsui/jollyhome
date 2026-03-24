@@ -97,7 +97,7 @@ Plans:
   3. User can plan meals on a weekly calendar with drag-and-drop, add/import recipes from URL, and meal plans auto-populate shopping lists with pantry deduction (only buy what is missing)
   4. AI generates weekly meal plans factoring in member preferences, dietary needs, budget, pantry contents, who is home which nights, and prep time -- user can accept, swap, or regenerate individual meals
   5. Scanning a grocery receipt simultaneously creates an expense split, adds purchased items to pantry inventory, and checks off matching shopping list items -- one photo, three workflows
-**Plans**: 7 plans
+**Plans**: 8 plans
 
 Plans:
 - [x] 04-01-PLAN.md — Contracts, dependencies, and scaffold validation for the unified food domain
@@ -107,6 +107,7 @@ Plans:
 - [ ] 04-05-PLAN.md — Recipe CRUD/import plus weekly meal board, shopping generation, and cooked-meal flow
 - [ ] 04-06-PLAN.md — AI meal planning, replenishment prediction, and pantry-photo review flows
 - [ ] 04-07-PLAN.md — Atomic grocery receipt commit for expense + pantry + shopping synchronization
+- [ ] 04-08-PLAN.md — Gap closure: history-aware meal recommendations, pantry-fit ranking, and manual dish rotation
 
 ### Phase 5: Maintenance + House Rules
 **Goal**: Users can track the full maintenance request lifecycle and coordinate shared living through house rules, quiet hours, shared space scheduling, and guest management
