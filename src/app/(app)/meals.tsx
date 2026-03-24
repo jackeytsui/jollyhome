@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { supabase } from '@/lib/supabase';
+import { buildMealPlannerInputs, serializeMealPlannerPayload } from '@/lib/mealPlanning';
+import { AIMealPlanSheet } from '@/components/meals/AIMealPlanSheet';
 import { MealBoard, type MealBoardItem } from '@/components/meals/MealBoard';
 import { MealPlanReviewSheet } from '@/components/meals/MealPlanReviewSheet';
 import { RecipeCard } from '@/components/meals/RecipeCard';
@@ -70,6 +73,8 @@ export default function MealsScreen() {
     saveMealPlanEntry,
     generateShoppingList,
     markMealCooked,
+    submitSuggestionFeedback,
+    suggestions,
   } = useMealPlans();
 
   const [editorVisible, setEditorVisible] = useState(false);
@@ -78,6 +83,7 @@ export default function MealsScreen() {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<MealBoardItem | null>(null);
   const [reviewEntry, setReviewEntry] = useState<MealPlanEntry | null>(null);
+  const [aiSheetVisible, setAISheetVisible] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -102,6 +108,36 @@ export default function MealsScreen() {
   const dietaryNotes = useMemo(
     () => [...new Set(members.flatMap((member) => member.profile.dietary_preferences))],
     [members]
+  );
+
+  const plannerPayload = useMemo(
+    () =>
+      serializeMealPlannerPayload(
+        buildMealPlannerInputs({
+          startDate: weekStart,
+          members: members.map((member) => ({
+            userId: member.user_id,
+            dietaryPreferences: member.profile.dietary_preferences,
+          })),
+          attendanceByDate,
+          calendarLoadByDate: Object.fromEntries(weekDates.map((date) => [date, 45])),
+          pantryItems: [],
+          recipes: recipes.map((recipe) => ({
+            id: recipe.id,
+            title: recipe.title,
+            prepMinutes: recipe.prepMinutes,
+            cookMinutes: recipe.cookMinutes,
+            totalMinutes: recipe.totalMinutes,
+            tags: recipe.tags,
+            ingredients: (ingredientsByRecipeId[recipe.id] ?? []).map((ingredient) => ({
+              catalogItemId: ingredient.catalogItemId,
+              quantity: ingredient.quantity,
+              unit: ingredient.unit,
+            })),
+          })),
+        })
+      ),
+    [attendanceByDate, ingredientsByRecipeId, members, recipes, weekDates, weekStart]
   );
 
   async function handleRecipeSubmit(values: RecipeEditorValues) {
@@ -169,6 +205,26 @@ export default function MealsScreen() {
           {generatedShoppingItems.length > 0 ? (
             <Text style={styles.generated}>Last shopping generation created {generatedShoppingItems.length} row(s).</Text>
           ) : null}
+          <Button
+            label="AI plan week"
+            onPress={async () => {
+              setSaving(true);
+              try {
+                await supabase.functions.invoke('generate-meal-plan', {
+                  body: {
+                    household_id: activeHouseholdId,
+                    planner_payload: plannerPayload,
+                    accepted_ids: suggestions.map((suggestion) => suggestion.id),
+                  },
+                });
+                setAISheetVisible(true);
+              } catch (err) {
+                Alert.alert('Unable to generate meal plan', err instanceof Error ? err.message : 'Please try again.');
+              } finally {
+                setSaving(false);
+              }
+            }}
+          />
         </Card>
 
         <MealBoard
@@ -310,6 +366,76 @@ export default function MealsScreen() {
             setReviewEntry(null);
           } catch (err) {
             Alert.alert('Unable to mark meal cooked', err instanceof Error ? err.message : 'Please try again.');
+          } finally {
+            setSaving(false);
+          }
+        }}
+      />
+
+      <AIMealPlanSheet
+        visible={aiSheetVisible}
+        suggestions={suggestions}
+        loading={saving}
+        onClose={() => setAISheetVisible(false)}
+        onAccept={async (suggestion) => {
+          setSaving(true);
+          try {
+            await saveMealPlanEntry({
+              title: suggestion.title,
+              recipeId: suggestion.recipeId,
+              suggestionRunId: suggestion.suggestionRunId,
+              suggestionId: suggestion.id,
+              slot: suggestion.slot,
+              plannedForDate: suggestion.plannedForDate,
+              servings: suggestion.servings,
+              servingSource: 'attendance',
+              attendanceMemberIds: suggestion.attendanceMemberIds,
+              attendanceSnapshotDate: suggestion.plannedForDate,
+            });
+            await submitSuggestionFeedback({
+              suggestionRunId: suggestion.suggestionRunId,
+              suggestionId: suggestion.id,
+              action: 'accept',
+              recipeId: suggestion.recipeId,
+            });
+          } finally {
+            setSaving(false);
+          }
+        }}
+        onSwap={async (suggestion) => {
+          setSaving(true);
+          try {
+            await submitSuggestionFeedback({
+              suggestionRunId: suggestion.suggestionRunId,
+              suggestionId: suggestion.id,
+              action: 'swap',
+              recipeId: suggestion.recipeId,
+            });
+          } finally {
+            setSaving(false);
+          }
+        }}
+        onRegenerate={async (suggestion) => {
+          setSaving(true);
+          try {
+            await submitSuggestionFeedback({
+              suggestionRunId: suggestion.suggestionRunId,
+              suggestionId: suggestion.id,
+              action: 'regenerate',
+              recipeId: suggestion.recipeId,
+              feedbackNote: 'User requested a new option',
+            });
+            await supabase.functions.invoke('generate-meal-plan', {
+              body: {
+                household_id: activeHouseholdId,
+                planner_payload: plannerPayload,
+                accepted_ids: suggestions.map((item) => item.id),
+                regenerate_slot: {
+                  plannedForDate: suggestion.plannedForDate,
+                  slot: suggestion.slot,
+                },
+              },
+            });
           } finally {
             setSaving(false);
           }

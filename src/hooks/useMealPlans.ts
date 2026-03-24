@@ -104,6 +104,16 @@ interface MealPlanEntryInput {
   notes?: string | null;
 }
 
+interface SuggestionFeedbackInput {
+  suggestionRunId: string;
+  suggestionId: string | null;
+  action: MealSuggestionFeedback['action'];
+  mealPlanEntryId?: string | null;
+  feedbackNote?: string | null;
+  replacementSuggestionId?: string | null;
+  recipeId?: string | null;
+}
+
 function toNumber(value: number | string | null | undefined): number | null {
   if (value === null || value === undefined) {
     return null;
@@ -417,6 +427,30 @@ export function useMealPlans() {
     return data;
   }, [loadMealPlans]);
 
+  const submitSuggestionFeedback = useCallback(async (input: SuggestionFeedbackInput) => {
+    if (!activeHouseholdId || !user) {
+      throw new Error('Not authenticated or no active household');
+    }
+
+    const { error: insertError } = await supabase.from('meal_suggestion_feedback').insert({
+      household_id: activeHouseholdId,
+      suggestion_run_id: input.suggestionRunId,
+      suggestion_id: input.suggestionId,
+      meal_plan_entry_id: input.mealPlanEntryId ?? null,
+      action: input.action,
+      feedback_note: input.feedbackNote ?? null,
+      replacement_suggestion_id: input.replacementSuggestionId ?? null,
+      recipe_id: input.recipeId ?? null,
+      created_by: user.id,
+    });
+
+    if (insertError) {
+      throw insertError;
+    }
+
+    await loadMealPlans();
+  }, [activeHouseholdId, loadMealPlans, user]);
+
   const weeklyEntries = useMemo(
     () => [...mealPlans].sort((left, right) => {
       if (left.plannedForDate !== right.plannedForDate) {
@@ -442,5 +476,6 @@ export function useMealPlans() {
     deleteMealPlanEntry,
     generateShoppingList,
     markMealCooked,
+    submitSuggestionFeedback,
   };
 }

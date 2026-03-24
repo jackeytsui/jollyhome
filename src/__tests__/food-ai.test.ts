@@ -1,7 +1,10 @@
 import {
+  buildPredictiveRestockSuggestions,
   bucketPrepTimeAvailability,
   buildMealPlannerInputs,
   buildMealSuggestionFeedback,
+  buildSuggestionRationale,
+  serializeMealPlannerPayload,
   scoreIngredientOverlap,
 } from '@/lib/mealPlanning';
 
@@ -52,6 +55,7 @@ describe('food AI helpers', () => {
       prepTimeBucket: 'project',
     });
     expect(planner.pantry).toHaveLength(1);
+    expect(serializeMealPlannerPayload(planner).days[0]?.attendanceMemberIds).toEqual(['u1', 'u2', 'u3']);
   });
 
   it('scores ingredient overlap to support waste-reducing suggestions', () => {
@@ -64,6 +68,21 @@ describe('food AI helpers', () => {
     expect(bucketPrepTimeAvailability(15)).toBe('quick');
     expect(bucketPrepTimeAvailability(50)).toBe('standard');
     expect(bucketPrepTimeAvailability(95)).toBe('project');
+    expect(
+      buildSuggestionRationale({
+        attendanceMemberIds: ['u1', 'u2'],
+        prepTimeBucket: 'quick',
+        ingredientOverlap: 0.5,
+        pantryMatchCount: 2,
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/2 household members home/i),
+        expect.stringMatching(/low-prep/i),
+        expect.stringMatching(/50% ingredient overlap/i),
+        expect.stringMatching(/uses 2 pantry items/i),
+      ])
+    );
   });
 
   it('builds feedback payloads for accept, swap, and regenerate suggestion outcomes', () => {
@@ -114,5 +133,86 @@ describe('food AI helpers', () => {
       action: 'regenerate',
       feedbackNote: 'Need a faster option',
     });
+  });
+
+  it('builds predictive restock suggestions from usage trends and open alerts', () => {
+    const predictions = buildPredictiveRestockSuggestions({
+      inventoryItems: [
+        {
+          id: 'inventory-rice',
+          householdId: 'house-1',
+          catalogItemId: 'rice',
+          quantityOnHand: 0.5,
+          unit: 'kg',
+          minimumQuantity: 1,
+          preferredReorderQuantity: 3,
+          storageLocation: null,
+          lastCountedAt: null,
+          lastRestockedAt: null,
+          expiresAt: null,
+          notes: null,
+          createdAt: '2026-03-01T00:00:00.000Z',
+          updatedAt: '2026-03-24T00:00:00.000Z',
+        },
+      ],
+      inventoryEvents: [
+        {
+          id: 'event-1',
+          householdId: 'house-1',
+          inventoryItemId: 'inventory-rice',
+          catalogItemId: 'rice',
+          sourceType: 'meal_cooked',
+          quantityDelta: -0.8,
+          quantityAfter: 1.2,
+          unit: 'kg',
+          reason: null,
+          sourceId: null,
+          sourceRef: null,
+          occurredAt: '2026-03-24T00:00:00.000Z',
+          createdBy: 'u1',
+          metadata: null,
+        },
+        {
+          id: 'event-2',
+          householdId: 'house-1',
+          inventoryItemId: 'inventory-rice',
+          catalogItemId: 'rice',
+          sourceType: 'meal_cooked',
+          quantityDelta: -0.6,
+          quantityAfter: 2,
+          unit: 'kg',
+          reason: null,
+          sourceId: null,
+          sourceRef: null,
+          occurredAt: '2026-03-21T00:00:00.000Z',
+          createdBy: 'u1',
+          metadata: null,
+        },
+      ],
+      alerts: [
+        {
+          id: 'alert-1',
+          householdId: 'house-1',
+          inventoryItemId: 'inventory-rice',
+          catalogItemId: 'rice',
+          alertType: 'low_stock',
+          status: 'open',
+          thresholdQuantity: 1,
+          currentQuantity: 0.5,
+          triggeredByEventId: 'event-1',
+          title: 'Low stock',
+          message: null,
+          createdAt: '2026-03-24T00:00:00.000Z',
+          resolvedAt: null,
+        },
+      ],
+    });
+
+    expect(predictions[0]).toMatchObject({
+      catalogItemId: 'rice',
+      inventoryItemId: 'inventory-rice',
+      alertId: 'alert-1',
+    });
+    expect(predictions[0]?.suggestedQuantity).toBeGreaterThan(0);
   });
 });

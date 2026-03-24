@@ -1,8 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { stagePantryPhotoReview, type StagedPantryPhotoItem } from '@/lib/foodNormalization';
+import { buildPredictiveRestockSuggestions } from '@/lib/mealPlanning';
+import { supabase } from '@/lib/supabase';
 import { BarcodeScannerSheet } from '@/components/supplies/BarcodeScannerSheet';
 import { InventoryCard } from '@/components/supplies/InventoryCard';
 import { LowStockAlertCard } from '@/components/supplies/LowStockAlertCard';
+import { PantryPhotoReviewSheet } from '@/components/supplies/PantryPhotoReviewSheet';
 import { ThresholdEditorSheet } from '@/components/supplies/ThresholdEditorSheet';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -12,15 +17,21 @@ import { useShopping } from '@/hooks/useShopping';
 import type { InventoryItem } from '@/types/inventory';
 
 export default function SuppliesScreen() {
-  const { catalogItems, inventoryItems, lowStockAlerts, loading, error, adjustStock, updateThreshold, resolveCatalogItem } = useInventory();
+  const { catalogItems, inventoryItems, inventoryEvents, lowStockAlerts, loading, error, adjustStock, updateThreshold, resolveCatalogItem } = useInventory();
   const { activeListItems, createItem, activeListId, createList, setActiveListId } = useShopping();
 
   const [editingThreshold, setEditingThreshold] = useState<InventoryItem | null>(null);
   const [scannerVisible, setScannerVisible] = useState(false);
   const [scannerTarget, setScannerTarget] = useState<InventoryItem | null>(null);
+  const [photoReviewItems, setPhotoReviewItems] = useState<StagedPantryPhotoItem[]>([]);
+  const [photoReviewVisible, setPhotoReviewVisible] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const catalogById = useMemo(() => new Map(catalogItems.map((item) => [item.id, item])), [catalogItems]);
+  const predictiveRestocks = useMemo(
+    () => buildPredictiveRestockSuggestions({ inventoryItems, inventoryEvents, alerts: lowStockAlerts }),
+    [inventoryEvents, inventoryItems, lowStockAlerts]
+  );
 
   async function ensureShoppingList() {
     if (activeListId) {
@@ -56,6 +67,34 @@ export default function SuppliesScreen() {
                 setScannerVisible(true);
               }}
             />
+            <Button
+              label="Pantry photo"
+              variant="secondary"
+              onPress={async () => {
+                const result = await ImagePicker.launchImageLibraryAsync({
+                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                  quality: 0.8,
+                });
+                if (!result.canceled && result.assets[0]?.uri) {
+                  try {
+                    const { data, error: fnError } = await supabase.functions.invoke('identify-pantry-items', {
+                      body: { image_uri: result.assets[0].uri },
+                    });
+                    if (fnError) {
+                      throw fnError;
+                    }
+                    const staged = stagePantryPhotoReview({
+                      detections: data?.review_items ?? [],
+                      catalog: catalogItems,
+                    });
+                    setPhotoReviewItems(staged);
+                    setPhotoReviewVisible(true);
+                  } catch (err) {
+                    Alert.alert('Unable to analyze pantry photo', err instanceof Error ? err.message : 'Please try again.');
+                  }
+                }
+              }}
+            />
           </View>
           {error ? <Text style={styles.error}>{error}</Text> : null}
           {loading ? <Text style={styles.loading}>Refreshing pantry…</Text> : null}
@@ -65,6 +104,14 @@ export default function SuppliesScreen() {
           const linked = activeListItems.find((item) => item.generatedRestock?.inventoryAlertId === alert.id) ?? null;
           return <LowStockAlertCard key={alert.id} alert={alert} linkedRestockItem={linked} />;
         })}
+        {predictiveRestocks.map((prediction) => (
+          <Card key={prediction.inventoryItemId} style={styles.predictionCard}>
+            <Text style={styles.predictionTitle}>Predicted restock</Text>
+            <Text style={styles.predictionBody}>
+              {prediction.reason} • suggest buying {prediction.suggestedQuantity} {prediction.unit}
+            </Text>
+          </Card>
+        ))}
 
         {inventoryItems.length === 0 ? (
           <Card>
@@ -171,6 +218,38 @@ export default function SuppliesScreen() {
           }
         }}
       />
+
+      <PantryPhotoReviewSheet
+        visible={photoReviewVisible}
+        items={photoReviewItems}
+        loading={saving}
+        onClose={() => setPhotoReviewVisible(false)}
+        onAcceptItem={async (item) => {
+          try {
+            setSaving(true);
+            const resolved = await resolveCatalogItem({
+              name: item.displayName,
+              category: item.categoryKey,
+              unit: item.unit,
+            });
+            if (!resolved) {
+              throw new Error('Unable to resolve pantry item.');
+            }
+            await adjustStock({
+              catalogItemId: resolved.id,
+              quantityDelta: item.quantity ?? 1,
+              unit: item.unit,
+              sourceType: 'pantry_scan_seed',
+              reason: `Pantry photo review (${item.rawLabel})`,
+            });
+            setPhotoReviewItems((current) => current.filter((candidate) => candidate.rawLabel !== item.rawLabel));
+          } catch (err) {
+            Alert.alert('Unable to apply pantry item', err instanceof Error ? err.message : 'Please try again.');
+          } finally {
+            setSaving(false);
+          }
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -243,5 +322,17 @@ const styles = StyleSheet.create({
     marginTop: 6,
     lineHeight: 22,
     color: colors.textSecondary.light,
+  },
+  predictionCard: {
+    gap: 6,
+    borderColor: colors.accent.light,
+  },
+  predictionTitle: {
+    color: colors.accent.light,
+    fontWeight: '700',
+  },
+  predictionBody: {
+    color: colors.textSecondary.light,
+    lineHeight: 20,
   },
 });
