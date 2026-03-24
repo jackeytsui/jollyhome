@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import type { ReceiptData } from '@/hooks/useReceipt';
 import type { Member } from '@/hooks/useMembers';
 import type { CreateExpenseInput } from '@/types/expenses';
+import type { MaintenanceRequest } from '@/types/maintenance';
 import type { FoodCatalogItem, InventoryUnit } from '@/types/inventory';
 import type { ShoppingCategoryKey, ShoppingListItem } from '@/types/shopping';
 
@@ -66,6 +67,35 @@ export interface GroceryReceiptCommitResult {
   matched_shopping_item_ids: string[];
 }
 
+export interface RepairReceiptReview {
+  receiptReviewId: string;
+  householdId: string;
+  storeName: string;
+  date: string | null;
+  storagePaths: string[];
+  maintenanceRequestId: string | null;
+  suggestedMaintenanceRequestId: string | null;
+  candidateRequestIds: string[];
+  candidateRequestLabels: string[];
+  markResolved: boolean;
+  note: string | null;
+}
+
+export interface RepairReceiptCommitPayload {
+  expense: CreateExpenseInput;
+  receipt_review_id: string;
+  storage_paths: string[];
+  maintenance_request_id: string;
+  mark_resolved: boolean;
+  note: string | null;
+}
+
+export interface RepairReceiptCommitResult {
+  expense_id: string;
+  maintenance_request_id: string;
+  receipt_review_id: string;
+}
+
 function toDateString(value: string | null | undefined): string {
   return value || new Date().toISOString().split('T')[0];
 }
@@ -99,6 +129,30 @@ export function isLikelyGroceryReceipt(receiptData: ReceiptData): boolean {
   ).length;
 
   return receiptData.items.length >= 3 && groceryLikeCount >= Math.ceil(receiptData.items.length / 3);
+}
+
+export function isLikelyRepairReceipt(receiptData: ReceiptData): boolean {
+  const store = normalizeFoodName(receiptData.store_name);
+  const repairKeywords = [
+    'hardware',
+    'home depot',
+    'lowes',
+    'rona',
+    'plumbing',
+    'electrical',
+    'appliance',
+    'repair',
+    'maintenance',
+  ];
+
+  if (repairKeywords.some((keyword) => store.includes(keyword))) {
+    return true;
+  }
+
+  const normalizedItems = receiptData.items.map((item) => normalizeFoodName(item.name));
+  return normalizedItems.some((item) =>
+    /(bulb|filter|seal|pipe|drain|washer|screw|caulk|paint|repair|tool|fixture)/.test(item)
+  );
 }
 
 export function buildReceiptExpenseInput(input: {
@@ -198,6 +252,36 @@ function buildReceiptReviewId(input: {
     .slice(0, 16) ?? 'manual';
 
   return `${input.householdId}:${normalizedStore}:${input.date ?? 'undated'}:${suffix}`;
+}
+
+function matchMaintenanceRequests(
+  receiptData: ReceiptData,
+  requests: MaintenanceRequest[]
+): MaintenanceRequest[] {
+  const haystack = normalizeFoodName(
+    `${receiptData.store_name} ${receiptData.items.map((item) => item.name).join(' ')}`
+  );
+
+  return requests
+    .map((request) => {
+      const requestText = normalizeFoodName(`${request.title} ${request.description ?? ''} ${request.area ?? ''}`);
+      let score = request.status !== 'resolved' ? 4 : 0;
+
+      if (request.area && haystack.includes(normalizeFoodName(request.area))) {
+        score += 3;
+      }
+      if (requestText.split(' ').some((token) => token.length > 3 && haystack.includes(token))) {
+        score += 2;
+      }
+      if (request.priority === 'urgent' || request.priority === 'high') {
+        score += 1;
+      }
+
+      return { request, score };
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((left, right) => right.score - left.score)
+    .map((entry) => entry.request);
 }
 
 function matchShoppingItems(
@@ -306,6 +390,53 @@ export function buildGroceryReceiptCommitPayload(input: {
   };
 }
 
+export function stageRepairReceiptReview(input: {
+  receiptData: ReceiptData;
+  householdId: string;
+  storagePaths: string[];
+  maintenanceRequests: MaintenanceRequest[];
+}): RepairReceiptReview {
+  const candidates = matchMaintenanceRequests(input.receiptData, input.maintenanceRequests);
+  const suggested = candidates[0] ?? null;
+
+  return {
+    receiptReviewId: buildReceiptReviewId({
+      householdId: input.householdId,
+      storeName: input.receiptData.store_name,
+      date: input.receiptData.date,
+      storagePaths: input.storagePaths,
+    }),
+    householdId: input.householdId,
+    storeName: input.receiptData.store_name,
+    date: input.receiptData.date,
+    storagePaths: input.storagePaths,
+    maintenanceRequestId: suggested?.id ?? null,
+    suggestedMaintenanceRequestId: suggested?.id ?? null,
+    candidateRequestIds: candidates.map((candidate) => candidate.id),
+    candidateRequestLabels: candidates.map((candidate) => candidate.title),
+    markResolved: false,
+    note: null,
+  };
+}
+
+export function buildRepairReceiptCommitPayload(input: {
+  expenseInput: CreateExpenseInput;
+  review: RepairReceiptReview;
+}): RepairReceiptCommitPayload {
+  if (!input.review.maintenanceRequestId) {
+    throw new Error('A maintenance request must be selected before committing a repair receipt');
+  }
+
+  return {
+    expense: input.expenseInput,
+    receipt_review_id: input.review.receiptReviewId,
+    storage_paths: input.review.storagePaths,
+    maintenance_request_id: input.review.maintenanceRequestId,
+    mark_resolved: input.review.markResolved,
+    note: input.review.note ?? null,
+  };
+}
+
 export async function commitGroceryReceipt(input: {
   expenseInput: CreateExpenseInput;
   review: GroceryReceiptReview;
@@ -326,4 +457,26 @@ export async function commitGroceryReceipt(input: {
   }
 
   return data as GroceryReceiptCommitResult;
+}
+
+export async function commitRepairReceipt(input: {
+  expenseInput: CreateExpenseInput;
+  review: RepairReceiptReview;
+  supabaseClient?: typeof supabase;
+}): Promise<RepairReceiptCommitResult> {
+  const payload = buildRepairReceiptCommitPayload(input);
+  const client = input.supabaseClient ?? supabase;
+  const { data, error } = await client.functions.invoke('commit-repair-receipt', {
+    body: payload,
+  });
+
+  if (error) {
+    throw new Error(error.message ?? 'Failed to commit repair receipt');
+  }
+
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+
+  return data as RepairReceiptCommitResult;
 }

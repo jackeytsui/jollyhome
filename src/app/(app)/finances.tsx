@@ -10,7 +10,7 @@ import {
   Modal,
 } from 'react-native';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '@/constants/theme';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useBalances } from '@/hooks/useBalances';
@@ -30,12 +30,13 @@ import { RecurringExpenseRow } from '@/components/expenses/RecurringExpenseRow';
 import { JollyNLInput } from '@/components/expenses/JollyNLInput';
 import { ReceiptCameraView } from '@/components/receipt/ReceiptCameraView';
 import { ReceiptReviewCard } from '@/components/receipt/ReceiptReviewCard';
-import { commitGroceryReceipt } from '@/lib/receiptWorkflow';
+import { commitGroceryReceipt, commitRepairReceipt } from '@/lib/receiptWorkflow';
 import type { CreateExpenseInput } from '@/types/expenses';
 import type { ExpenseWithSplits } from '@/hooks/useExpenses';
 
 export default function FinancesScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ prefill_expense?: string }>();
   const { activeHouseholdId } = useHouseholdStore();
   const { user } = useAuthStore();
 
@@ -60,6 +61,7 @@ export default function FinancesScreen() {
     images,
     receiptStoragePaths,
     groceryReview,
+    repairReview,
     loading: receiptLoading,
     error: receiptError,
     captureImage,
@@ -88,6 +90,20 @@ export default function FinancesScreen() {
       loadMembers();
     }
   }, [activeHouseholdId, loadExpenses, loadBalances, loadMembers]);
+
+  useEffect(() => {
+    if (!params.prefill_expense) {
+      return;
+    }
+
+    try {
+      setNlPrefilled(JSON.parse(params.prefill_expense));
+      setNlConfidenceFlags([]);
+      bottomSheetRef.current?.expand();
+    } catch {
+      // Ignore malformed prefills.
+    }
+  }, [params.prefill_expense]);
 
   const handleOpenAddExpense = useCallback(() => {
     bottomSheetRef.current?.expand();
@@ -125,6 +141,7 @@ export default function FinancesScreen() {
   const handleReceiptConfirm = useCallback(async (input: {
     expenseInput: CreateExpenseInput;
     groceryReview: NonNullable<typeof groceryReview> | null;
+    repairReview: NonNullable<typeof repairReview> | null;
   }) => {
     try {
       const expenseInput = {
@@ -137,6 +154,11 @@ export default function FinancesScreen() {
           expenseInput,
           review: input.groceryReview,
         });
+      } else if (input.repairReview) {
+        await commitRepairReceipt({
+          expenseInput,
+          review: input.repairReview,
+        });
       } else {
         await createExpense(expenseInput);
       }
@@ -147,6 +169,8 @@ export default function FinancesScreen() {
       loadBalances();
       Alert.alert('Saved!', input.groceryReview
         ? 'Receipt synced to expenses, pantry, and shopping.'
+        : input.repairReview
+        ? 'Receipt linked to maintenance and expense tracking.'
         : 'Expense created from receipt.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save expense';
@@ -427,6 +451,7 @@ export default function FinancesScreen() {
               currentUserId={user?.id ?? ''}
               householdId={activeHouseholdId ?? ''}
               groceryReview={groceryReview}
+              repairReview={repairReview}
               onConfirm={handleReceiptConfirm}
               onCancel={handleReceiptCancel}
               loading={false}
@@ -448,6 +473,7 @@ export default function FinancesScreen() {
               currentUserId={user?.id ?? ''}
               householdId={activeHouseholdId ?? ''}
               groceryReview={groceryReview}
+              repairReview={repairReview}
               onConfirm={handleReceiptConfirm}
               onCancel={handleReceiptCancel}
               loading={receiptLoading}

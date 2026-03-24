@@ -21,6 +21,7 @@ export interface CompleteChoreValues {
 interface CompleteChoreSheetProps {
   visible: boolean;
   choreTitle: string;
+  supplyPrompt?: string | null;
   loading?: boolean;
   onClose: () => void;
   onSubmit: (values: CompleteChoreValues) => Promise<void> | void;
@@ -29,6 +30,7 @@ interface CompleteChoreSheetProps {
 export function CompleteChoreSheet({
   visible,
   choreTitle,
+  supplyPrompt = null,
   loading = false,
   onClose,
   onSubmit,
@@ -75,6 +77,9 @@ export function CompleteChoreSheet({
             <Text style={styles.subtitle}>
               Wrap up {choreTitle} with an optional note, optional actual minutes, and optional photo proof.
             </Text>
+            {supplyPrompt ? (
+              <Text style={styles.promptText}>{supplyPrompt}</Text>
+            ) : null}
 
             <View style={styles.field}>
               <Text style={styles.label}>Completion note</Text>
@@ -156,6 +161,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: colors.textSecondary.light,
+  },
+  promptText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.sandbox.light,
+    fontWeight: '600',
   },
   field: {
     gap: 8,

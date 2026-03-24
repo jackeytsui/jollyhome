@@ -153,6 +153,62 @@ function mapInventoryAlert(row: InventoryAlertRow): InventoryAlert {
   };
 }
 
+export interface ChoreSupplyWarning {
+  level: 'warning' | 'prompt';
+  title: string;
+  detail: string;
+  relatedCatalogItemIds: string[];
+}
+
+function isCleaningChore(input: { title: string; area: string | null }) {
+  const text = `${input.title} ${input.area ?? ''}`.toLowerCase();
+  return /(clean|wipe|mop|vacuum|laundry|bathroom|kitchen|sanitize|dust|trash)/.test(text);
+}
+
+export function buildChoreSupplyWarnings(input: {
+  title: string;
+  area: string | null;
+  catalogItems: FoodCatalogItem[];
+  lowStockAlerts: InventoryAlert[];
+}): ChoreSupplyWarning[] {
+  if (!isCleaningChore({ title: input.title, area: input.area })) {
+    return [];
+  }
+
+  const relevantAlerts = input.lowStockAlerts.filter((alert) => {
+    const catalogItem = input.catalogItems.find((item) => item.id === alert.catalogItemId);
+    if (!catalogItem) {
+      return false;
+    }
+
+    if (catalogItem.category === 'household' || catalogItem.category === 'personal_care') {
+      return true;
+    }
+
+    const label = `${catalogItem.displayName} ${catalogItem.canonicalName}`.toLowerCase();
+    return /(detergent|soap|spray|bleach|paper towel|trash bag|sponge|cleaner)/.test(label);
+  });
+
+  if (relevantAlerts.length === 0) {
+    return [];
+  }
+
+  return [
+    {
+      level: 'warning',
+      title: 'Low cleaning supplies',
+      detail: `Related supplies are low: ${relevantAlerts.map((alert) => alert.title).join(', ')}`,
+      relatedCatalogItemIds: relevantAlerts.map((alert) => alert.catalogItemId),
+    },
+    {
+      level: 'prompt',
+      title: 'Restock prompt after completion',
+      detail: 'When you finish this chore, confirm whether any cleaning supplies should be restocked.',
+      relatedCatalogItemIds: relevantAlerts.map((alert) => alert.catalogItemId),
+    },
+  ];
+}
+
 export function findCatalogItemMatch(
   catalog: FoodCatalogItem[],
   input: { name: string; barcode?: string | null; unit?: string | null; category?: string | null }

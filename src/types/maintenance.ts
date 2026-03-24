@@ -70,3 +70,10 @@ export interface MaintenanceHistoryFilters {
   status: MaintenanceStatus | 'all';
   area: string | 'all';
 }
+
+export interface MaintenanceExpensePrefillInput {
+  request: MaintenanceRequest;
+  memberUserIds: string[];
+  paidBy: string;
+  householdId: string;
+}

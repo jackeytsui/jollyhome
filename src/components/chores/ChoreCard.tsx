@@ -16,6 +16,10 @@ interface ChoreCardProps {
     status: 'open' | 'claimed' | 'completed' | 'skipped';
     kind: 'responsibility' | 'bonus';
   };
+  warning?: {
+    title: string;
+    detail: string;
+  } | null;
   onPress?: () => void;
   footer?: React.ReactNode;
 }
@@ -26,7 +30,7 @@ const CONDITION_COLORS = {
   red: colors.destructive.light,
 } as const;
 
-export function ChoreCard({ chore, onPress, footer }: ChoreCardProps) {
+export function ChoreCard({ chore, warning = null, onPress, footer }: ChoreCardProps) {
   return (
     <Card style={styles.card}>
       <Pressable onPress={onPress} accessibilityLabel={`Edit chore ${chore.title}`}>
@@ -74,6 +78,13 @@ export function ChoreCard({ chore, onPress, footer }: ChoreCardProps) {
           </Text>
         </View>
       </Pressable>
+
+      {warning ? (
+        <View style={styles.warningBlock}>
+          <Text style={styles.warningTitle}>{warning.title}</Text>
+          <Text style={styles.warningDetail}>{warning.detail}</Text>
+        </View>
+      ) : null}
 
       {footer ? <View style={styles.footer}>{footer}</View> : null}
     </Card>
@@ -154,6 +165,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '600',
+  },
+  warningBlock: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border.light,
+    paddingTop: 12,
+    gap: 4,
+  },
+  warningTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.sandbox.light,
+  },
+  warningDetail: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.textSecondary.light,
   },
   footer: {
     borderTopWidth: 1,

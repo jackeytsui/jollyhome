@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/auth';
 import { useHouseholdStore } from '@/stores/household';
+import type { CreateExpenseInput } from '@/types/expenses';
 import type {
   MaintenanceAppointmentInput,
+  MaintenanceExpensePrefillInput,
   MaintenanceHistoryFilters,
   MaintenancePriority,
   MaintenanceRequest,
@@ -204,6 +206,29 @@ export function buildMaintenanceAppointmentPayload(
     icon_key: 'wrench',
     visual_weight: 'secondary' as const,
     owner_member_user_ids: input.ownerMemberUserIds ?? [],
+  };
+}
+
+export function buildMaintenanceExpensePrefill(
+  input: MaintenanceExpensePrefillInput
+): Partial<CreateExpenseInput> {
+  const total = input.request.costCents ?? 0;
+  const memberCount = Math.max(1, input.memberUserIds.length);
+  const baseShare = Math.floor(total / memberCount);
+  const remainder = total - baseShare * memberCount;
+
+  return {
+    household_id: input.householdId,
+    description: `${input.request.title} repair`,
+    amount_cents: total,
+    category: 'home',
+    paid_by: input.paidBy,
+    split_type: 'exact',
+    splits: input.memberUserIds.map((userId, index) => ({
+      user_id: userId,
+      amount_cents: baseShare + (index < remainder ? 1 : 0),
+    })),
+    expense_date: new Date().toISOString().slice(0, 10),
   };
 }
 

@@ -24,6 +24,7 @@ import { buildFairnessStats, getRollingAverageMinutes } from '@/lib/fairness';
 import { parseRecurrenceRule } from '@/lib/recurrence';
 import { useChoreRotation } from '@/hooks/useChoreRotation';
 import { useChores } from '@/hooks/useChores';
+import { buildChoreSupplyWarnings, useInventory } from '@/hooks/useInventory';
 import { useMembers } from '@/hooks/useMembers';
 import { colors } from '@/constants/theme';
 import { useAuthStore } from '@/stores/auth';
@@ -48,6 +49,7 @@ type DisplayChore = {
   recurrenceRule: string | null;
   recurrenceTimezone: string;
   recurrenceAnchor: string;
+  supplyWarnings: Array<{ title: string; detail: string }>;
 };
 
 const DEFAULT_FILTERS: ChoreFilterState = {
@@ -198,6 +200,7 @@ export default function ChoresScreen() {
     upsertEnergyEntry,
     updateHouseholdSettings,
   } = useChores();
+  const { catalogItems, lowStockAlerts } = useInventory();
   const { members, loadMembers } = useMembers(activeHouseholdId);
   const { suggestions, refreshSuggestions, applySuggestions } = useChoreRotation();
 
@@ -262,11 +265,20 @@ export default function ChoresScreen() {
           recurrenceRule: template.recurrence_rule,
           recurrenceTimezone: template.recurrence_timezone,
           recurrenceAnchor: template.recurrence_anchor,
+          supplyWarnings: buildChoreSupplyWarnings({
+            title: template.title,
+            area: template.area,
+            catalogItems,
+            lowStockAlerts,
+          }).map((warning) => ({
+            title: warning.title,
+            detail: warning.detail,
+          })),
         };
       })
       .filter((item): item is DisplayChore => Boolean(item))
       .sort(sortChores);
-  }, [assignments, completions, instances, members, templates]);
+  }, [assignments, catalogItems, completions, instances, lowStockAlerts, members, templates]);
 
   const filteredChores = useMemo(
     () => chores.filter((chore) => matchesFilters(chore, filters)),
@@ -320,6 +332,16 @@ export default function ChoresScreen() {
       .map((member) => ({
         label: member.profile.display_name ?? 'Housemate',
         value: member.user_id,
+      })),
+    [members]
+  );
+
+  const rotationMemberOptions = useMemo(
+    () => members
+      .filter((member) => member.status === 'active')
+      .map((member) => ({
+        id: member.user_id,
+        label: member.profile.display_name ?? 'Housemate',
       })),
     [members]
   );
@@ -471,7 +493,7 @@ export default function ChoresScreen() {
     try {
       await completeChore(completingChore.id, {
         actual_minutes: values.actualMinutes,
-        note: values.note || null,
+        note: values.note || completingChore.supplyWarnings[0]?.detail || null,
         photo_path: values.photoPath || null,
         condition_state: completingChore.conditionState,
       });
@@ -654,6 +676,7 @@ export default function ChoresScreen() {
             <ChoreCard
               key={chore.id}
               chore={chore}
+              warning={chore.supplyWarnings[0] ?? null}
               onPress={() => router.push(`/chores/${chore.templateId}`)}
               footer={(
                 <View style={styles.cardActions}>
@@ -686,6 +709,7 @@ export default function ChoresScreen() {
             <ChoreCard
               key={chore.id}
               chore={chore}
+              warning={chore.supplyWarnings[0] ?? null}
               onPress={() => router.push(`/chores/${chore.templateId}`)}
               footer={(
                 <View style={styles.cardActions}>
@@ -730,6 +754,7 @@ export default function ChoresScreen() {
       <CompleteChoreSheet
         visible={Boolean(completingChore)}
         choreTitle={completingChore?.title ?? ''}
+        supplyPrompt={completingChore?.supplyWarnings[1]?.detail ?? completingChore?.supplyWarnings[0]?.detail ?? null}
         loading={submitting}
         onClose={() => setCompletingChore(null)}
         onSubmit={handleComplete}
@@ -737,7 +762,7 @@ export default function ChoresScreen() {
       <RotationReviewSheet
         visible={rotationReviewVisible}
         items={rotationDraft}
-        memberOptions={assigneeOptions}
+        memberOptions={rotationMemberOptions}
         loading={rotationApplying}
         refreshing={rotationRefreshing}
         onClose={() => setRotationReviewVisible(false)}

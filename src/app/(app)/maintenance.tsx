@@ -5,8 +5,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  Pressable,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { MaintenanceEditorSheet } from '@/components/maintenance/MaintenanceEditorSheet';
@@ -14,9 +16,10 @@ import { MaintenanceHistorySheet } from '@/components/maintenance/MaintenanceHis
 import { MaintenanceRequestCard } from '@/components/maintenance/MaintenanceRequestCard';
 import { MaintenanceStatusSheet } from '@/components/maintenance/MaintenanceStatusSheet';
 import { colors } from '@/constants/theme';
-import { useMaintenance } from '@/hooks/useMaintenance';
+import { buildMaintenanceExpensePrefill, useMaintenance } from '@/hooks/useMaintenance';
 import { useMembers } from '@/hooks/useMembers';
 import type { MaintenanceRequest, MaintenanceRequestInput } from '@/types/maintenance';
+import { useAuthStore } from '@/stores/auth';
 import { useHouseholdStore } from '@/stores/household';
 
 export function buildMaintenanceSummary(activeCount: number, historyCount: number) {
@@ -31,6 +34,7 @@ export function buildMaintenanceSummary(activeCount: number, historyCount: numbe
 }
 
 export default function MaintenanceScreen() {
+  const router = useRouter();
   const [editorVisible, setEditorVisible] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
   const [statusVisible, setStatusVisible] = useState(false);
@@ -39,6 +43,7 @@ export default function MaintenanceScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const activeHouseholdId = useHouseholdStore((state) => state.activeHouseholdId);
+  const user = useAuthStore((state) => state.user);
   const {
     activeRequests,
     historyRequests,
@@ -59,6 +64,11 @@ export default function MaintenanceScreen() {
 
   const memberNameMap = useMemo(
     () => new Map(members.map((member) => [member.user_id, member.profile.display_name ?? 'Housemate'])),
+    [members]
+  );
+
+  const activeMemberIds = useMemo(
+    () => members.filter((member) => member.status === 'active').map((member) => member.user_id),
     [members]
   );
 
@@ -171,23 +181,45 @@ export default function MaintenanceScreen() {
             </Card>
           ) : (
             activeRequests.map((request) => (
-              <MaintenanceRequestCard
-                key={request.id}
-                request={request}
-                assigneeLabel={request.claimedBy ? memberNameMap.get(request.claimedBy) ?? 'Housemate' : null}
-                onEdit={() => {
-                  setEditingRequest(request);
-                  setEditorVisible(true);
-                }}
-                onAdvanceStatus={() => {
-                  setSelectedRequest(request);
-                  setStatusVisible(true);
-                }}
-                onScheduleAppointment={() => {
-                  setSelectedRequest(request);
-                  setStatusVisible(true);
-                }}
-              />
+              <View key={request.id} style={styles.requestBlock}>
+                <MaintenanceRequestCard
+                  request={request}
+                  assigneeLabel={request.claimedBy ? memberNameMap.get(request.claimedBy) ?? 'Housemate' : null}
+                  onEdit={() => {
+                    setEditingRequest(request);
+                    setEditorVisible(true);
+                  }}
+                  onAdvanceStatus={() => {
+                    setSelectedRequest(request);
+                    setStatusVisible(true);
+                  }}
+                  onScheduleAppointment={() => {
+                    setSelectedRequest(request);
+                    setStatusVisible(true);
+                  }}
+                />
+                {request.costCents ? (
+                  <Pressable
+                    style={styles.expenseLink}
+                    onPress={() => {
+                      const prefill = buildMaintenanceExpensePrefill({
+                        request,
+                        memberUserIds: activeMemberIds,
+                        paidBy: user?.id ?? request.createdBy,
+                        householdId: activeHouseholdId ?? request.householdId,
+                      });
+                      router.push({
+                        pathname: '/finances',
+                        params: {
+                          prefill_expense: JSON.stringify(prefill),
+                        },
+                      });
+                    }}
+                  >
+                    <Text style={styles.expenseLinkText}>Split this expense</Text>
+                  </Pressable>
+                ) : null}
+              </View>
             ))
           )}
         </View>
@@ -270,6 +302,9 @@ const styles = StyleSheet.create({
   section: {
     gap: 12,
   },
+  requestBlock: {
+    gap: 8,
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -297,5 +332,14 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: colors.destructive.light,
+  },
+  expenseLink: {
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 2,
+  },
+  expenseLinkText: {
+    color: colors.accent.light,
+    fontWeight: '700',
   },
 });

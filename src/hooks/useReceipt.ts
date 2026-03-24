@@ -1,12 +1,18 @@
 import { useState, useCallback } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { stageGroceryReceiptReview, isLikelyGroceryReceipt } from '@/lib/receiptWorkflow';
+import {
+  stageGroceryReceiptReview,
+  stageRepairReceiptReview,
+  isLikelyGroceryReceipt,
+  isLikelyRepairReceipt,
+} from '@/lib/receiptWorkflow';
 import { supabase } from '@/lib/supabase';
 import { useHouseholdStore } from '@/stores/household';
 import { useAuthStore } from '@/stores/auth';
 import type { FoodCatalogItem, InventoryUnit } from '@/types/inventory';
+import type { MaintenanceRequest } from '@/types/maintenance';
 import type { ShoppingCategoryKey } from '@/types/shopping';
-import type { GroceryReceiptReview, ReceiptShoppingCandidate } from '@/lib/receiptWorkflow';
+import type { GroceryReceiptReview, ReceiptShoppingCandidate, RepairReceiptReview } from '@/lib/receiptWorkflow';
 
 // ============================================================
 // Types
@@ -40,6 +46,7 @@ export function useReceipt() {
   const [images, setImages] = useState<string[]>([]);
   const [receiptStoragePaths, setReceiptStoragePaths] = useState<string[]>([]);
   const [groceryReview, setGroceryReview] = useState<GroceryReceiptReview | null>(null);
+  const [repairReview, setRepairReview] = useState<RepairReceiptReview | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,82 +54,146 @@ export function useReceipt() {
   const { user } = useAuthStore();
 
   const hydrateGroceryReview = useCallback(async (parsed: ReceiptData, storagePaths: string[]) => {
-    if (!activeHouseholdId || !isLikelyGroceryReceipt(parsed)) {
+    if (!activeHouseholdId) {
       setGroceryReview(null);
+      setRepairReview(null);
       return;
     }
 
-    const [catalogResult, shoppingResult] = await Promise.all([
-      supabase
-        .from('food_catalog_items')
-        .select('id, household_id, canonical_name, display_name, normalized_name, barcode, category_key, default_unit, synonyms, source, created_at, updated_at')
-        .or(`household_id.eq.${activeHouseholdId},household_id.is.null`)
-        .order('display_name', { ascending: true }),
-      supabase
-        .from('shopping_list_items')
-        .select('id, title, category_key, unit, catalog_item_id, status')
-        .eq('household_id', activeHouseholdId)
-        .eq('status', 'pending'),
-    ]);
+    if (!isLikelyGroceryReceipt(parsed)) {
+      setGroceryReview(null);
+    } else {
+      const [catalogResult, shoppingResult] = await Promise.all([
+        supabase
+          .from('food_catalog_items')
+          .select('id, household_id, canonical_name, display_name, normalized_name, barcode, category_key, default_unit, synonyms, source, created_at, updated_at')
+          .or(`household_id.eq.${activeHouseholdId},household_id.is.null`)
+          .order('display_name', { ascending: true }),
+        supabase
+          .from('shopping_list_items')
+          .select('id, title, category_key, unit, catalog_item_id, status')
+          .eq('household_id', activeHouseholdId)
+          .eq('status', 'pending'),
+      ]);
 
-    if (catalogResult.error) {
-      throw catalogResult.error;
-    }
-    if (shoppingResult.error) {
-      throw shoppingResult.error;
+      if (catalogResult.error) {
+        throw catalogResult.error;
+      }
+      if (shoppingResult.error) {
+        throw shoppingResult.error;
+      }
+
+      const catalogItems: FoodCatalogItem[] = (catalogResult.data ?? []).map((row: {
+        id: string;
+        household_id: string | null;
+        canonical_name: string;
+        display_name: string;
+        normalized_name: string;
+        barcode: string | null;
+        category_key: ShoppingCategoryKey;
+        default_unit: InventoryUnit;
+        synonyms: string[] | null;
+        source: FoodCatalogItem['source'];
+        created_at: string;
+        updated_at: string;
+      }) => ({
+        id: row.id,
+        householdId: row.household_id,
+        canonicalName: row.canonical_name,
+        displayName: row.display_name,
+        normalizedName: row.normalized_name,
+        barcode: row.barcode,
+        category: row.category_key,
+        defaultUnit: row.default_unit,
+        synonyms: row.synonyms ?? [],
+        source: row.source,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      }));
+
+      const shoppingItems: ReceiptShoppingCandidate[] = (shoppingResult.data ?? []).map((row: {
+        id: string;
+        title: string;
+        category_key: ShoppingCategoryKey;
+        unit: string | null;
+        catalog_item_id: string | null;
+        status: 'pending' | 'purchased' | 'skipped';
+      }) => ({
+        id: row.id,
+        title: row.title,
+        category: row.category_key,
+        unit: row.unit,
+        catalogItemId: row.catalog_item_id,
+        status: row.status,
+      }));
+
+      setGroceryReview(stageGroceryReceiptReview({
+        receiptData: parsed,
+        householdId: activeHouseholdId,
+        storagePaths,
+        catalog: catalogItems,
+        shoppingItems,
+      }));
     }
 
-    const catalogItems: FoodCatalogItem[] = (catalogResult.data ?? []).map((row: {
+    if (!isLikelyRepairReceipt(parsed)) {
+      setRepairReview(null);
+      return;
+    }
+
+    const { data: maintenanceResult, error: maintenanceError } = await supabase
+      .from('maintenance_requests')
+      .select('*')
+      .eq('household_id', activeHouseholdId)
+      .order('updated_at', { ascending: false });
+
+    if (maintenanceError) {
+      throw maintenanceError;
+    }
+
+    const maintenanceRequests: MaintenanceRequest[] = ((maintenanceResult ?? []) as Array<{
       id: string;
-      household_id: string | null;
-      canonical_name: string;
-      display_name: string;
-      normalized_name: string;
-      barcode: string | null;
-      category_key: ShoppingCategoryKey;
-      default_unit: InventoryUnit;
-      synonyms: string[] | null;
-      source: FoodCatalogItem['source'];
+      household_id: string;
+      created_by: string;
+      title: string;
+      description: string | null;
+      area: string | null;
+      priority: MaintenanceRequest['priority'];
+      status: MaintenanceRequest['status'];
+      claimed_by: string | null;
+      claimed_at: string | null;
+      resolved_at: string | null;
+      cost_cents: number | string | null;
+      latest_note: string | null;
+      latest_photo_path: string | null;
+      appointment_event_id: string | null;
       created_at: string;
       updated_at: string;
-    }) => ({
+    }>).map((row) => ({
       id: row.id,
       householdId: row.household_id,
-      canonicalName: row.canonical_name,
-      displayName: row.display_name,
-      normalizedName: row.normalized_name,
-      barcode: row.barcode,
-      category: row.category_key,
-      defaultUnit: row.default_unit,
-      synonyms: row.synonyms ?? [],
-      source: row.source,
+      createdBy: row.created_by,
+      title: row.title,
+      description: row.description,
+      area: row.area,
+      priority: row.priority,
+      status: row.status,
+      claimedBy: row.claimed_by,
+      claimedAt: row.claimed_at,
+      resolvedAt: row.resolved_at,
+      costCents: typeof row.cost_cents === 'number' ? row.cost_cents : row.cost_cents ? Number(row.cost_cents) : null,
+      latestNote: row.latest_note,
+      latestPhotoPath: row.latest_photo_path,
+      appointmentEventId: row.appointment_event_id,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }));
 
-    const shoppingItems: ReceiptShoppingCandidate[] = (shoppingResult.data ?? []).map((row: {
-      id: string;
-      title: string;
-      category_key: ShoppingCategoryKey;
-      unit: string | null;
-      catalog_item_id: string | null;
-      status: 'pending' | 'purchased' | 'skipped';
-    }) => ({
-      id: row.id,
-      title: row.title,
-      category: row.category_key,
-      unit: row.unit,
-      catalogItemId: row.catalog_item_id,
-      status: row.status,
-    }));
-
-    // Reviewed OCR payload gets extended here before commit-grocery-receipt persistence.
-    setGroceryReview(stageGroceryReceiptReview({
+    setRepairReview(stageRepairReceiptReview({
       receiptData: parsed,
       householdId: activeHouseholdId,
       storagePaths,
-      catalog: catalogItems,
-      shoppingItems,
+      maintenanceRequests,
     }));
   }, [activeHouseholdId]);
 
@@ -268,6 +339,7 @@ export function useReceipt() {
     setReceiptData(null);
     setReceiptStoragePaths([]);
     setGroceryReview(null);
+    setRepairReview(null);
     setError(null);
     setLoading(false);
   }, []);
@@ -277,6 +349,7 @@ export function useReceipt() {
     images,
     receiptStoragePaths,
     groceryReview,
+    repairReview,
     loading,
     error,
     captureImage,

@@ -18,6 +18,7 @@ import type { CreateExpenseInput } from '@/types/expenses';
 import {
   buildReceiptExpenseInput,
   type GroceryReceiptReview,
+  type RepairReceiptReview,
 } from '@/lib/receiptWorkflow';
 
 interface ReceiptReviewCardProps {
@@ -26,7 +27,12 @@ interface ReceiptReviewCardProps {
   currentUserId: string;
   householdId: string;
   groceryReview?: GroceryReceiptReview | null;
-  onConfirm: (input: { expenseInput: CreateExpenseInput; groceryReview: GroceryReceiptReview | null }) => void;
+  repairReview?: RepairReceiptReview | null;
+  onConfirm: (input: {
+    expenseInput: CreateExpenseInput;
+    groceryReview: GroceryReceiptReview | null;
+    repairReview: RepairReceiptReview | null;
+  }) => void;
   onCancel: () => void;
   loading: boolean;
 }
@@ -47,6 +53,7 @@ export function ReceiptReviewCard({
   currentUserId,
   householdId,
   groceryReview = null,
+  repairReview = null,
   onConfirm,
   onCancel,
   loading,
@@ -58,11 +65,13 @@ export function ReceiptReviewCard({
   const [tipStr, setTipStr] = useState(formatCentsToString(receiptData.tip_cents));
   const [totalStr, setTotalStr] = useState(formatCentsToString(receiptData.total_cents));
   const [groceryItems, setGroceryItems] = useState(groceryReview?.items ?? []);
+  const [repairState, setRepairState] = useState(repairReview);
 
   useEffect(() => {
     setItems(receiptData.items);
     setGroceryItems(groceryReview?.items ?? []);
-  }, [receiptData, groceryReview]);
+    setRepairState(repairReview);
+  }, [receiptData, groceryReview, repairReview]);
 
   const taxCents = parseCentsFromString(taxStr);
   const tipCents = parseCentsFromString(tipStr);
@@ -124,7 +133,7 @@ export function ReceiptReviewCard({
       })),
     } : null;
 
-    onConfirm({ expenseInput, groceryReview: finalGroceryReview });
+    onConfirm({ expenseInput, groceryReview: finalGroceryReview, repairReview: repairState });
   }, [
     receiptData,
     items,
@@ -139,6 +148,7 @@ export function ReceiptReviewCard({
     householdId,
     groceryItems,
     groceryReview,
+    repairState,
     onConfirm,
   ]);
 
@@ -332,6 +342,48 @@ export function ReceiptReviewCard({
         </>
       ) : null}
 
+      {repairState ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Maintenance Link</Text>
+          <View style={styles.groceryCard}>
+            <Text style={styles.groceryLabel}>Maintenance request id</Text>
+            <TextInput
+              style={styles.groceryInput}
+              value={repairState.maintenanceRequestId ?? ''}
+              onChangeText={(value) => setRepairState((current) => current ? { ...current, maintenanceRequestId: value || null } : current)}
+              placeholder={repairState.suggestedMaintenanceRequestId ?? 'Link a maintenance request'}
+              placeholderTextColor={colors.textSecondary.light}
+              accessibilityLabel="Maintenance request id"
+            />
+            <Text style={styles.groceryHelp}>
+              {repairState.candidateRequestLabels.length > 0
+                ? `Suggested matches: ${repairState.candidateRequestLabels.join(', ')}`
+                : 'No strong match found. Link a request manually before saving.'}
+            </Text>
+            <View style={styles.toggleRow}>
+              <Pressable
+                style={[styles.togglePill, repairState.markResolved && styles.togglePillActive]}
+                onPress={() => setRepairState((current) => current ? { ...current, markResolved: !current.markResolved } : current)}
+              >
+                <Text style={[styles.togglePillText, repairState.markResolved && styles.togglePillTextActive]}>
+                  {repairState.markResolved ? 'Mark request resolved' : 'Leave request open'}
+                </Text>
+              </Pressable>
+            </View>
+            <Text style={styles.groceryLabel}>Maintenance note</Text>
+            <TextInput
+              style={[styles.groceryInput, styles.groceryNoteInput]}
+              value={repairState.note ?? ''}
+              onChangeText={(value) => setRepairState((current) => current ? { ...current, note: value || null } : current)}
+              placeholder="Note to add on the maintenance request"
+              placeholderTextColor={colors.textSecondary.light}
+              multiline
+              accessibilityLabel="Maintenance note"
+            />
+          </View>
+        </View>
+      ) : null}
+
       {/* Split Summary Preview */}
       <SplitSummaryPreview
         items={items}
@@ -498,6 +550,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
+  },
+  groceryHelp: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: colors.textSecondary.light,
+  },
+  groceryNoteInput: {
+    minHeight: 84,
+    textAlignVertical: 'top',
   },
   groceryMetaRow: {
     flexDirection: 'row',

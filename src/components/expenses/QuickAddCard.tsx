@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -63,6 +63,30 @@ export function QuickAddCard({
   const [isPrivate, setIsPrivate] = useState(prefilled?.is_private ?? false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setAmountStr(prefilled?.amount_cents ? (prefilled.amount_cents / 100).toFixed(2) : '');
+    setDescription(prefilled?.description ?? '');
+    setSelectedCategory(prefilled?.category ?? null);
+    setSplitType(prefilled?.split_type ?? 'equal');
+    setSelectedPresetId(undefined);
+    setSelectedMemberIds(
+      prefilled?.splits?.length
+        ? new Set(prefilled.splits.map((split) => split.user_id))
+        : new Set(members.map((member) => member.user_id))
+    );
+    setSplitValues(
+      prefilled?.splits?.reduce<Record<string, number>>((accumulator, split) => {
+        accumulator[split.user_id] = split.amount_cents / 100;
+        return accumulator;
+      }, {}) ?? {}
+    );
+    setExpenseDate(prefilled?.expense_date ?? new Date().toISOString().split('T')[0]);
+    setTaxStr(prefilled?.tax_cents ? (prefilled.tax_cents / 100).toFixed(2) : '');
+    setTipStr(prefilled?.tip_cents ? (prefilled.tip_cents / 100).toFixed(2) : '');
+    setIsPrivate(prefilled?.is_private ?? false);
+    setErrors({});
+  }, [members, prefilled]);
 
   function handleSplitSelect(type: SplitType, presetId?: string) {
     setSplitType(type);
