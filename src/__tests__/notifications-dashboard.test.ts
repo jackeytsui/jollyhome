@@ -4,6 +4,12 @@ import {
   getDefaultNotificationPreferences,
   mapNotificationPreferencesRow,
 } from '@/hooks/useNotifications';
+import {
+  buildFairnessOverview,
+  buildHouseholdDashboard,
+  buildMonthlyReport,
+  buildSpendingInsights,
+} from '@/lib/dashboard';
 
 describe('notifications dashboard', () => {
   it('provides stable default preferences and fills missing category modes', () => {
@@ -258,6 +264,205 @@ describe('notifications dashboard', () => {
     expect(digest.sections.find((section) => section.id === 'expenses')?.references[0]).toMatchObject({
       feature: 'finances',
       subtitle: expect.stringContaining('$24.50'),
+    });
+  });
+
+  it('builds a combined household dashboard, fairness summary, monthly report, and evidence-backed spending insights', () => {
+    const dashboard = buildHouseholdDashboard({
+      householdName: 'Jolly Home',
+      simplifiedDebts: [{ from: 'alex', to: 'sam', amount: 2400 }],
+      openChoreCount: 3,
+      upcomingCalendarCount: 4,
+      lowStockCount: 2,
+      activeMaintenanceCount: 1,
+      plannedMealCount: 5,
+    });
+
+    expect(dashboard).toMatchObject({
+      headline: expect.stringMatching(/Jolly Home/),
+      metrics: expect.arrayContaining([
+        expect.objectContaining({ id: 'balances', value: '1', tone: 'attention' }),
+        expect.objectContaining({ id: 'chores', value: '3' }),
+      ]),
+    });
+
+    const fairness = buildFairnessOverview({
+      householdId: 'house-1',
+      members: [
+        { userId: 'alex', displayName: 'Alex' },
+        { userId: 'sam', displayName: 'Sam' },
+      ],
+      completions: [
+        {
+          householdId: 'house-1',
+          templateId: 'kitchen',
+          completedBy: 'alex',
+          completedAt: '2026-03-22T10:00:00.000Z',
+          actualMinutes: 35,
+        },
+        {
+          householdId: 'house-1',
+          templateId: 'bathroom',
+          completedBy: 'alex',
+          completedAt: '2026-03-23T10:00:00.000Z',
+          actualMinutes: 25,
+        },
+        {
+          householdId: 'house-1',
+          templateId: 'trash',
+          completedBy: 'sam',
+          completedAt: '2026-03-23T12:00:00.000Z',
+          actualMinutes: 10,
+        },
+      ],
+      netBalances: {
+        alex: 3200,
+        sam: -3200,
+      },
+      now: '2026-03-24T12:00:00.000Z',
+    });
+
+    expect(fairness.members[0]).toMatchObject({
+      memberName: 'Alex',
+      status: 'carrying',
+    });
+    expect(fairness.members[1]).toMatchObject({
+      memberName: 'Sam',
+      status: 'supported',
+    });
+
+    const monthlyReport = buildMonthlyReport({
+      now: '2026-03-24T12:00:00.000Z',
+      expenses: [
+        {
+          id: 'expense-1',
+          description: 'Trader Joe run',
+          amount_cents: 7200,
+          category: 'Groceries',
+          expense_date: '2026-03-10',
+        },
+        {
+          id: 'expense-2',
+          description: 'Internet bill',
+          amount_cents: 6500,
+          category: 'Utilities',
+          expense_date: '2026-03-11',
+        },
+      ],
+      completions: [
+        {
+          householdId: 'house-1',
+          templateId: 'kitchen',
+          completedBy: 'alex',
+          completedAt: '2026-03-12T10:00:00.000Z',
+          actualMinutes: 30,
+        },
+      ],
+      mealPlans: [
+        {
+          plannedForDate: '2026-03-20',
+          status: 'planned',
+        },
+      ],
+      lowStockAlerts: [
+        {
+          id: 'alert-1',
+          householdId: 'house-1',
+          inventoryItemId: 'inventory-1',
+          catalogItemId: 'milk',
+          alertType: 'low_stock',
+          status: 'open',
+          thresholdQuantity: 1,
+          currentQuantity: 0,
+          triggeredByEventId: null,
+          title: 'Milk low',
+          message: null,
+          createdAt: '2026-03-12T00:00:00.000Z',
+          resolvedAt: null,
+        },
+      ],
+      calendarItems: [
+        {
+          id: 'event-1',
+          householdId: 'house-1',
+          sourceId: 'event-1',
+          sourceType: 'event',
+          title: 'Dinner party',
+          details: null,
+          startsAt: '2026-03-27T18:00:00.000Z',
+          endsAt: '2026-03-27T20:00:00.000Z',
+          allDay: false,
+          iconKey: null,
+          visualWeight: 'medium',
+          memberOwnerIds: [],
+          memberColorKey: null,
+          recurrenceRule: null,
+          recurrenceTimezone: null,
+          recurrenceAnchor: null,
+          attendanceStatus: null,
+          isProjected: false,
+          metadata: null,
+        },
+      ],
+      maintenanceRequests: [
+        { status: 'open' },
+      ],
+    });
+
+    expect(monthlyReport).toMatchObject({
+      monthLabel: 'March 2026',
+      spendTotalCents: 13700,
+      topCategory: 'Groceries',
+      choresCompleted: 1,
+      mealsPlanned: 1,
+    });
+
+    const insights = buildSpendingInsights({
+      now: '2026-03-24T12:00:00.000Z',
+      expenses: [
+        {
+          id: 'expense-1',
+          description: 'Trader Joe run',
+          amount_cents: 9000,
+          category: 'Groceries',
+          expense_date: '2026-03-10',
+        },
+        {
+          id: 'expense-2',
+          description: 'Costco restock',
+          amount_cents: 11000,
+          category: 'Groceries',
+          expense_date: '2026-03-17',
+        },
+        {
+          id: 'expense-3',
+          description: 'Power bill',
+          amount_cents: 7000,
+          category: 'Utilities',
+          expense_date: '2026-03-07',
+        },
+        {
+          id: 'expense-4',
+          description: 'Trader Joe run',
+          amount_cents: 6000,
+          category: 'Groceries',
+          expense_date: '2026-02-12',
+        },
+      ],
+    });
+
+    expect(insights[0]).toMatchObject({
+      id: 'month-over-month',
+      tone: 'attention',
+      route: '/(app)/finances',
+    });
+    expect(insights[1]).toMatchObject({
+      id: 'top-category',
+      title: expect.stringMatching(/Groceries/),
+    });
+    expect(insights[2]).toMatchObject({
+      id: 'grocery-pattern',
+      route: '/(app)/meals',
     });
   });
 });

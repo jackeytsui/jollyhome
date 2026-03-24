@@ -13,13 +13,18 @@ import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DailyDigestPreviewCard } from '@/components/home/DailyDigestPreviewCard';
+import { FairnessDashboardCard } from '@/components/home/FairnessDashboardCard';
 import { HouseholdHeader } from '@/components/household/HouseholdHeader';
+import { HouseholdDashboard } from '@/components/home/HouseholdDashboard';
 import { InviteSheet } from '@/components/household/InviteSheet';
+import { MonthlyReportCard } from '@/components/home/MonthlyReportCard';
 import { NotificationPreferencesCard } from '@/components/home/NotificationPreferencesCard';
+import { SpendingInsightCard } from '@/components/home/SpendingInsightCard';
 import { SandboxBanner } from '@/components/household/SandboxBanner';
 import { useBalances } from '@/hooks/useBalances';
 import { useCalendar } from '@/hooks/useCalendar';
 import { useChores } from '@/hooks/useChores';
+import { useDashboard } from '@/hooks/useDashboard';
 import { useHousehold } from '@/hooks/useHousehold';
 import { useInventory } from '@/hooks/useInventory';
 import { buildDailyDigestPreview, useNotifications } from '@/hooks/useNotifications';
@@ -51,6 +56,12 @@ export default function HouseholdHomeScreen() {
   const { lowStockAlerts } = useInventory();
   const { mealPlans } = useMealPlans();
   const { activeRequests } = useMaintenance();
+  const {
+    dashboard,
+    fairness,
+    monthlyReport,
+    spendingInsights,
+  } = useDashboard();
   const { preferences, saving, updateCategoryMode, updateDigestTiming } = useNotifications();
 
   const {
@@ -257,9 +268,19 @@ export default function HouseholdHomeScreen() {
         {!isSandboxActive ? (
           <>
             <Text style={styles.sectionLabel}>Household Pulse</Text>
+            <HouseholdDashboard
+              summary={dashboard}
+              onMetricPress={(route) => router.push(route)}
+            />
             <DailyDigestPreviewCard
               digest={digestPreview}
               onReferencePress={handleNotificationReferencePress}
+            />
+            <FairnessDashboardCard fairness={fairness} />
+            <MonthlyReportCard report={monthlyReport} />
+            <SpendingInsightCard
+              insights={spendingInsights}
+              onInsightPress={(route) => router.push(route)}
             />
             <NotificationPreferencesCard
               preferences={preferences}
