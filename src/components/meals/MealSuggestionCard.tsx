@@ -30,6 +30,7 @@ export function MealSuggestionCard({
         </View>
         <Text style={styles.rank}>#{suggestion.rank}</Text>
       </View>
+      <Text style={styles.whyThisFits}>Why this fits</Text>
       {rationale.map((line) => (
         <Text key={line} style={styles.reason}>
           • {line}
@@ -57,6 +58,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 16, fontWeight: '700', color: colors.textPrimary.light },
   meta: { color: colors.textSecondary.light, fontSize: 13 },
   rank: { color: colors.accent.light, fontWeight: '700' },
+  whyThisFits: { color: colors.textPrimary.light, fontSize: 13, fontWeight: '700' },
   reason: { color: colors.textSecondary.light, lineHeight: 20 },
   actions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   action: {

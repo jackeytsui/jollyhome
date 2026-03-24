@@ -14,6 +14,7 @@ import { colors } from '@/constants/theme';
 import { useAttendance } from '@/hooks/useAttendance';
 import { buildMealWeekRange, deriveMealServings, useMealPlans } from '@/hooks/useMealPlans';
 import { useMembers } from '@/hooks/useMembers';
+import { useInventory } from '@/hooks/useInventory';
 import { useRecipes } from '@/hooks/useRecipes';
 import { useHouseholdStore } from '@/stores/household';
 import type { MealPlanEntry, MealPlanSlot } from '@/types/meals';
@@ -75,7 +76,9 @@ export default function MealsScreen() {
     markMealCooked,
     submitSuggestionFeedback,
     suggestions,
+    recommendationSignals,
   } = useMealPlans();
+  const { inventoryItems } = useInventory();
 
   const [editorVisible, setEditorVisible] = useState(false);
   const [importVisible, setImportVisible] = useState(false);
@@ -121,10 +124,16 @@ export default function MealsScreen() {
           })),
           attendanceByDate,
           calendarLoadByDate: Object.fromEntries(weekDates.map((date) => [date, 45])),
-          pantryItems: [],
+          pantryItems: inventoryItems.map((item) => ({
+            catalogItemId: item.catalogItemId,
+            quantityOnHand: item.quantityOnHand,
+            unit: item.unit,
+          })),
           recipes: recipes.map((recipe) => ({
             id: recipe.id,
             title: recipe.title,
+            source: recipe.source,
+            favorite: recipe.favorite,
             prepMinutes: recipe.prepMinutes,
             cookMinutes: recipe.cookMinutes,
             totalMinutes: recipe.totalMinutes,
@@ -135,9 +144,10 @@ export default function MealsScreen() {
               unit: ingredient.unit,
             })),
           })),
+          history: recommendationSignals,
         })
       ),
-    [attendanceByDate, ingredientsByRecipeId, members, recipes, weekDates, weekStart]
+    [attendanceByDate, ingredientsByRecipeId, inventoryItems, members, recommendationSignals, recipes, weekDates, weekStart]
   );
 
   async function handleRecipeSubmit(values: RecipeEditorValues) {
@@ -195,6 +205,9 @@ export default function MealsScreen() {
               <Text style={styles.heroTitle}>Week of {weekStart}</Text>
               <Text style={styles.heroMeta}>
                 {dietaryNotes.length > 0 ? dietaryNotes.join(', ') : 'No household dietary tags yet'}
+              </Text>
+              <Text style={styles.heroSignals}>
+                {inventoryItems.length} pantry items • {recommendationSignals.length} dishes with history signals
               </Text>
             </View>
             <View style={styles.heroActions}>
@@ -458,6 +471,7 @@ const styles = StyleSheet.create({
   heroCopy: { flex: 1, gap: 4 },
   heroTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary.light },
   heroMeta: { color: colors.textSecondary.light },
+  heroSignals: { color: colors.success.light, fontWeight: '600' },
   heroActions: { gap: 8 },
   generated: { color: colors.success.light, fontWeight: '600' },
   library: { gap: 12 },

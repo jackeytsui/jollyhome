@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/auth';
 import { useHouseholdStore } from '@/stores/household';
 import type { MealPlanEntry, MealPlanEntryStatus, MealPlanSlot, MealServingSource, MealSuggestion, MealSuggestionFeedback, MealSuggestionRun } from '@/types/meals';
+import type { RecipeRecommendationSignal } from '@/types/recipes';
 import type { ShoppingListItem } from '@/types/shopping';
 import { useFoodRealtime } from './useFoodRealtime';
 
@@ -211,6 +212,67 @@ function mapSuggestionRun(row: MealSuggestionRunRow): MealSuggestionRun {
   };
 }
 
+function coerceSuggestion(input: MealSuggestion, householdId: string, runId: string): MealSuggestion {
+  return {
+    ...input,
+    householdId: input.householdId ?? householdId,
+    suggestionRunId: input.suggestionRunId ?? runId,
+    recommendation: input.recommendation ?? null,
+  };
+}
+
+export function buildRecipeRecommendationSignals(input: {
+  mealPlans: MealPlanEntry[];
+  feedback: MealSuggestionFeedback[];
+}): RecipeRecommendationSignal[] {
+  const byRecipe = new Map<string, RecipeRecommendationSignal>();
+
+  for (const entry of input.mealPlans) {
+    if (!entry.recipeId) {
+      continue;
+    }
+    const current = byRecipe.get(entry.recipeId) ?? {
+      recipeId: entry.recipeId,
+      acceptedCount: 0,
+      cookedCount: 0,
+      lastUsedAt: null,
+      lastAcceptedAt: null,
+    };
+    if (entry.status === 'cooked') {
+      current.cookedCount += 1;
+      current.lastUsedAt = !current.lastUsedAt || entry.plannedForDate > current.lastUsedAt
+        ? entry.plannedForDate
+        : current.lastUsedAt;
+    }
+    byRecipe.set(entry.recipeId, current);
+  }
+
+  for (const item of input.feedback) {
+    if (!item.recipeId) {
+      continue;
+    }
+    const current = byRecipe.get(item.recipeId) ?? {
+      recipeId: item.recipeId,
+      acceptedCount: 0,
+      cookedCount: 0,
+      lastUsedAt: null,
+      lastAcceptedAt: null,
+    };
+    if (item.action === 'accept') {
+      current.acceptedCount += 1;
+      current.lastAcceptedAt = !current.lastAcceptedAt || item.createdAt > current.lastAcceptedAt
+        ? item.createdAt
+        : current.lastAcceptedAt;
+      current.lastUsedAt = !current.lastUsedAt || item.createdAt > current.lastUsedAt
+        ? item.createdAt
+        : current.lastUsedAt;
+    }
+    byRecipe.set(item.recipeId, current);
+  }
+
+  return [...byRecipe.values()].sort((left, right) => left.recipeId.localeCompare(right.recipeId));
+}
+
 function mapSuggestionFeedback(row: MealSuggestionFeedbackRow): MealSuggestionFeedback {
   return {
     id: row.id,
@@ -259,6 +321,7 @@ export function useMealPlans() {
   const [suggestionRuns, setSuggestionRuns] = useState<MealSuggestionRun[]>([]);
   const [suggestions, setSuggestions] = useState<MealSuggestion[]>([]);
   const [feedback, setFeedback] = useState<MealSuggestionFeedback[]>([]);
+  const [recentMeals, setRecentMeals] = useState<MealPlanEntry[]>([]);
   const [generatedShoppingItems, setGeneratedShoppingItems] = useState<ShoppingListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -273,6 +336,7 @@ export function useMealPlans() {
       setSuggestions([]);
       setFeedback([]);
       setGeneratedShoppingItems([]);
+      setRecentMeals([]);
       return;
     }
 
@@ -282,7 +346,7 @@ export function useMealPlans() {
     setError(null);
 
     try {
-      const [mealPlansResult, runsResult, feedbackResult] = await Promise.all([
+      const [mealPlansResult, runsResult, feedbackResult, recentMealsResult] = await Promise.all([
         supabase
           .from('meal_plan_entries')
           .select('*')
@@ -302,12 +366,19 @@ export function useMealPlans() {
           .select('*')
           .eq('household_id', activeHouseholdId)
           .order('created_at', { ascending: false })
-          .limit(50),
+          .limit(100),
+        supabase
+          .from('meal_plan_entries')
+          .select('*')
+          .eq('household_id', activeHouseholdId)
+          .order('updated_at', { ascending: false })
+          .limit(100),
       ]);
 
       if (mealPlansResult.error) throw mealPlansResult.error;
       if (runsResult.error) throw runsResult.error;
       if (feedbackResult.error) throw feedbackResult.error;
+      if (recentMealsResult.error) throw recentMealsResult.error;
 
       const mappedRuns = ((runsResult.data ?? []) as MealSuggestionRunRow[]).map(mapSuggestionRun);
 
@@ -315,14 +386,12 @@ export function useMealPlans() {
       setSuggestionRuns(mappedRuns);
       setSuggestions(
         ((runsResult.data ?? []) as MealSuggestionRunRow[]).flatMap((row) =>
-          (row.suggestions ?? []).map((suggestion) => ({
-            ...suggestion,
-            householdId: suggestion.householdId ?? row.household_id,
-            suggestionRunId: suggestion.suggestionRunId ?? row.id,
-          }))
+          (row.suggestions ?? []).map((suggestion) => coerceSuggestion(suggestion, row.household_id, row.id))
         )
       );
-      setFeedback(((feedbackResult.data ?? []) as MealSuggestionFeedbackRow[]).map(mapSuggestionFeedback));
+      const mappedFeedback = ((feedbackResult.data ?? []) as MealSuggestionFeedbackRow[]).map(mapSuggestionFeedback);
+      setFeedback(mappedFeedback);
+      setRecentMeals(((recentMealsResult.data ?? []) as MealPlanEntryRow[]).map(mapMealPlanEntry));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load meal plans');
     } finally {
@@ -461,12 +530,18 @@ export function useMealPlans() {
     [mealPlans]
   );
 
+  const recommendationSignals = useMemo(
+    () => buildRecipeRecommendationSignals({ mealPlans: recentMeals, feedback }),
+    [feedback, recentMeals]
+  );
+
   return {
     weekStart,
     mealPlans: weeklyEntries,
     suggestionRuns,
     suggestions,
     feedback,
+    recommendationSignals,
     generatedShoppingItems,
     loading,
     error,

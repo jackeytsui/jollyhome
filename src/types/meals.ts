@@ -4,6 +4,20 @@ export type MealServingSource = 'manual' | 'attendance' | 'recipe_default';
 export type MealSuggestionAction = 'accept' | 'swap' | 'regenerate' | 'reject';
 export type MealSuggestionRunStatus = 'pending' | 'completed' | 'failed';
 
+export interface MealSuggestionRecommendation {
+  pantryMatchCount: number;
+  pantryFitScore: number;
+  isFavorite: boolean;
+  isManualDish: boolean;
+  acceptedCount: number;
+  cookedCount: number;
+  lastUsedAt: string | null;
+  daysSinceLastUsed: number | null;
+  repeatCooldownActive: boolean;
+  rotationReason: string | null;
+  whyThisFits: string[];
+}
+
 export interface MealPlanEntry {
   id: string;
   householdId: string;
@@ -57,6 +71,7 @@ export interface MealSuggestion {
   estimatedCostCents: number | null;
   tags: string[];
   rank: number;
+  recommendation: MealSuggestionRecommendation | null;
 }
 
 export interface MealSuggestionFeedback {

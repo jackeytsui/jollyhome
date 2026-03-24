@@ -1,5 +1,7 @@
 import {
+  buildRecommendation,
   buildPredictiveRestockSuggestions,
+  rankMealRecommendations,
   bucketPrepTimeAvailability,
   buildMealPlannerInputs,
   buildMealSuggestionFeedback,
@@ -30,6 +32,8 @@ describe('food AI helpers', () => {
         {
           id: 'fried-rice',
           title: 'Fried Rice',
+          source: 'manual',
+          favorite: false,
           prepMinutes: 20,
           cookMinutes: 15,
           totalMinutes: 35,
@@ -55,6 +59,7 @@ describe('food AI helpers', () => {
       prepTimeBucket: 'project',
     });
     expect(planner.pantry).toHaveLength(1);
+    expect(planner.history).toEqual([]);
     expect(serializeMealPlannerPayload(planner).days[0]?.attendanceMemberIds).toEqual(['u1', 'u2', 'u3']);
   });
 
@@ -214,5 +219,114 @@ describe('food AI helpers', () => {
       alertId: 'alert-1',
     });
     expect(predictions[0]?.suggestedQuantity).toBeGreaterThan(0);
+  });
+
+  it('ranks manual favorites with pantry fit and history while cooling down recent repeats', () => {
+    const ranked = rankMealRecommendations({
+      recipes: [
+        {
+          id: 'manual-curry',
+          title: 'House Curry',
+          source: 'manual',
+          favorite: true,
+          prepMinutes: 25,
+          cookMinutes: 20,
+          totalMinutes: 45,
+          tags: ['favorite'],
+          ingredients: [
+            { catalogItemId: 'rice', quantity: 1, unit: 'kg' },
+            { catalogItemId: 'coconut-milk', quantity: 1, unit: 'can' },
+          ],
+        },
+        {
+          id: 'recent-pasta',
+          title: 'Creamy Pasta',
+          source: 'manual',
+          favorite: false,
+          prepMinutes: 20,
+          cookMinutes: 15,
+          totalMinutes: 35,
+          tags: [],
+          ingredients: [{ catalogItemId: 'pasta', quantity: 1, unit: 'box' }],
+        },
+      ],
+      pantryItems: [
+        { catalogItemId: 'rice', quantityOnHand: 2, unit: 'kg' },
+        { catalogItemId: 'coconut-milk', quantityOnHand: 2, unit: 'can' },
+      ],
+      history: [
+        {
+          recipeId: 'manual-curry',
+          acceptedCount: 3,
+          cookedCount: 2,
+          lastUsedAt: '2026-03-10T00:00:00.000Z',
+          lastAcceptedAt: '2026-03-10T00:00:00.000Z',
+        },
+        {
+          recipeId: 'recent-pasta',
+          acceptedCount: 1,
+          cookedCount: 1,
+          lastUsedAt: '2026-03-22T00:00:00.000Z',
+          lastAcceptedAt: '2026-03-22T00:00:00.000Z',
+        },
+      ],
+      day: {
+        date: '2026-03-24',
+        attendanceMemberIds: ['u1', 'u2'],
+        servings: 2,
+        prepMinutesAvailable: 45,
+        prepTimeBucket: 'standard',
+        dietaryPreferences: [],
+      },
+    });
+
+    expect(ranked[0]?.recipe.id).toBe('manual-curry');
+    expect(ranked[0]?.recommendation).toMatchObject({
+      isFavorite: true,
+      isManualDish: true,
+      pantryMatchCount: 2,
+      repeatCooldownActive: false,
+    });
+    expect(ranked[1]?.recommendation.repeatCooldownActive).toBe(true);
+  });
+
+  it('builds structured recommendation reasons instead of placeholder tags alone', () => {
+    const recommendation = buildRecommendation(
+      {
+        id: 'manual-tacos',
+        title: 'Manual Tacos',
+        source: 'manual',
+        favorite: true,
+        prepMinutes: 25,
+        cookMinutes: 15,
+        totalMinutes: 40,
+        tags: [],
+        ingredients: [{ catalogItemId: 'beans', quantity: 1, unit: 'can' }],
+      },
+      {
+        pantryItems: [{ catalogItemId: 'beans', quantityOnHand: 3, unit: 'can' }],
+        history: [
+          {
+            recipeId: 'manual-tacos',
+            acceptedCount: 2,
+            cookedCount: 1,
+            lastUsedAt: '2026-03-12T00:00:00.000Z',
+            lastAcceptedAt: '2026-03-12T00:00:00.000Z',
+          },
+        ],
+        attendanceMemberIds: ['u1'],
+        prepTimeBucket: 'quick',
+      },
+      '2026-03-24'
+    );
+
+    expect(recommendation.whyThisFits).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/pantry item/i),
+        expect.stringMatching(/favorite/i),
+        expect.stringMatching(/history/i),
+        expect.stringMatching(/manual staple/i),
+      ])
+    );
   });
 });

@@ -52,3 +52,11 @@ export interface Recipe {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface RecipeRecommendationSignal {
+  recipeId: string;
+  acceptedCount: number;
+  cookedCount: number;
+  lastUsedAt: string | null;
+  lastAcceptedAt: string | null;
+}

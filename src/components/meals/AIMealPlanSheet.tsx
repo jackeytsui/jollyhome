@@ -5,6 +5,19 @@ import { colors } from '@/constants/theme';
 import type { MealSuggestion } from '@/types/meals';
 import { MealSuggestionCard } from './MealSuggestionCard';
 
+export function getMealSuggestionWhyThisFits(suggestion: MealSuggestion) {
+  if (suggestion.recommendation?.whyThisFits?.length) {
+    return suggestion.recommendation.whyThisFits;
+  }
+
+  return buildSuggestionRationale({
+    attendanceMemberIds: suggestion.attendanceMemberIds,
+    prepTimeBucket: suggestion.tags.includes('quick') ? 'quick' : 'standard',
+    ingredientOverlap: suggestion.tags.includes('pantry') ? 0.5 : 0,
+    pantryMatchCount: suggestion.tags.includes('pantry') ? 2 : 0,
+  });
+}
+
 interface AIMealPlanSheetProps {
   visible: boolean;
   suggestions: MealSuggestion[];
@@ -43,12 +56,7 @@ export function AIMealPlanSheet({
               <MealSuggestionCard
                 key={suggestion.id}
                 suggestion={suggestion}
-                rationale={buildSuggestionRationale({
-                  attendanceMemberIds: suggestion.attendanceMemberIds,
-                  prepTimeBucket: suggestion.tags.includes('quick') ? 'quick' : 'standard',
-                  ingredientOverlap: suggestion.tags.includes('pantry') ? 0.5 : 0,
-                  pantryMatchCount: suggestion.tags.includes('pantry') ? 2 : 0,
-                })}
+                rationale={getMealSuggestionWhyThisFits(suggestion)}
                 onAccept={() => onAccept(suggestion)}
                 onSwap={() => onSwap(suggestion)}
                 onRegenerate={() => onRegenerate(suggestion)}
