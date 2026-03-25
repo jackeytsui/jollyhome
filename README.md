@@ -66,6 +66,7 @@ npm run web
 Environment variables are documented in [.env.example](./.env.example).
 
 For release builds, EAS is configured through [eas.json](./eas.json).
+Launch ops are documented in [docs/LAUNCH-CHECKLIST.md](./docs/LAUNCH-CHECKLIST.md) and [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
 
 ## Repository Readiness
 

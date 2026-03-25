@@ -176,7 +176,8 @@ function getSourceLabel(sourceType: HouseholdCalendarItem['sourceType']): string
 }
 
 function renderCalendarEvent(event: CalendarRenderEvent, onPress: (item: HouseholdCalendarItem) => void) {
-  const Icon = ICON_COMPONENTS[CALENDAR_SOURCE_ICON_MAP[event.sourceType]];
+  const iconKey = CALENDAR_SOURCE_ICON_MAP[event.sourceType] as keyof typeof ICON_COMPONENTS;
+  const Icon = ICON_COMPONENTS[iconKey];
   const textColor = event.visualWeight === 'strong' ? '#FFFFFF' : colors.textPrimary.light;
 
   return (

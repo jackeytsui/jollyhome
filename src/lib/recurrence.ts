@@ -1,5 +1,5 @@
 import { TZDate } from '@date-fns/tz';
-import { RRule, rrulestr } from 'rrule';
+import { RRule, RRuleSet, Weekday, rrulestr } from 'rrule';
 
 export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
 export type RecurrenceWeekday = 'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU';
@@ -74,13 +74,20 @@ function normalizeIso(value: Date | string): string {
 }
 
 function parseRule(rule: string): RRule {
-  const parsed = rrulestr(rule);
+  const parsed: unknown = rrulestr(rule);
 
   if (parsed instanceof RRule) {
     return parsed;
   }
 
-  return parsed.rrules()[0];
+  if (parsed && typeof parsed === 'object' && 'rrules' in parsed && parsed instanceof RRuleSet) {
+    const [firstRule] = parsed.rrules();
+    if (firstRule) {
+      return firstRule;
+    }
+  }
+
+  throw new Error('Unsupported recurrence rule');
 }
 
 export function buildRecurrenceRule(input: BuildRecurrenceRuleInput): BuiltRecurrenceRule {
@@ -105,14 +112,24 @@ export function buildRecurrenceRule(input: BuildRecurrenceRuleInput): BuiltRecur
 export function parseRecurrenceRule(rule: string, timezone: string = 'UTC'): ParsedRecurrenceRule {
   const parsed = parseRule(rule);
   const { origOptions } = parsed;
+  const rawWeekdays = Array.isArray(origOptions.byweekday)
+    ? origOptions.byweekday
+    : origOptions.byweekday !== undefined
+      ? [origOptions.byweekday]
+      : [];
+  const rawMonthDays = Array.isArray(origOptions.bymonthday)
+    ? origOptions.bymonthday
+    : origOptions.bymonthday !== undefined
+      ? [origOptions.bymonthday]
+      : [];
 
   return {
     frequency: REVERSE_FREQ_MAP[origOptions.freq ?? RRule.DAILY],
     interval: origOptions.interval ?? 1,
-    byWeekday: (origOptions.byweekday ?? []).map((weekday) =>
-      weekday.toString().slice(0, 2).toUpperCase() as RecurrenceWeekday
+    byWeekday: rawWeekdays.map((weekday) =>
+      (weekday as Weekday).toString().slice(0, 2).toUpperCase() as RecurrenceWeekday
     ),
-    byMonthDay: origOptions.bymonthday ?? [],
+    byMonthDay: rawMonthDays.filter((day): day is number => typeof day === 'number'),
     count: origOptions.count ?? null,
     until: origOptions.until ? normalizeIso(origOptions.until) : null,
     startsAt: parsed.options.dtstart ? normalizeIso(parsed.options.dtstart) : null,

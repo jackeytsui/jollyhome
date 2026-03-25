@@ -200,7 +200,7 @@ export function ChoreEditorSheet({
       return buildRecurrenceRule({
         frequency: 'weekly',
         interval: recurrencePreset === 'biweekly' ? 2 : 1,
-        byWeekday: [weekday],
+        byWeekday: [weekday as import('@/lib/recurrence').RecurrenceWeekday],
         startsAt: recurrenceAnchor,
         timezone: recurrenceTimezone,
       });

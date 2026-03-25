@@ -150,7 +150,7 @@ function mapEventToFormState(event: CalendarEvent, memberOptions: MemberOption[]
     if (parsed.frequency === 'weekly' && parsed.interval === 1) {
       return {
         preset: 'weekly' as RecurrencePreset,
-        recurrenceWeekdays: parsed.byWeekday.length > 0 ? parsed.byWeekday : ['MO'],
+        recurrenceWeekdays: parsed.byWeekday.length > 0 ? parsed.byWeekday : ['MO' as RecurrenceWeekday],
         recurrenceMonthDay: getDefaultMonthDay(startsAt),
         customInterval: '2',
         customFrequency: 'weekly' as RecurrenceFrequency,
@@ -169,7 +169,7 @@ function mapEventToFormState(event: CalendarEvent, memberOptions: MemberOption[]
 
     return {
       preset: 'custom' as RecurrencePreset,
-      recurrenceWeekdays: parsed.byWeekday.length > 0 ? parsed.byWeekday : ['MO'],
+      recurrenceWeekdays: parsed.byWeekday.length > 0 ? parsed.byWeekday : ['MO' as RecurrenceWeekday],
       recurrenceMonthDay: String(parsed.byMonthDay[0] ?? getDefaultMonthDay(startsAt)),
       customInterval: String(parsed.interval),
       customFrequency: parsed.frequency,

@@ -93,7 +93,8 @@ export function CalendarAgendaList({
           <Text style={styles.groupTitle}>{formatAgendaDate(group.date)}</Text>
           <View style={styles.groupItems}>
             {group.items.map((item) => {
-              const Icon = ICON_COMPONENTS[CALENDAR_SOURCE_ICON_MAP[item.sourceType]];
+              const iconKey = CALENDAR_SOURCE_ICON_MAP[item.sourceType] as keyof typeof ICON_COMPONENTS;
+              const Icon = ICON_COMPONENTS[iconKey];
               const itemColor = getMemberColor(item, memberColorLookup);
 
               return (
