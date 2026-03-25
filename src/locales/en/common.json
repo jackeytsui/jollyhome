@@ -24,6 +24,9 @@
   "error": {
     "authFailure": "Incorrect email or password. Please try again or reset your password.",
     "network": "Connection problem. Check your internet and try again.",
+    "inviteCodeInvalid": "That beta access code is not valid.",
+    "inviteCodeUsed": "That beta access code has already been used.",
+    "inviteCodeExpired": "That beta access code has expired.",
     "inviteExpired": "This invite has expired. Ask your household admin to send a new one.",
     "inviteUsed": "This invite link has already been used. Ask your household admin for a new one.",
     "memberLimit": "Households are limited to 6 members on the free plan. Upgrade to Plus to add more.",
@@ -103,6 +106,8 @@
       "displayNamePlaceholder": "How should we call you?",
       "emailLabel": "Email",
       "emailPlaceholder": "you@example.com",
+      "inviteCodeLabel": "Beta Access Code",
+      "inviteCodePlaceholder": "Enter your tester code",
       "passwordLabel": "Password",
       "passwordPlaceholder": "At least 8 characters"
     },

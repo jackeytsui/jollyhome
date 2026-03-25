@@ -14,15 +14,15 @@ import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 import { useAuth } from '@/hooks/useAuth';
 import { captureEvent } from '@/lib/posthog';
 import { colors } from '@/constants/theme';
+import { INVITE_ONLY_BETA } from '@/constants/config';
 
 export default function SignInScreen() {
   const { t } = useTranslation();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
-  const { signInWithEmail, signInWithGoogle, signInWithApple, isLoading, error } = useAuth();
+  const { signInWithEmail, isLoading, error } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -55,6 +55,15 @@ export default function SignInScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Text style={styles.heading}>{t('auth.signIn.heading')}</Text>
+
+          {INVITE_ONLY_BETA ? (
+            <View style={styles.betaBanner}>
+              <Text style={styles.betaTitle}>Private tester access</Text>
+              <Text style={styles.betaBody}>
+                New accounts are currently created through beta invite codes only. Existing testers can still sign in here.
+              </Text>
+            </View>
+          ) : null}
 
           <View style={styles.form}>
             <Input
@@ -90,12 +99,6 @@ export default function SignInScreen() {
             variant="primary"
             size="lg"
             loading={isLoading}
-            disabled={isLoading}
-          />
-
-          <SocialAuthButtons
-            onGooglePress={signInWithGoogle}
-            onApplePress={signInWithApple}
             disabled={isLoading}
           />
 
@@ -141,6 +144,24 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: 16,
+  },
+  betaBanner: {
+    gap: 6,
+    borderRadius: 16,
+    padding: 16,
+    backgroundColor: colors.secondary.light,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  betaTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.textPrimary.light,
+  },
+  betaBody: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: colors.textSecondary.light,
   },
   forgotRow: {
     alignSelf: 'flex-end',

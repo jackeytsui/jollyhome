@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/hooks/useAuth';
 import { captureEvent } from '@/lib/posthog';
 import { colors } from '@/constants/theme';
+import { INVITE_ONLY_BETA } from '@/constants/config';
 
 export default function MagicLinkScreen() {
   const { t } = useTranslation();
@@ -48,6 +49,15 @@ export default function MagicLinkScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Text style={styles.heading}>{t('auth.magicLink.heading')}</Text>
+
+          {INVITE_ONLY_BETA ? (
+            <View style={styles.betaBanner}>
+              <Text style={styles.betaTitle}>Existing tester sign-in only</Text>
+              <Text style={styles.betaBody}>
+                Magic links are available for testers who already have accounts. New accounts still require a beta access code on the sign-up screen.
+              </Text>
+            </View>
+          ) : null}
 
           {sent ? (
             <View style={styles.confirmationBox}>
@@ -115,6 +125,24 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textPrimary.light,
     lineHeight: 28,
+  },
+  betaBanner: {
+    gap: 6,
+    borderRadius: 16,
+    padding: 16,
+    backgroundColor: colors.secondary.light,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  betaTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.textPrimary.light,
+  },
+  betaBody: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: colors.textSecondary.light,
   },
   confirmationBox: {
     gap: 16,

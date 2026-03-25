@@ -4,6 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from 'react-i18next';
+import { INVITE_ONLY_BETA } from '@/constants/config';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -29,6 +30,15 @@ export function useAuth() {
       ) {
         return t('error.network');
       }
+      if (message.includes('not valid')) {
+        return t('error.inviteCodeInvalid');
+      }
+      if (message.includes('fully used')) {
+        return t('error.inviteCodeUsed');
+      }
+      if (message.includes('expired')) {
+        return t('error.inviteCodeExpired');
+      }
       return message;
     },
     [t]
@@ -38,11 +48,35 @@ export function useAuth() {
     async (
       email: string,
       password: string,
-      displayName: string
+      displayName: string,
+      inviteCode?: string
     ): Promise<{ user: import('@supabase/supabase-js').User | null; emailConfirmationRequired: boolean }> => {
       setIsLoading(true);
       setError(null);
       try {
+        if (INVITE_ONLY_BETA) {
+          const { data, error: fnError } = await supabase.functions.invoke('invite-signup', {
+            body: {
+              invite_code: inviteCode,
+              email,
+              password,
+              display_name: displayName,
+            },
+          });
+          if (fnError) throw fnError;
+
+          const signInResult = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (signInResult.error) throw signInResult.error;
+
+          return {
+            user: signInResult.data.user,
+            emailConfirmationRequired: false,
+          };
+        }
+
         const { data, error: sbError } = await supabase.auth.signUp({
           email,
           password,
@@ -95,7 +129,10 @@ export function useAuth() {
         const emailRedirectTo = Linking.createURL('/');
         const { error: sbError } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo },
+          options: {
+            emailRedirectTo,
+            shouldCreateUser: false,
+          },
         });
         if (sbError) throw sbError;
         return true;

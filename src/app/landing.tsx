@@ -282,8 +282,10 @@ export default function LandingScreen() {
 
           <View style={styles.headerBand}>
             <View style={styles.headerBandCopy}>
-              <Text style={styles.headerBandTitle}>Website preview</Text>
-              <Text style={styles.headerBandBody}>This landing page is the public front door for the product, with a real nav, footer, and legal links.</Text>
+              <Text style={styles.headerBandTitle}>Private beta</Text>
+              <Text style={styles.headerBandBody}>
+                Built for invited testers who want one calm place to manage money, meals, routines, and shared-home coordination.
+              </Text>
             </View>
           </View>
 
@@ -336,6 +338,11 @@ export default function LandingScreen() {
             <View style={[styles.featureGrid, isWide ? styles.featureGridWide : styles.featureGridStack]}>
               {featureRows.map((item, index) => (
                 <View key={item.title} style={styles.featureCard}>
+                  <View style={styles.featureIllustration}>
+                    <View style={styles.featureIllustrationOrb}>
+                      <InlineIcon kind={index === 0 ? 'money' : index === 1 ? 'home' : index === 2 ? 'meal' : 'jolly'} size={28} />
+                    </View>
+                  </View>
                   <View style={styles.featureTitleRow}>
                     <View style={styles.featureIconWrap}>
                       <InlineIcon kind={index === 0 ? 'money' : index === 1 ? 'home' : index === 2 ? 'meal' : 'jolly'} />
@@ -367,11 +374,10 @@ export default function LandingScreen() {
           </View>
 
           <View style={[styles.section, styles.footerBand]}>
-            <Text style={[styles.sectionEyebrow, { fontFamily: sansFamily }]}>Why the brand matters</Text>
-            <Text style={[styles.footerHeading, { fontFamily: displayFamily }]}>Jolly should feel like a helpful friend in the home, not a backend product talking to users.</Text>
+            <Text style={[styles.sectionEyebrow, { fontFamily: sansFamily }]}>Designed for real households</Text>
+            <Text style={[styles.footerHeading, { fontFamily: displayFamily }]}>Professional enough to trust, warm enough to actually use.</Text>
             <Text style={styles.footerBody}>
-              This page now avoids backend-heavy language, removes stock-photo energy, and centers the product around what people actually feel:
-              clarity, calm, and a sense that the home is being taken care of.
+              Jolly Home is meant to feel clear and steady from the first screen. The goal is simple: less juggling, less forgetting, and fewer household tasks leaking into chat threads and mental overhead.
             </Text>
           </View>
 
@@ -723,6 +729,22 @@ const styles = StyleSheet.create({
     padding: 18,
     backgroundColor: '#F3E7DB',
     gap: 8,
+  },
+  featureIllustration: {
+    height: 72,
+    borderRadius: 18,
+    backgroundColor: '#FFF8F1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  featureIllustrationOrb: {
+    width: 52,
+    height: 52,
+    borderRadius: 999,
+    backgroundColor: '#F5EEE6',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   featureTitleRow: {
     flexDirection: 'row',

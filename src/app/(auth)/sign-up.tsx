@@ -14,33 +14,34 @@ import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 import { EmailVerificationBanner } from '@/components/auth/EmailVerificationBanner';
 import { useAuth } from '@/hooks/useAuth';
 import { captureEvent } from '@/lib/posthog';
 import { colors } from '@/constants/theme';
+import { INVITE_ONLY_BETA } from '@/constants/config';
 
 export default function SignUpScreen() {
   const { t } = useTranslation();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
-  const { signUpWithEmail, signInWithGoogle, signInWithApple, resendVerification, isLoading, error } =
+  const { signUpWithEmail, resendVerification, isLoading, error } =
     useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [emailConfirmRequired, setEmailConfirmRequired] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
 
   const handleSignUp = async () => {
     setFieldError(null);
-    if (!email || !password || !displayName) {
+    if (!email || !password || !displayName || (INVITE_ONLY_BETA && !inviteCode.trim())) {
       setFieldError('Please fill in all fields.');
       return;
     }
     try {
-      const result = await signUpWithEmail(email, password, displayName);
+      const result = await signUpWithEmail(email, password, displayName, inviteCode);
       captureEvent('sign_up', { method: 'email' });
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
@@ -87,17 +88,14 @@ export default function SignUpScreen() {
             />
           ) : (
             <>
-              <SocialAuthButtons
-                onGooglePress={signInWithGoogle}
-                onApplePress={signInWithApple}
-                disabled={isLoading}
-              />
-
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>{t('common.or')}</Text>
-                <View style={styles.dividerLine} />
-              </View>
+              {INVITE_ONLY_BETA ? (
+                <View style={styles.betaBanner}>
+                  <Text style={styles.betaTitle}>Invitation-only beta</Text>
+                  <Text style={styles.betaBody}>
+                    Account creation is currently limited to invited testers. Enter your beta access code to continue.
+                  </Text>
+                </View>
+              ) : null}
 
               <View style={styles.form}>
                 <Input
@@ -117,6 +115,16 @@ export default function SignUpScreen() {
                   autoCapitalize="none"
                   autoComplete="email"
                 />
+                {INVITE_ONLY_BETA ? (
+                  <Input
+                    label={t('auth.signUp.inviteCodeLabel')}
+                    value={inviteCode}
+                    onChangeText={setInviteCode}
+                    placeholder={t('auth.signUp.inviteCodePlaceholder')}
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                  />
+                ) : null}
                 <Input
                   label={t('auth.signUp.passwordLabel')}
                   value={password}
@@ -203,6 +211,24 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: 16,
+  },
+  betaBanner: {
+    gap: 6,
+    borderRadius: 16,
+    padding: 16,
+    backgroundColor: colors.secondary.light,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  betaTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.textPrimary.light,
+  },
+  betaBody: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: colors.textSecondary.light,
   },
   footer: {
     gap: 12,
