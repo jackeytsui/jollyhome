@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  Image,
   Linking,
   Platform,
   Pressable,
@@ -11,53 +10,140 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { router } from 'expo-router';
-import { colors } from '@/constants/theme';
 
-const HERO_IMAGE = require('../../assets/landing/family-in-a-kitchen.jpg');
-
-const FEATURE_COLUMNS = [
+const FEATURE_CARDS = [
   {
-    title: 'One shared ledger',
-    body: 'Receipts, balances, settlements, and expense history live in one place instead of being split across chat, notes, and a finance app.',
+    title: 'Money',
+    blurb: 'Track expenses, split bills, scan receipts, and keep balances clear.',
+    details:
+      'Add expenses quickly, review receipt scans before saving, settle up with confidence, and keep a clean household ledger without spreadsheet cleanup.',
   },
   {
-    title: 'A live household timeline',
-    body: 'Meals, chores, quiet hours, guests, bookings, and maintenance all show up in one timeline with the same underlying state.',
+    title: 'Home rhythm',
+    blurb: 'Run chores, calendars, quiet hours, guests, and maintenance from one place.',
+    details:
+      'Everyone can see what matters this week: what is due, what is planned, what is urgent, and what needs attention around the home.',
   },
   {
-    title: 'Food decisions with memory',
-    body: 'Shopping, pantry stock, and meal planning feed each other so the app can recommend what fits your home, not just suggest random dishes.',
+    title: 'Meals and supplies',
+    blurb: 'Plan dinners, manage shopping lists, and stay ahead of pantry gaps.',
+    details:
+      'Shopping, stock, and meal planning stay connected so your home can plan with what you already have instead of starting from scratch every time.',
+  },
+  {
+    title: 'Jolly AI',
+    blurb: 'A friendly assistant that helps the household decide what to do next.',
+    details:
+      'Jolly can help the home stay organized, surface suggestions, and make the app feel like a calm helper instead of another system asking for work.',
   },
 ];
 
-const CONNECTED_FLOWS = [
+const ACCORDION_ITEMS = [
   {
-    kicker: 'Receipt to reality',
-    title: 'One grocery receipt can update three systems',
-    body: 'A single review flow can save the expense, update pantry inventory, and reconcile matching shopping items.',
+    title: 'What can I do in Jolly Home?',
+    summary: 'See the main capabilities in one short view.',
+    content:
+      'You can manage bills, chores, a shared calendar, meals, shopping, home supplies, maintenance, house rules, and member coordination in one app.',
   },
   {
-    kicker: 'Calendar to action',
-    title: 'Schedules affect what gets recommended',
-    body: 'Who is home, what is urgent, and what is already planned informs meals, chores, and next-step suggestions.',
+    title: 'How does Jolly fit in?',
+    summary: 'Jolly is the friendly AI guide for the household.',
+    content:
+      'Jolly helps people understand what matters right now, suggests next steps, and makes planning feel lighter. It should feel like a smart housemate, not a robotic dashboard.',
   },
   {
-    kicker: 'Household memory',
-    title: 'The assistant answers from real household state',
-    body: 'It reads the same graph as the dashboard and workflow screens instead of inventing disconnected summaries.',
+    title: 'Who is this for?',
+    summary: 'Built for roommates, couples, and families.',
+    content:
+      'If multiple people share space, money, food, schedules, or responsibilities, Jolly Home is meant to reduce the friction that usually gets pushed into messages and mental overhead.',
+  },
+  {
+    title: 'Why is this clearer than using separate apps?',
+    summary: 'Because shared living problems overlap.',
+    content:
+      'A meal plan affects shopping. A receipt affects money. A maintenance issue affects the calendar. Jolly Home keeps those pieces close enough that the home feels coordinated.',
   },
 ];
 
-const LAUNCH_PILLARS = [
-  'Public web landing and app entry routing',
-  'Expo and EAS preview and production scripts',
-  'Release runbook, store listing draft, and launch checklist',
-  'Static web export path validated locally',
+const PREVIEW_STEPS = [
+  'See the home at a glance',
+  'Open a feature without losing context',
+  'Ask Jolly what matters next',
 ];
 
 const serifFamily = Platform.OS === 'web' ? 'Georgia, "Times New Roman", serif' : undefined;
-const sansFamily = Platform.OS === 'web' ? '"Trebuchet MS", "Segoe UI", sans-serif' : undefined;
+const sansFamily = Platform.OS === 'web' ? '"Avenir Next", "Segoe UI", sans-serif' : undefined;
+
+function BrandMark({ size = 48 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+      <Rect x="8" y="18" width="48" height="38" rx="16" fill="#FFF7EE" />
+      <Path d="M14 29L32 13L50 29" stroke="#A34E20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M23 54V31H41V54" stroke="#A34E20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M35 25C33.6 23.1 31.3 22 28.7 22C24.6 22 21.5 24.9 21.5 28.8C21.5 32.8 24.6 35.7 28.7 35.7C32.8 35.7 35.9 32.7 35.9 28.8V20" stroke="#234C53" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
+      <Circle cx="45.5" cy="23.5" r="3.5" fill="#234C53" />
+    </Svg>
+  );
+}
+
+function JollyFigure({ compact }: { compact: boolean }) {
+  return (
+    <View style={[styles.jollyPanel, compact && styles.jollyPanelCompact]}>
+      <View style={styles.jollyGlow} />
+      <Svg width={compact ? 240 : 320} height={compact ? 240 : 320} viewBox="0 0 320 320" fill="none">
+        <Circle cx="160" cy="164" r="104" fill="#F3E7D8" />
+        <Path d="M101 130C101 92 127 67 160 67C193 67 219 92 219 130V166C219 205 193 233 160 233C127 233 101 205 101 166V130Z" fill="#FFF8F0" />
+        <Path d="M123 117C123 92 139 79 160 79C181 79 197 92 197 117V132H123V117Z" fill="#DDE5D3" />
+        <Circle cx="137" cy="153" r="11" fill="#234C53" />
+        <Circle cx="183" cy="153" r="11" fill="#234C53" />
+        <Path d="M143 189C149 198 157 202 166 202C175 202 183 198 189 189" stroke="#A34E20" strokeWidth="8" strokeLinecap="round" />
+        <Path d="M115 240C129 222 144 214 160 214C176 214 191 222 205 240" stroke="#A34E20" strokeWidth="10" strokeLinecap="round" />
+        <Path d="M160 42V71" stroke="#234C53" strokeWidth="8" strokeLinecap="round" />
+        <Circle cx="160" cy="28" r="11" fill="#A34E20" />
+        <Path d="M79 239L160 272L241 239V242C241 264 223 282 201 282H119C97 282 79 264 79 242V239Z" fill="#234C53" />
+        <Path d="M103 236L160 198L217 236" stroke="#FFF8F0" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+      </Svg>
+      <View style={styles.jollySpeech}>
+        <Text style={styles.jollySpeechEyebrow}>Meet Jolly</Text>
+        <Text style={styles.jollySpeechTitle}>Homey, clear, and a little bit clever.</Text>
+        <Text style={styles.jollySpeechBody}>
+          Jolly is the face of the product: part guide, part assistant, part friendly presence in the home.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function FeatureAccordion({
+  title,
+  summary,
+  content,
+  open,
+  onPress,
+}: {
+  title: string;
+  summary: string;
+  content: string;
+  open: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.accordionCard, open && styles.accordionCardOpen, pressed && styles.cardPressed]}>
+      <View style={styles.accordionHeader}>
+        <View style={styles.accordionCopy}>
+          <Text style={styles.accordionTitle}>{title}</Text>
+          <Text style={styles.accordionSummary}>{summary}</Text>
+        </View>
+        <View style={[styles.accordionToggle, open && styles.accordionToggleOpen]}>
+          <Text style={[styles.accordionToggleText, open && styles.accordionToggleTextOpen]}>{open ? '−' : '+'}</Text>
+        </View>
+      </View>
+      {open && <Text style={styles.accordionContent}>{content}</Text>}
+    </Pressable>
+  );
+}
 
 function CTAButton({
   label,
@@ -76,14 +162,13 @@ function CTAButton({
         variant === 'primary' && styles.primaryButton,
         variant === 'secondary' && styles.secondaryButton,
         variant === 'ghost' && styles.ghostButton,
-        pressed && styles.buttonPressed,
+        pressed && styles.cardPressed,
       ]}
     >
       <Text
         style={[
           styles.buttonText,
-          variant === 'primary' && styles.primaryButtonText,
-          variant !== 'primary' && styles.secondaryButtonText,
+          variant === 'primary' ? styles.primaryButtonText : styles.secondaryButtonText,
         ]}
       >
         {label}
@@ -94,152 +179,109 @@ function CTAButton({
 
 export default function LandingScreen() {
   const { width } = useWindowDimensions();
-  const isWide = width >= 1080;
+  const isWide = width >= 1120;
   const isMedium = width >= 760;
+  const [openCard, setOpenCard] = useState<string>(ACCORDION_ITEMS[0].title);
+  const featureRows = useMemo(() => FEATURE_CARDS, []);
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.canvas}>
-          <View style={styles.backGlowOne} />
-          <View style={styles.backGlowTwo} />
+        <View style={styles.page}>
+          <View style={styles.glowLarge} />
+          <View style={styles.glowSmall} />
 
-          <View style={styles.navRow}>
-            <View style={styles.wordmarkWrap}>
-              <Text style={styles.wordmarkOverline}>Household operating system</Text>
-              <Text style={[styles.wordmark, { fontFamily: serifFamily }]}>Jolly Home</Text>
+          <View style={styles.nav}>
+            <View style={styles.brand}>
+              <BrandMark size={52} />
+              <View style={styles.brandCopy}>
+                <Text style={styles.brandOverline}>Yes, Jolly Home</Text>
+                <Text style={[styles.brandName, { fontFamily: serifFamily }]}>Jolly Home</Text>
+              </View>
             </View>
+
             <Pressable onPress={() => Linking.openURL('https://github.com/jackeytsui/jollyhome')}>
-              <Text style={styles.navLink}>GitHub</Text>
+              <Text style={styles.githubLink}>GitHub</Text>
             </Pressable>
           </View>
 
-          <View style={[styles.heroShell, isWide ? styles.heroShellWide : styles.heroShellStack]}>
-            <View style={[styles.heroCopy, isWide ? styles.heroCopyWide : null]}>
-              <View style={styles.heroBadge}>
-                <Text style={styles.heroBadgeText}>Launch-ready shared living platform</Text>
+          <View style={[styles.hero, isWide ? styles.heroWide : styles.heroStack]}>
+            <View style={[styles.heroLeft, isWide && styles.heroLeftWide]}>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>A calmer way to run a shared home</Text>
               </View>
 
-              <Text style={[styles.heroTitle, { fontFamily: serifFamily }]}>
-                Shared living deserves more than a pile of disconnected utilities.
+              <Text style={[styles.title, { fontFamily: serifFamily }]}>
+                One place for the real life of a home.
               </Text>
 
-              <Text style={[styles.heroSubtitle, { fontFamily: sansFamily }]}>
-                Jolly Home brings money, chores, meals, stock, calendar coordination, maintenance, and household AI into one
-                connected operating system.
+              <Text style={[styles.subtitle, { fontFamily: sansFamily }]}>
+                Bills, chores, meals, shopping, supplies, schedules, maintenance, and a friendly AI named Jolly.
               </Text>
 
-              <Text style={styles.heroBody}>
-                The point is not just having every feature. The point is having them affect each other so the home feels coordinated:
-                receipts can close shopping loops, pantry state can shape meal suggestions, and the assistant can answer from real
-                household context.
+              <Text style={styles.supporting}>
+                Clean enough to understand in seconds. Smart enough to help the household stay on top of what matters next.
               </Text>
 
               <View style={styles.ctaRow}>
                 <CTAButton label="Create account" variant="primary" onPress={() => router.push('/(auth)/sign-up')} />
                 <CTAButton label="Sign in" variant="secondary" onPress={() => router.push('/(auth)/sign-in')} />
-                <CTAButton
-                  label="View code"
-                  variant="ghost"
-                  onPress={() => Linking.openURL('https://github.com/jackeytsui/jollyhome')}
-                />
+                <CTAButton label="View code" variant="ghost" onPress={() => Linking.openURL('https://github.com/jackeytsui/jollyhome')} />
               </View>
 
-              <View style={[styles.metricRow, !isMedium && styles.metricRowStack]}>
-                <View style={styles.metricCard}>
-                  <Text style={styles.metricValue}>7</Text>
-                  <Text style={styles.metricLabel}>product phases shipped</Text>
-                </View>
-                <View style={styles.metricCard}>
-                  <Text style={styles.metricValue}>42</Text>
-                  <Text style={styles.metricLabel}>plans executed and summarized</Text>
-                </View>
-                <View style={styles.metricCardAccent}>
-                  <Text style={styles.metricAccentTitle}>Public web + app path</Text>
-                  <Text style={styles.metricAccentBody}>Web export, launch gate, and release runbook are already in repo.</Text>
-                </View>
+              <View style={[styles.previewRail, !isMedium && styles.previewRailStack]}>
+                {PREVIEW_STEPS.map((item, index) => (
+                  <View key={item} style={styles.previewStep}>
+                    <Text style={styles.previewStepNumber}>0{index + 1}</Text>
+                    <Text style={styles.previewStepText}>{item}</Text>
+                  </View>
+                ))}
               </View>
             </View>
 
-            <View style={[styles.heroVisual, isWide ? styles.heroVisualWide : null]}>
-              <View style={styles.imageFrame}>
-                <Image source={HERO_IMAGE} style={styles.heroImage} resizeMode="cover" />
-                <View style={styles.imageCaption}>
-                  <Text style={styles.imageCaptionEyebrow}>Public-domain photo</Text>
-                  <Text style={styles.imageCaptionText}>A real home scene instead of generic startup abstraction.</Text>
-                </View>
-              </View>
-
-              <View style={[styles.floatingCard, styles.floatingCardUpper]}>
-                <Text style={styles.floatingCardKicker}>Connected flow</Text>
-                <Text style={styles.floatingCardTitle}>Receipt → pantry → shopping</Text>
-              </View>
-
-              <View style={[styles.floatingCardWarm, styles.floatingCardLower]}>
-                <Text style={styles.floatingCardKickerDark}>Why it matters</Text>
-                <Text style={styles.floatingCardTitleDark}>People feel the value when the home updates itself once, not three times.</Text>
-              </View>
+            <View style={[styles.heroRight, isWide && styles.heroRightWide]}>
+              <JollyFigure compact={!isWide} />
             </View>
           </View>
 
-          <View style={styles.sectionShell}>
-            <Text style={[styles.sectionKicker, { fontFamily: sansFamily }]}>What makes the product feel higher-level</Text>
-            <Text style={[styles.sectionTitle, { fontFamily: serifFamily }]}>This is designed like a household system, not a feature stack.</Text>
-
+          <View style={styles.section}>
+            <Text style={[styles.sectionEyebrow, { fontFamily: sansFamily }]}>What you should expect</Text>
+            <Text style={[styles.sectionHeading, { fontFamily: serifFamily }]}>The feature story is simple.</Text>
             <View style={[styles.featureGrid, isWide ? styles.featureGridWide : styles.featureGridStack]}>
-              {FEATURE_COLUMNS.map((item) => (
+              {featureRows.map((item) => (
                 <View key={item.title} style={styles.featureCard}>
-                  <Text style={styles.featureCardTitle}>{item.title}</Text>
-                  <Text style={styles.featureCardBody}>{item.body}</Text>
+                  <Text style={styles.featureTitle}>{item.title}</Text>
+                  <Text style={styles.featureBlurb}>{item.blurb}</Text>
+                  <Text style={styles.featureDetail}>{item.details}</Text>
                 </View>
               ))}
             </View>
           </View>
 
-          <View style={[styles.sectionShell, styles.darkPanel]}>
-            <View style={styles.darkPanelHeader}>
-              <Text style={[styles.sectionKickerDark, { fontFamily: sansFamily }]}>Connected workflows</Text>
-              <Text style={[styles.sectionTitleDark, { fontFamily: serifFamily }]}>The product is strongest where features overlap.</Text>
-            </View>
-
-            <View style={styles.flowList}>
-              {CONNECTED_FLOWS.map((item, index) => (
-                <View key={item.title} style={styles.flowRow}>
-                  <View style={styles.flowIndex}>
-                    <Text style={styles.flowIndexText}>0{index + 1}</Text>
-                  </View>
-                  <View style={styles.flowContent}>
-                    <Text style={styles.flowKicker}>{item.kicker}</Text>
-                    <Text style={styles.flowTitle}>{item.title}</Text>
-                    <Text style={styles.flowBody}>{item.body}</Text>
-                  </View>
-                </View>
+          <View style={[styles.section, styles.sectionTint]}>
+            <Text style={[styles.sectionEyebrow, { fontFamily: sansFamily }]}>Tap to explore</Text>
+            <Text style={[styles.sectionHeading, { fontFamily: serifFamily }]}>A clearer way to explain the product.</Text>
+            <View style={styles.accordionList}>
+              {ACCORDION_ITEMS.map((item) => (
+                <FeatureAccordion
+                  key={item.title}
+                  title={item.title}
+                  summary={item.summary}
+                  content={item.content}
+                  open={openCard === item.title}
+                  onPress={() => setOpenCard((current) => (current === item.title ? '' : item.title))}
+                />
               ))}
             </View>
           </View>
 
-          <View style={[styles.sectionShell, styles.launchStrip]}>
-            <View style={styles.launchCopy}>
-              <Text style={[styles.sectionKicker, { fontFamily: sansFamily }]}>Ready to ship forward</Text>
-              <Text style={[styles.sectionTitle, { fontFamily: serifFamily }]}>The repo now has an actual launch layer, not just feature code.</Text>
-            </View>
-            <View style={styles.launchList}>
-              {LAUNCH_PILLARS.map((item) => (
-                <View key={item} style={styles.launchItem}>
-                  <View style={styles.launchDot} />
-                  <Text style={styles.launchItemText}>{item}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              Hero image: “Family in a kitchen” by Bill Branson / National Cancer Institute via Wikimedia Commons. Public domain.
+          <View style={[styles.section, styles.footerBand]}>
+            <Text style={[styles.sectionEyebrow, { fontFamily: sansFamily }]}>Why the brand matters</Text>
+            <Text style={[styles.footerHeading, { fontFamily: serifFamily }]}>Jolly should feel like a helpful friend in the home, not a backend product talking to users.</Text>
+            <Text style={styles.footerBody}>
+              This page now avoids backend-heavy language, removes stock-photo energy, and centers the product around what people actually feel:
+              clarity, calm, and a sense that the home is being taken care of.
             </Text>
-            <Pressable onPress={() => Linking.openURL('https://commons.wikimedia.org/wiki/File:Family_in_a_kitchen.jpg')}>
-              <Text style={styles.footerLink}>View image source and rights</Text>
-            </Pressable>
           </View>
         </View>
       </ScrollView>
@@ -250,127 +292,134 @@ export default function LandingScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#F6EFE7',
+    backgroundColor: '#F5EFE7',
   },
   scrollContent: {
     flexGrow: 1,
   },
-  canvas: {
-    flex: 1,
+  page: {
     width: '100%',
     maxWidth: 1320,
     alignSelf: 'center',
     paddingHorizontal: 20,
     paddingTop: 18,
-    paddingBottom: 42,
+    paddingBottom: 48,
     gap: 22,
   },
-  backGlowOne: {
+  glowLarge: {
     position: 'absolute',
-    top: 80,
-    right: -60,
-    width: 220,
-    height: 220,
+    top: 72,
+    right: -20,
+    width: 260,
+    height: 260,
     borderRadius: 999,
-    backgroundColor: '#F6C49D',
-    opacity: 0.36,
+    backgroundColor: '#F3C7A0',
+    opacity: 0.35,
   },
-  backGlowTwo: {
+  glowSmall: {
     position: 'absolute',
-    left: -40,
-    top: 310,
-    width: 160,
-    height: 160,
+    left: -30,
+    top: 280,
+    width: 190,
+    height: 190,
     borderRadius: 999,
-    backgroundColor: '#D8E1C7',
-    opacity: 0.58,
+    backgroundColor: '#D6E1D5',
+    opacity: 0.6,
   },
-  navRow: {
+  nav: {
     zIndex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 16,
-    paddingHorizontal: 6,
-    paddingTop: 2,
   },
-  wordmarkWrap: {
-    gap: 3,
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  wordmarkOverline: {
+  brandCopy: {
+    gap: 2,
+  },
+  brandOverline: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#726252',
     textTransform: 'uppercase',
-    letterSpacing: 1.3,
+    letterSpacing: 1.1,
+    color: '#786553',
   },
-  wordmark: {
+  brandName: {
     fontSize: 30,
     lineHeight: 32,
     fontWeight: '700',
-    color: '#241A14',
+    color: '#211712',
   },
-  navLink: {
+  githubLink: {
     fontSize: 14,
     fontWeight: '700',
     color: '#9A4A18',
   },
-  heroShell: {
+  hero: {
     zIndex: 1,
     borderRadius: 34,
     borderWidth: 1,
-    borderColor: '#E7D2BF',
-    backgroundColor: '#FBF7F2',
-    overflow: 'hidden',
+    borderColor: '#E6D6C8',
+    backgroundColor: '#FCF8F3',
     padding: 22,
-    gap: 22,
+    gap: 18,
   },
-  heroShellWide: {
+  heroWide: {
     flexDirection: 'row',
     alignItems: 'stretch',
   },
-  heroShellStack: {
+  heroStack: {
     flexDirection: 'column',
   },
-  heroCopy: {
+  heroLeft: {
     gap: 16,
   },
-  heroCopyWide: {
-    flex: 1.02,
-    paddingRight: 8,
+  heroLeftWide: {
+    flex: 1,
+    paddingRight: 6,
   },
-  heroBadge: {
+  heroRight: {
+    justifyContent: 'center',
+  },
+  heroRightWide: {
+    width: 420,
+  },
+  badge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#EEE4D5',
     borderRadius: 999,
+    backgroundColor: '#EEE3D6',
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
-  heroBadgeText: {
+  badgeText: {
     fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    color: '#6C5C4D',
+    color: '#6B5C4F',
   },
-  heroTitle: {
-    fontSize: 54,
-    lineHeight: 58,
-    color: '#221813',
-    fontWeight: '700',
+  title: {
     maxWidth: 680,
+    fontSize: 58,
+    lineHeight: 60,
+    fontWeight: '700',
+    color: '#221914',
   },
-  heroSubtitle: {
-    fontSize: 21,
+  subtitle: {
+    maxWidth: 700,
+    fontSize: 23,
     lineHeight: 31,
-    color: '#382A22',
-    maxWidth: 690,
+    color: '#31241D',
   },
-  heroBody: {
+  supporting: {
+    maxWidth: 620,
     fontSize: 15,
-    lineHeight: 24,
-    color: '#68594C',
-    maxWidth: 640,
+    lineHeight: 23,
+    color: '#6B5A4E',
   },
   ctaRow: {
     flexDirection: 'row',
@@ -380,24 +429,21 @@ const styles = StyleSheet.create({
   },
   button: {
     minHeight: 48,
-    borderRadius: 16,
     paddingHorizontal: 18,
-    alignItems: 'center',
+    borderRadius: 16,
     justifyContent: 'center',
-  },
-  buttonPressed: {
-    opacity: 0.9,
+    alignItems: 'center',
   },
   primaryButton: {
-    backgroundColor: '#9C4A1B',
+    backgroundColor: '#A04E1E',
   },
   secondaryButton: {
+    backgroundColor: '#FFF9F3',
     borderWidth: 1,
-    borderColor: '#D9C2AF',
-    backgroundColor: '#FFF8F1',
+    borderColor: '#DDC7B5',
   },
   ghostButton: {
-    backgroundColor: '#EDE1D1',
+    backgroundColor: '#E9DDD0',
   },
   buttonText: {
     fontSize: 14,
@@ -407,179 +453,119 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   secondaryButtonText: {
-    color: '#261B15',
+    color: '#241A15',
   },
-  metricRow: {
+  previewRail: {
     flexDirection: 'row',
-    gap: 12,
-    paddingTop: 8,
     flexWrap: 'wrap',
+    gap: 10,
+    paddingTop: 10,
   },
-  metricRowStack: {
+  previewRailStack: {
     flexDirection: 'column',
   },
-  metricCard: {
-    minWidth: 132,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+  previewStep: {
+    minWidth: 180,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     borderRadius: 18,
-    backgroundColor: '#F4EADB',
-    gap: 5,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    backgroundColor: '#F1E7DB',
   },
-  metricValue: {
-    fontSize: 30,
-    lineHeight: 32,
-    fontWeight: '800',
-    color: '#201712',
-  },
-  metricLabel: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: '#6B5A4C',
-  },
-  metricCardAccent: {
-    flex: 1,
-    minWidth: 220,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 20,
-    backgroundColor: '#DDE7D0',
-    gap: 6,
-  },
-  metricAccentTitle: {
+  previewStepNumber: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#254031',
+    fontWeight: '800',
+    color: '#A14C1D',
   },
-  metricAccentBody: {
+  previewStepText: {
+    flex: 1,
     fontSize: 13,
     lineHeight: 19,
-    color: '#345142',
+    color: '#4A3A2F',
   },
-  heroVisual: {
-    minHeight: 560,
-    justifyContent: 'center',
-  },
-  heroVisualWide: {
-    flex: 0.98,
-  },
-  imageFrame: {
-    flex: 1,
-    minHeight: 520,
-    borderRadius: 28,
+  jollyPanel: {
+    minHeight: 360,
+    borderRadius: 30,
+    backgroundColor: '#E4EADF',
     overflow: 'hidden',
-    backgroundColor: '#DCC6B3',
+    padding: 18,
+    justifyContent: 'space-between',
   },
-  heroImage: {
-    width: '100%',
-    height: '100%',
+  jollyPanelCompact: {
+    minHeight: 320,
   },
-  imageCaption: {
+  jollyGlow: {
     position: 'absolute',
-    left: 18,
+    top: 18,
     right: 18,
-    bottom: 18,
-    borderRadius: 18,
-    backgroundColor: 'rgba(23, 16, 12, 0.7)',
+    width: 110,
+    height: 110,
+    borderRadius: 999,
+    backgroundColor: '#F2C497',
+    opacity: 0.4,
+  },
+  jollySpeech: {
+    marginTop: -10,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,248,240,0.92)',
     paddingHorizontal: 16,
     paddingVertical: 14,
     gap: 4,
   },
-  imageCaptionEyebrow: {
+  jollySpeechEyebrow: {
     fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    color: '#EFD9C3',
+    color: '#896551',
   },
-  imageCaptionText: {
-    fontSize: 14,
+  jollySpeechTitle: {
+    fontSize: 18,
+    lineHeight: 23,
+    fontWeight: '700',
+    color: '#261B15',
+  },
+  jollySpeechBody: {
+    fontSize: 13,
     lineHeight: 20,
-    color: '#FFF5EA',
+    color: '#665449',
   },
-  floatingCard: {
-    position: 'absolute',
-    right: 14,
-    maxWidth: 220,
-    borderRadius: 20,
-    backgroundColor: '#F8F0E5',
-    borderWidth: 1,
-    borderColor: '#E7D2BE',
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    gap: 4,
-  },
-  floatingCardWarm: {
-    position: 'absolute',
-    left: 14,
-    maxWidth: 230,
-    borderRadius: 20,
-    backgroundColor: '#9D4E22',
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    gap: 4,
-  },
-  floatingCardUpper: {
-    top: 18,
-  },
-  floatingCardLower: {
-    bottom: 26,
-  },
-  floatingCardKicker: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    color: '#886A55',
-  },
-  floatingCardTitle: {
-    fontSize: 15,
-    lineHeight: 21,
-    fontWeight: '700',
-    color: '#261A15',
-  },
-  floatingCardKickerDark: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    color: '#F8D3BE',
-  },
-  floatingCardTitleDark: {
-    fontSize: 15,
-    lineHeight: 21,
-    fontWeight: '700',
-    color: '#FFF5ED',
-  },
-  sectionShell: {
+  section: {
     zIndex: 1,
     borderRadius: 30,
+    borderWidth: 1,
+    borderColor: '#E5D8CA',
+    backgroundColor: '#FCF8F3',
     paddingHorizontal: 22,
     paddingVertical: 24,
-    backgroundColor: '#FBF7F2',
-    borderWidth: 1,
-    borderColor: '#E8D8C6',
     gap: 18,
   },
-  sectionKicker: {
+  sectionTint: {
+    backgroundColor: '#EEF1E6',
+    borderColor: '#DDE2D1',
+  },
+  sectionEyebrow: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#8A5D42',
     textTransform: 'uppercase',
     letterSpacing: 1.1,
+    color: '#8A5D42',
   },
-  sectionTitle: {
-    fontSize: 36,
-    lineHeight: 40,
-    color: '#221913',
+  sectionHeading: {
+    fontSize: 38,
+    lineHeight: 41,
     fontWeight: '700',
-    maxWidth: 820,
+    color: '#241A15',
+    maxWidth: 760,
   },
   featureGrid: {
     gap: 14,
   },
   featureGridWide: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
   },
   featureGridStack: {
     flexDirection: 'column',
@@ -588,129 +574,105 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 240,
     borderRadius: 22,
-    backgroundColor: '#F3E8DB',
     padding: 18,
-    gap: 10,
-  },
-  featureCardTitle: {
-    fontSize: 19,
-    lineHeight: 24,
-    fontWeight: '700',
-    color: '#211711',
-  },
-  featureCardBody: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#665447',
-  },
-  darkPanel: {
-    backgroundColor: '#261C16',
-    borderColor: '#3B2A20',
-  },
-  darkPanelHeader: {
-    gap: 10,
-  },
-  sectionKickerDark: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#F6BE95',
-    textTransform: 'uppercase',
-    letterSpacing: 1.1,
-  },
-  sectionTitleDark: {
-    fontSize: 34,
-    lineHeight: 39,
-    color: '#FFF5EB',
-    fontWeight: '700',
-    maxWidth: 760,
-  },
-  flowList: {
-    gap: 14,
-  },
-  flowRow: {
-    flexDirection: 'row',
-    gap: 14,
-    alignItems: 'flex-start',
-    borderTopWidth: 1,
-    borderTopColor: '#453229',
-    paddingTop: 14,
-  },
-  flowIndex: {
-    width: 44,
-    height: 44,
-    borderRadius: 999,
-    backgroundColor: '#A04E1E',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  flowIndexText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#FFF6EF',
-  },
-  flowContent: {
-    flex: 1,
-    gap: 4,
-  },
-  flowKicker: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#E6B38C',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  flowTitle: {
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: '700',
-    color: '#FFF5EC',
-  },
-  flowBody: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#D6C1B3',
-  },
-  launchStrip: {
-    backgroundColor: '#E6EBD8',
-    borderColor: '#D1D9BC',
-  },
-  launchCopy: {
-    gap: 10,
-  },
-  launchList: {
-    gap: 10,
-  },
-  launchItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  launchDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 999,
-    backgroundColor: '#8E4D21',
-  },
-  launchItemText: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 21,
-    color: '#334433',
-  },
-  footer: {
-    zIndex: 1,
-    paddingHorizontal: 6,
-    paddingTop: 4,
+    backgroundColor: '#F3E7DB',
     gap: 8,
   },
-  footerText: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: '#766555',
-  },
-  footerLink: {
-    fontSize: 12,
+  featureTitle: {
+    fontSize: 20,
+    lineHeight: 25,
     fontWeight: '700',
-    color: '#9A4A18',
+    color: '#201712',
+  },
+  featureBlurb: {
+    fontSize: 14,
+    lineHeight: 21,
+    fontWeight: '600',
+    color: '#43413C',
+  },
+  featureDetail: {
+    fontSize: 13,
+    lineHeight: 21,
+    color: '#67564A',
+  },
+  accordionList: {
+    gap: 12,
+  },
+  accordionCard: {
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D9DDCF',
+    padding: 16,
+    gap: 12,
+  },
+  accordionCardOpen: {
+    backgroundColor: '#FFF8F1',
+    borderColor: '#E1C7AF',
+  },
+  accordionHeader: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  accordionCopy: {
+    flex: 1,
+    gap: 3,
+  },
+  accordionTitle: {
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: '700',
+    color: '#231913',
+  },
+  accordionSummary: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: '#645449',
+  },
+  accordionToggle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EEE6DC',
+  },
+  accordionToggleOpen: {
+    backgroundColor: '#A14D1E',
+  },
+  accordionToggleText: {
+    fontSize: 20,
+    lineHeight: 22,
+    fontWeight: '700',
+    color: '#5C4A3D',
+  },
+  accordionToggleTextOpen: {
+    color: '#FFFFFF',
+  },
+  accordionContent: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: '#4F4238',
+  },
+  footerBand: {
+    backgroundColor: '#261C16',
+    borderColor: '#3A2B22',
+  },
+  footerHeading: {
+    fontSize: 32,
+    lineHeight: 37,
+    fontWeight: '700',
+    color: '#FFF6EE',
+    maxWidth: 760,
+  },
+  footerBody: {
+    maxWidth: 760,
+    fontSize: 14,
+    lineHeight: 22,
+    color: '#DCCABD',
+  },
+  cardPressed: {
+    opacity: 0.92,
   },
 });
