@@ -17,6 +17,7 @@
 ## Expo / EAS
 
 - [ ] Configure bundle identifiers and package names in `app.json` or app config
+- [ ] Confirm `com.jackeytsui.jollyhome` is the final iOS bundle identifier and Android package
 - [ ] Attach the project to EAS if not already linked
 - [ ] Run `eas build --platform ios --profile preview`
 - [ ] Run `eas build --platform android --profile preview`
@@ -32,6 +33,7 @@
 
 - [ ] Finalize app name, subtitle, description, keywords, and screenshots
 - [ ] Prepare privacy policy and support contact
+- [ ] Finalize store listing copy from `docs/STORE-LISTING.md`
 - [ ] Verify icon, splash, favicon, and adaptive icon assets
 - [ ] Review subscription/paywall copy if RevenueCat is enabled in production
 

@@ -5,6 +5,7 @@
 ```bash
 npm install
 npm run verify:launch
+bash scripts/release-prep.sh --skip-env
 ```
 
 ## Web Export
@@ -20,15 +21,15 @@ The Expo web export can then be deployed to the preferred static host.
 Preview builds:
 
 ```bash
-eas build --platform ios --profile preview
-eas build --platform android --profile preview
+npm run build:ios:preview
+npm run build:android:preview
 ```
 
 Production builds:
 
 ```bash
-eas build --platform ios --profile production
-eas build --platform android --profile production
+npm run build:ios:prod
+npm run build:android:prod
 ```
 
 ## Submission
@@ -36,8 +37,8 @@ eas build --platform android --profile production
 Once production builds are validated:
 
 ```bash
-eas submit --platform ios --profile production
-eas submit --platform android --profile production
+npm run submit:ios
+npm run submit:android
 ```
 
 ## Current Repo Constraint

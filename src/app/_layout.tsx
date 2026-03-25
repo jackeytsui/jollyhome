@@ -1,4 +1,4 @@
-import '../../../global.css';
+import '../../global.css';
 import '@/lib/i18n';
 import { useEffect } from 'react';
 import { ActivityIndicator, Appearance, Platform, useColorScheme, View } from 'react-native';

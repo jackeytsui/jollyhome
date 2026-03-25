@@ -13,12 +13,14 @@
       "backgroundColor": "#FFF8F0"
     },
     "ios": {
+      "bundleIdentifier": "com.jackeytsui.jollyhome",
       "supportsTablet": true,
       "infoPlist": {
         "NSFaceIDUsageDescription": "Authenticate to access Jolly Home"
       }
     },
     "android": {
+      "package": "com.jackeytsui.jollyhome",
       "adaptiveIcon": {
         "backgroundColor": "#FFF8F0",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -29,7 +31,8 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "static"
     },
     "plugins": [
       "expo-router",
