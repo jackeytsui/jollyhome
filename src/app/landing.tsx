@@ -10,7 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import Svg, { Circle, Ellipse, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { router } from 'expo-router';
 
 const FEATURE_CARDS = [
@@ -73,8 +73,63 @@ const PREVIEW_STEPS = [
   'Ask Jolly what matters next',
 ];
 
-const serifFamily = Platform.OS === 'web' ? 'Georgia, "Times New Roman", serif' : undefined;
+const displayFamily = Platform.OS === 'web' ? '"Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif' : undefined;
 const sansFamily = Platform.OS === 'web' ? '"Avenir Next", "Segoe UI", sans-serif' : undefined;
+
+function InlineIcon({
+  kind,
+  size = 22,
+}: {
+  kind: 'money' | 'home' | 'meal' | 'jolly' | 'spark';
+  size?: number;
+}) {
+  if (kind === 'money') {
+    return (
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Rect x="3" y="5" width="18" height="14" rx="4" stroke="#A34E20" strokeWidth="2" />
+        <Circle cx="12" cy="12" r="3" stroke="#234C53" strokeWidth="2" />
+      </Svg>
+    );
+  }
+
+  if (kind === 'home') {
+    return (
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Path d="M4 11L12 4L20 11" stroke="#A34E20" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        <Path d="M6.5 10.5V19H17.5V10.5" stroke="#234C53" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      </Svg>
+    );
+  }
+
+  if (kind === 'meal') {
+    return (
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Path d="M6 4V11" stroke="#234C53" strokeWidth="2" strokeLinecap="round" />
+        <Path d="M9 4V11" stroke="#234C53" strokeWidth="2" strokeLinecap="round" />
+        <Path d="M6 8H9" stroke="#234C53" strokeWidth="2" strokeLinecap="round" />
+        <Path d="M15 4V19" stroke="#A34E20" strokeWidth="2" strokeLinecap="round" />
+        <Path d="M15 4C17.5 4 19 5.6 19 8V10H15" stroke="#A34E20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </Svg>
+    );
+  }
+
+  if (kind === 'jolly') {
+    return (
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Circle cx="12" cy="12" r="8" stroke="#234C53" strokeWidth="2" />
+        <Circle cx="9.5" cy="10.5" r="1" fill="#234C53" />
+        <Circle cx="14.5" cy="10.5" r="1" fill="#234C53" />
+        <Path d="M9 14.5C9.8 15.5 10.9 16 12 16C13.1 16 14.2 15.5 15 14.5" stroke="#A34E20" strokeWidth="2" strokeLinecap="round" />
+      </Svg>
+    );
+  }
+
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 3L13.9 8.1L19 10L13.9 11.9L12 17L10.1 11.9L5 10L10.1 8.1L12 3Z" stroke="#A34E20" strokeWidth="2" strokeLinejoin="round" />
+    </Svg>
+  );
+}
 
 function BrandMark({ size = 48 }: { size?: number }) {
   return (
@@ -91,32 +146,22 @@ function BrandMark({ size = 48 }: { size?: number }) {
 function JollyFigure({ compact }: { compact: boolean }) {
   return (
     <View style={[styles.jollyPanel, compact && styles.jollyPanelCompact]}>
-      <View style={styles.jollyGlow} />
-      <Svg width={compact ? 240 : 320} height={compact ? 240 : 320} viewBox="0 0 320 320" fill="none">
-        <Circle cx="160" cy="160" r="108" fill="#F0E5D8" />
-        <Ellipse cx="160" cy="132" rx="76" ry="70" fill="#FFF9F2" />
-        <Path d="M104 118C108 88 130 70 160 70C190 70 212 88 216 118C203 99 184 90 160 90C136 90 117 99 104 118Z" fill="#D8E4DB" />
-        <Ellipse cx="132" cy="142" rx="21" ry="24" fill="#FFFFFF" />
-        <Ellipse cx="188" cy="142" rx="21" ry="24" fill="#FFFFFF" />
-        <Circle cx="136" cy="145" r="9" fill="#234C53" />
-        <Circle cx="184" cy="145" r="9" fill="#234C53" />
-        <Circle cx="132" cy="141" r="3" fill="#FFF9F2" />
-        <Circle cx="180" cy="141" r="3" fill="#FFF9F2" />
-        <Ellipse cx="160" cy="174" rx="10" ry="8" fill="#F5C4A6" />
-        <Path d="M136 196C143 207 151 212 160 212C169 212 177 207 184 196" stroke="#A34E20" strokeWidth="8" strokeLinecap="round" />
-        <Path d="M160 52V72" stroke="#234C53" strokeWidth="7" strokeLinecap="round" />
-        <Circle cx="160" cy="40" r="12" fill="#A34E20" />
-        <Rect x="112" y="226" width="96" height="48" rx="24" fill="#234C53" />
-        <Rect x="132" y="218" width="56" height="22" rx="11" fill="#FFF9F2" />
-        <Path d="M103 236C120 224 139 218 160 218C181 218 200 224 217 236" stroke="#FFF9F2" strokeWidth="8" strokeLinecap="round" />
-        <Path d="M118 238L97 260" stroke="#234C53" strokeWidth="8" strokeLinecap="round" />
-        <Path d="M202 238L223 260" stroke="#234C53" strokeWidth="8" strokeLinecap="round" />
+      <Svg width={compact ? 220 : 280} height={compact ? 220 : 280} viewBox="0 0 280 280" fill="none">
+        <Circle cx="140" cy="110" r="54" fill="#FFF9F2" />
+        <Circle cx="140" cy="110" r="54" stroke="#234C53" strokeWidth="5" />
+        <Rect x="95" y="171" width="90" height="58" rx="24" fill="#234C53" />
+        <Circle cx="122" cy="104" r="7.5" fill="#234C53" />
+        <Circle cx="158" cy="104" r="7.5" fill="#234C53" />
+        <Path d="M123 132C128 139 134 142 140 142C146 142 152 139 157 132" stroke="#A34E20" strokeWidth="6" strokeLinecap="round" />
+        <Path d="M140 48V61" stroke="#234C53" strokeWidth="5" strokeLinecap="round" />
+        <Circle cx="140" cy="37" r="10" fill="#A34E20" />
+        <Path d="M111 175C120 168 129 165 140 165C151 165 160 168 169 175" stroke="#FFF9F2" strokeWidth="6" strokeLinecap="round" />
       </Svg>
       <View style={styles.jollySpeech}>
         <Text style={styles.jollySpeechEyebrow}>Meet Jolly</Text>
-        <Text style={styles.jollySpeechTitle}>Friendly guide, light tech feel, easy to trust.</Text>
+        <Text style={styles.jollySpeechTitle}>A simple helper, not a complicated mascot.</Text>
         <Text style={styles.jollySpeechBody}>
-          Jolly is the face of the product: a warm little helper for the house, designed to feel approachable before it feels technical.
+          Jolly is the friendly assistant for the home. The design stays small, clear, and approachable so it supports the product instead of distracting from it.
         </Text>
       </View>
     </View>
@@ -195,14 +240,11 @@ export default function LandingScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.page}>
-          <View style={styles.glowLarge} />
-          <View style={styles.glowSmall} />
-
           <View style={styles.nav}>
             <View style={styles.brand}>
               <BrandMark size={52} />
               <View style={styles.brandCopy}>
-                <Text style={[styles.brandName, { fontFamily: serifFamily }]}>Jolly Home</Text>
+                <Text style={[styles.brandName, { fontFamily: displayFamily }]}>Jolly Home</Text>
               </View>
             </View>
 
@@ -214,10 +256,11 @@ export default function LandingScreen() {
           <View style={[styles.hero, isWide ? styles.heroWide : styles.heroStack]}>
             <View style={[styles.heroLeft, isWide && styles.heroLeftWide]}>
               <View style={styles.badge}>
+                <InlineIcon kind="spark" size={16} />
                 <Text style={styles.badgeText}>A calmer way to run a shared home</Text>
               </View>
 
-              <Text style={[styles.title, { fontFamily: serifFamily }]}>
+              <Text style={[styles.title, { fontFamily: displayFamily }]}>
                 One place for the real life of a home.
               </Text>
 
@@ -238,6 +281,9 @@ export default function LandingScreen() {
               <View style={[styles.previewRail, !isMedium && styles.previewRailStack]}>
                 {PREVIEW_STEPS.map((item, index) => (
                   <View key={item} style={styles.previewStep}>
+                    <View style={styles.previewIconWrap}>
+                      <InlineIcon kind={index === 0 ? 'home' : index === 1 ? 'money' : 'jolly'} size={18} />
+                    </View>
                     <Text style={styles.previewStepNumber}>0{index + 1}</Text>
                     <Text style={styles.previewStepText}>{item}</Text>
                   </View>
@@ -252,11 +298,16 @@ export default function LandingScreen() {
 
           <View style={styles.section}>
             <Text style={[styles.sectionEyebrow, { fontFamily: sansFamily }]}>What you should expect</Text>
-            <Text style={[styles.sectionHeading, { fontFamily: serifFamily }]}>The feature story is simple.</Text>
+            <Text style={[styles.sectionHeading, { fontFamily: displayFamily }]}>The feature story is simple.</Text>
             <View style={[styles.featureGrid, isWide ? styles.featureGridWide : styles.featureGridStack]}>
-              {featureRows.map((item) => (
+              {featureRows.map((item, index) => (
                 <View key={item.title} style={styles.featureCard}>
-                  <Text style={styles.featureTitle}>{item.title}</Text>
+                  <View style={styles.featureTitleRow}>
+                    <View style={styles.featureIconWrap}>
+                      <InlineIcon kind={index === 0 ? 'money' : index === 1 ? 'home' : index === 2 ? 'meal' : 'jolly'} />
+                    </View>
+                    <Text style={styles.featureTitle}>{item.title}</Text>
+                  </View>
                   <Text style={styles.featureBlurb}>{item.blurb}</Text>
                   <Text style={styles.featureDetail}>{item.details}</Text>
                 </View>
@@ -266,7 +317,7 @@ export default function LandingScreen() {
 
           <View style={[styles.section, styles.sectionTint]}>
             <Text style={[styles.sectionEyebrow, { fontFamily: sansFamily }]}>Tap to explore</Text>
-            <Text style={[styles.sectionHeading, { fontFamily: serifFamily }]}>A clearer way to explain the product.</Text>
+            <Text style={[styles.sectionHeading, { fontFamily: displayFamily }]}>A clearer way to explain the product.</Text>
             <View style={styles.accordionList}>
               {ACCORDION_ITEMS.map((item) => (
                 <FeatureAccordion
@@ -283,7 +334,7 @@ export default function LandingScreen() {
 
           <View style={[styles.section, styles.footerBand]}>
             <Text style={[styles.sectionEyebrow, { fontFamily: sansFamily }]}>Why the brand matters</Text>
-            <Text style={[styles.footerHeading, { fontFamily: serifFamily }]}>Jolly should feel like a helpful friend in the home, not a backend product talking to users.</Text>
+            <Text style={[styles.footerHeading, { fontFamily: displayFamily }]}>Jolly should feel like a helpful friend in the home, not a backend product talking to users.</Text>
             <Text style={styles.footerBody}>
               This page now avoids backend-heavy language, removes stock-photo energy, and centers the product around what people actually feel:
               clarity, calm, and a sense that the home is being taken care of.
@@ -298,7 +349,7 @@ export default function LandingScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#F5EFE7',
+    backgroundColor: '#F7F3ED',
   },
   scrollContent: {
     flexGrow: 1,
@@ -311,26 +362,6 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 48,
     gap: 22,
-  },
-  glowLarge: {
-    position: 'absolute',
-    top: 72,
-    right: -20,
-    width: 260,
-    height: 260,
-    borderRadius: 999,
-    backgroundColor: '#F3C7A0',
-    opacity: 0.35,
-  },
-  glowSmall: {
-    position: 'absolute',
-    left: -30,
-    top: 280,
-    width: 190,
-    height: 190,
-    borderRadius: 999,
-    backgroundColor: '#D6E1D5',
-    opacity: 0.6,
   },
   nav: {
     zIndex: 1,
@@ -355,10 +386,11 @@ const styles = StyleSheet.create({
     color: '#786553',
   },
   brandName: {
-    fontSize: 30,
-    lineHeight: 32,
+    fontSize: 28,
+    lineHeight: 30,
     fontWeight: '700',
     color: '#211712',
+    letterSpacing: -0.3,
   },
   githubLink: {
     fontSize: 14,
@@ -369,8 +401,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
     borderRadius: 34,
     borderWidth: 1,
-    borderColor: '#E6D6C8',
-    backgroundColor: '#FCF8F3',
+    borderColor: '#E5DDD3',
+    backgroundColor: '#FFFCF8',
     padding: 22,
     gap: 18,
   },
@@ -396,8 +428,11 @@ const styles = StyleSheet.create({
   },
   badge: {
     alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     borderRadius: 999,
-    backgroundColor: '#EEE3D6',
+    backgroundColor: '#F1EBE3',
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
@@ -410,10 +445,11 @@ const styles = StyleSheet.create({
   },
   title: {
     maxWidth: 680,
-    fontSize: 58,
-    lineHeight: 60,
+    fontSize: 54,
+    lineHeight: 56,
     fontWeight: '700',
     color: '#221914',
+    letterSpacing: -0.8,
   },
   subtitle: {
     maxWidth: 700,
@@ -480,6 +516,14 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     backgroundColor: '#F1E7DB',
   },
+  previewIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF8F0',
+  },
   previewStepNumber: {
     fontSize: 13,
     fontWeight: '800',
@@ -494,7 +538,7 @@ const styles = StyleSheet.create({
   jollyPanel: {
     minHeight: 360,
     borderRadius: 30,
-    backgroundColor: '#E4EADF',
+    backgroundColor: '#EEF2EA',
     overflow: 'hidden',
     padding: 18,
     justifyContent: 'space-between',
@@ -502,18 +546,7 @@ const styles = StyleSheet.create({
   jollyPanelCompact: {
     minHeight: 320,
   },
-  jollyGlow: {
-    position: 'absolute',
-    top: 18,
-    right: 18,
-    width: 110,
-    height: 110,
-    borderRadius: 999,
-    backgroundColor: '#F2C497',
-    opacity: 0.4,
-  },
   jollySpeech: {
-    marginTop: -10,
     borderRadius: 20,
     backgroundColor: 'rgba(255,248,240,0.92)',
     paddingHorizontal: 16,
@@ -584,6 +617,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3E7DB',
     gap: 8,
   },
+  featureTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  featureIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF8F1',
+  },
   featureTitle: {
     fontSize: 20,
     lineHeight: 25,
@@ -608,7 +654,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#D9DDCF',
+    borderColor: '#E1D8CE',
     padding: 16,
     gap: 12,
   },
