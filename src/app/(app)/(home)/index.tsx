@@ -11,6 +11,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Button } from '@/components/ui/Button';
+import { AssistantSheet } from '@/components/assistant/AssistantSheet';
 import { Card } from '@/components/ui/Card';
 import { DailyDigestPreviewCard } from '@/components/home/DailyDigestPreviewCard';
 import { FairnessDashboardCard } from '@/components/home/FairnessDashboardCard';
@@ -22,6 +23,8 @@ import { NotificationPreferencesCard } from '@/components/home/NotificationPrefe
 import { SpendingInsightCard } from '@/components/home/SpendingInsightCard';
 import { SandboxBanner } from '@/components/household/SandboxBanner';
 import { useBalances } from '@/hooks/useBalances';
+import { buildAssistantSnapshot } from '@/lib/assistantActions';
+import { useAssistant } from '@/hooks/useAssistant';
 import { useCalendar } from '@/hooks/useCalendar';
 import { useChores } from '@/hooks/useChores';
 import { useDashboard } from '@/hooks/useDashboard';
@@ -32,6 +35,7 @@ import { useExpenses } from '@/hooks/useExpenses';
 import { useMaintenance } from '@/hooks/useMaintenance';
 import { useMealPlans } from '@/hooks/useMealPlans';
 import { useSandbox } from '@/hooks/useSandbox';
+import { useShopping } from '@/hooks/useShopping';
 import { useHouseholdStore } from '@/stores/household';
 import type { NotificationReference } from '@/types/notifications';
 import { colors } from '@/constants/theme';
@@ -57,12 +61,51 @@ export default function HouseholdHomeScreen() {
   const { mealPlans } = useMealPlans();
   const { activeRequests } = useMaintenance();
   const {
+    activeListId,
+    createItem,
+    createList,
+  } = useShopping();
+  const {
     dashboard,
     fairness,
     monthlyReport,
     spendingInsights,
   } = useDashboard();
   const { preferences, saving, updateCategoryMode, updateDigestTiming } = useNotifications();
+  const urgentChores = instances
+    .filter((instance) => instance.status === 'open' || instance.status === 'claimed')
+    .map((instance) => {
+      const template = templates.find((item) => item.id === instance.template_id);
+      return {
+        id: instance.id,
+        title: template?.title ?? 'Chore',
+        area: template?.area ?? 'Home',
+      };
+    })
+    .slice(0, 3);
+  const upcomingEvents = [...calendarItems]
+    .sort((left, right) => new Date(left.startsAt).getTime() - new Date(right.startsAt).getTime())
+    .slice(0, 3);
+  const assistant = useAssistant({
+    householdId: activeHouseholdId,
+    snapshot: buildAssistantSnapshot({
+      householdName,
+      dashboardHeadline: dashboard.headline,
+      monthlySpendCents: monthlyReport.spendTotalCents,
+      topSpendCategory: monthlyReport.topCategory,
+      openChoreTitles: urgentChores.map((chore) => chore.title),
+      upcomingEventTitles: upcomingEvents.map((item) => item.title),
+      lowStockTitles: lowStockAlerts.map((alert) => alert.title),
+      plannedMealTitles: mealPlans.filter((meal) => meal.status === 'planned').map((meal) => meal.title),
+      maintenanceTitles: activeRequests.map((request) => request.title),
+      fairnessSummary: fairness.members.slice(0, 3).map((member) => `${member.memberName}: ${member.summary}`),
+      spendingInsightSummaries: spendingInsights.map((insight) => insight.summary),
+      activeShoppingListId: activeListId,
+    }),
+    activeShoppingListId: activeListId,
+    createShoppingList: createList,
+    createShoppingItem: createItem,
+  });
 
   const {
     isSandboxActive,
@@ -127,20 +170,6 @@ export default function HouseholdHomeScreen() {
   }
 
   const isSolo = memberCount <= 1;
-  const urgentChores = instances
-    .filter((instance) => instance.status === 'open' || instance.status === 'claimed')
-    .map((instance) => {
-      const template = templates.find((item) => item.id === instance.template_id);
-      return {
-        id: instance.id,
-        title: template?.title ?? 'Chore',
-        area: template?.area ?? 'Home',
-      };
-    })
-    .slice(0, 3);
-  const upcomingEvents = [...calendarItems]
-    .sort((left, right) => new Date(left.startsAt).getTime() - new Date(right.startsAt).getTime())
-    .slice(0, 3);
   const digestPreview = buildDailyDigestPreview({
     householdName,
     expenses: expenses.slice(0, 3),
@@ -268,6 +297,19 @@ export default function HouseholdHomeScreen() {
         {!isSandboxActive ? (
           <>
             <Text style={styles.sectionLabel}>Household Pulse</Text>
+            <Card style={styles.featureCard}>
+              <View style={styles.featureRow}>
+                <View style={styles.featureInfo}>
+                  <Text style={styles.featureLabel}>Household assistant</Text>
+                  <Text style={styles.featureDescription}>
+                    Ask grounded questions across money, chores, calendar, pantry, meals, and maintenance.
+                  </Text>
+                </View>
+                <View style={styles.inlineAction}>
+                  <Button label="Ask" variant="secondary" onPress={assistant.openAssistant} />
+                </View>
+              </View>
+            </Card>
             <HouseholdDashboard
               summary={dashboard}
               onMetricPress={(route) => router.push(route)}
@@ -347,6 +389,20 @@ export default function HouseholdHomeScreen() {
           householdName={householdName ?? ''}
         />
       ) : null}
+      <AssistantSheet
+        visible={assistant.visible}
+        loading={assistant.loading}
+        error={assistant.error}
+        messages={assistant.messages}
+        onClose={assistant.closeAssistant}
+        onSend={assistant.sendMessage}
+        onActionPress={async (action) => {
+          const result = await assistant.executeAction(action);
+          if (result.route) {
+            router.push(result.route as any);
+          }
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -472,9 +528,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
   },
   featureInfo: {
     flex: 1,
+  },
+  inlineAction: {
+    alignSelf: 'flex-start',
   },
   featureLabel: {
     fontSize: 16,
