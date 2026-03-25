@@ -2,7 +2,7 @@ import '../../global.css';
 import '@/lib/i18n';
 import { useEffect } from 'react';
 import { ActivityIndicator, Appearance, Platform, useColorScheme, View } from 'react-native';
-import { Stack, Redirect } from 'expo-router';
+import { Stack, Redirect, usePathname } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -24,6 +24,9 @@ function RootLayoutInner() {
   const { session, isLoading, setSession } = useAuthStore();
   const { themeOverride } = useSettingsStore();
   const systemScheme = useColorScheme();
+  const pathname = usePathname();
+  const allowPublicWebRoute =
+    Platform.OS === 'web' && (pathname === '/landing' || pathname === '/terms');
 
   useEffect(() => {
     if (Platform.OS === 'web' || typeof Appearance.setColorScheme !== 'function') {
@@ -68,7 +71,7 @@ function RootLayoutInner() {
 
   return (
     <>
-      {!session && <Redirect href={Platform.OS === 'web' ? '/landing' : '/(auth)/sign-in'} />}
+      {!session && !allowPublicWebRoute && <Redirect href={Platform.OS === 'web' ? '/landing' : '/(auth)/sign-in'} />}
       {session && <Redirect href="/(app)" />}
       <Stack screenOptions={{ headerShown: false }} />
     </>

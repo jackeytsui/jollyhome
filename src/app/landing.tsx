@@ -248,9 +248,43 @@ export default function LandingScreen() {
               </View>
             </View>
 
-            <Pressable onPress={() => Linking.openURL('https://github.com/jackeytsui/jollyhome')}>
-              <Text style={styles.githubLink}>GitHub</Text>
-            </Pressable>
+            <View style={styles.navLinks}>
+              <Pressable onPress={() => router.push('/terms')}>
+                <Text style={styles.navLink}>Terms</Text>
+              </Pressable>
+              <Pressable onPress={() => Linking.openURL('https://github.com/jackeytsui/jollyhome')}>
+                <Text style={styles.navLink}>GitHub</Text>
+              </Pressable>
+              <Pressable onPress={() => router.push('/(auth)/sign-in')}>
+                <Text style={styles.navLinkStrong}>Sign in</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <View style={styles.navBar}>
+            <View style={styles.navPill}>
+              <InlineIcon kind="home" size={16} />
+              <Text style={styles.navPillText}>Shared home</Text>
+            </View>
+            <View style={styles.navPill}>
+              <InlineIcon kind="money" size={16} />
+              <Text style={styles.navPillText}>Expenses</Text>
+            </View>
+            <View style={styles.navPill}>
+              <InlineIcon kind="meal" size={16} />
+              <Text style={styles.navPillText}>Meals</Text>
+            </View>
+            <View style={styles.navPill}>
+              <InlineIcon kind="jolly" size={16} />
+              <Text style={styles.navPillText}>Jolly AI</Text>
+            </View>
+          </View>
+
+          <View style={styles.headerBand}>
+            <View style={styles.headerBandCopy}>
+              <Text style={styles.headerBandTitle}>Website preview</Text>
+              <Text style={styles.headerBandBody}>This landing page is the public front door for the product, with a real nav, footer, and legal links.</Text>
+            </View>
           </View>
 
           <View style={[styles.hero, isWide ? styles.heroWide : styles.heroStack]}>
@@ -340,6 +374,28 @@ export default function LandingScreen() {
               clarity, calm, and a sense that the home is being taken care of.
             </Text>
           </View>
+
+          <View style={styles.footer}>
+            <View style={styles.footerBrand}>
+              <BrandMark size={40} />
+              <View style={styles.footerBrandCopy}>
+                <Text style={styles.footerBrandTitle}>Jolly Home</Text>
+                <Text style={styles.footerBrandBody}>Shared living, made calmer.</Text>
+              </View>
+            </View>
+
+            <View style={styles.footerLinks}>
+              <Pressable onPress={() => router.push('/landing')}>
+                <Text style={styles.footerLink}>Home</Text>
+              </Pressable>
+              <Pressable onPress={() => router.push('/terms')}>
+                <Text style={styles.footerLink}>Terms & Conditions</Text>
+              </Pressable>
+              <Pressable onPress={() => Linking.openURL('https://github.com/jackeytsui/jollyhome')}>
+                <Text style={styles.footerLink}>GitHub</Text>
+              </Pressable>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -370,6 +426,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 16,
   },
+  navLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    flexWrap: 'wrap',
+  },
   brand: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -392,10 +454,55 @@ const styles = StyleSheet.create({
     color: '#211712',
     letterSpacing: -0.3,
   },
-  githubLink: {
+  navLink: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6E5948',
+  },
+  navLinkStrong: {
     fontSize: 14,
     fontWeight: '700',
     color: '#9A4A18',
+  },
+  navBar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  navPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 999,
+    backgroundColor: '#F1EBE3',
+  },
+  navPillText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4B3E34',
+  },
+  headerBand: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#E5DDD3',
+    backgroundColor: '#FFFDF9',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+  },
+  headerBandCopy: {
+    gap: 4,
+  },
+  headerBandTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#241A15',
+  },
+  headerBandBody: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: '#625347',
   },
   hero: {
     zIndex: 1,
@@ -723,6 +830,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     color: '#DCCABD',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    gap: 18,
+    paddingTop: 8,
+    paddingBottom: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5DDD3',
+  },
+  footerBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  footerBrandCopy: {
+    gap: 2,
+  },
+  footerBrandTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#241A15',
+  },
+  footerBrandBody: {
+    fontSize: 13,
+    color: '#625347',
+  },
+  footerLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  footerLink: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#9A4A18',
   },
   cardPressed: {
     opacity: 0.92,
