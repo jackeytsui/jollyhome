@@ -10,6 +10,11 @@ import {
   buildMonthlyReport,
   buildSpendingInsights,
 } from '@/lib/dashboard';
+import {
+  buildContextSuggestions,
+  buildOnboardingSteps,
+  buildUnifiedTimelineSummary,
+} from '@/lib/onboarding';
 
 describe('notifications dashboard', () => {
   it('provides stable default preferences and fills missing category modes', () => {
@@ -464,5 +469,80 @@ describe('notifications dashboard', () => {
       id: 'grocery-pattern',
       route: '/(app)/meals',
     });
+  });
+
+  it('builds unified timeline summaries and context-aware home suggestions', () => {
+    const timeline = buildUnifiedTimelineSummary({
+      now: '2026-03-24T12:00:00.000Z',
+      items: [
+        {
+          id: 'timeline-1',
+          householdId: 'house-1',
+          sourceId: 'meal-1',
+          sourceType: 'meal',
+          title: 'Veggie curry',
+          details: null,
+          startsAt: '2026-03-24T18:00:00.000Z',
+          endsAt: '2026-03-24T19:00:00.000Z',
+          allDay: false,
+          iconKey: null,
+          visualWeight: 'medium',
+          memberOwnerIds: [],
+          memberColorKey: null,
+          recurrenceRule: null,
+          recurrenceTimezone: null,
+          recurrenceAnchor: null,
+          attendanceStatus: null,
+          isProjected: true,
+          metadata: null,
+        },
+        {
+          id: 'timeline-2',
+          householdId: 'house-1',
+          sourceId: 'guest-1',
+          sourceType: 'guest',
+          title: 'Friends staying over',
+          details: null,
+          startsAt: '2026-03-25T20:00:00.000Z',
+          endsAt: '2026-03-26T09:00:00.000Z',
+          allDay: false,
+          iconKey: null,
+          visualWeight: 'secondary',
+          memberOwnerIds: [],
+          memberColorKey: null,
+          recurrenceRule: null,
+          recurrenceTimezone: null,
+          recurrenceAnchor: null,
+          attendanceStatus: null,
+          isProjected: false,
+          metadata: null,
+        },
+      ],
+    });
+
+    expect(timeline).toMatchObject({
+      headline: expect.stringMatching(/timeline items/i),
+    });
+    expect(timeline.entries[0]).toMatchObject({
+      title: 'Veggie curry',
+      sourceType: 'meal',
+    });
+
+    const suggestions = buildContextSuggestions({
+      lowStockTitles: ['Rice'],
+      plannedMealTitles: ['Veggie curry'],
+      openChoreTitles: ['Reset kitchen'],
+      upcomingEventTitles: ['Friends staying over'],
+      maintenanceTitles: ['Seal window draft'],
+      spendingInsightSummaries: ['Groceries are the largest spend category this month'],
+      fairnessSummary: ['Alex is carrying more shared load right now'],
+    });
+
+    expect(suggestions.map((item) => item.id)).toEqual([
+      'restock-before-meals',
+      'prep-before-event',
+      'follow-up-maintenance',
+      'review-spending',
+    ]);
   });
 });

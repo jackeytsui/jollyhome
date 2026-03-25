@@ -13,6 +13,7 @@ import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Button } from '@/components/ui/Button';
 import { AssistantSheet } from '@/components/assistant/AssistantSheet';
 import { Card } from '@/components/ui/Card';
+import { ContextSuggestionCard } from '@/components/home/ContextSuggestionCard';
 import { DailyDigestPreviewCard } from '@/components/home/DailyDigestPreviewCard';
 import { FairnessDashboardCard } from '@/components/home/FairnessDashboardCard';
 import { HouseholdHeader } from '@/components/household/HouseholdHeader';
@@ -20,8 +21,10 @@ import { HouseholdDashboard } from '@/components/home/HouseholdDashboard';
 import { InviteSheet } from '@/components/household/InviteSheet';
 import { MonthlyReportCard } from '@/components/home/MonthlyReportCard';
 import { NotificationPreferencesCard } from '@/components/home/NotificationPreferencesCard';
+import { OnboardingFlowSheet } from '@/components/home/OnboardingFlowSheet';
 import { SpendingInsightCard } from '@/components/home/SpendingInsightCard';
 import { SandboxBanner } from '@/components/household/SandboxBanner';
+import { UnifiedTimelineCard } from '@/components/home/UnifiedTimelineCard';
 import { useBalances } from '@/hooks/useBalances';
 import { buildAssistantSnapshot } from '@/lib/assistantActions';
 import { useAssistant } from '@/hooks/useAssistant';
@@ -31,9 +34,11 @@ import { useDashboard } from '@/hooks/useDashboard';
 import { useHousehold } from '@/hooks/useHousehold';
 import { useInventory } from '@/hooks/useInventory';
 import { buildDailyDigestPreview, useNotifications } from '@/hooks/useNotifications';
+import { buildContextSuggestions, buildUnifiedTimelineSummary } from '@/lib/onboarding';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useMaintenance } from '@/hooks/useMaintenance';
 import { useMealPlans } from '@/hooks/useMealPlans';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import { useSandbox } from '@/hooks/useSandbox';
 import { useShopping } from '@/hooks/useShopping';
 import { useHouseholdStore } from '@/stores/household';
@@ -187,6 +192,29 @@ export default function HouseholdHomeScreen() {
     simplifiedDebts,
     maintenanceRequests: activeRequests,
   });
+  const timelineSummary = buildUnifiedTimelineSummary({
+    items: calendarItems,
+  });
+  const contextSuggestions = buildContextSuggestions({
+    lowStockTitles: lowStockAlerts.map((alert) => alert.title),
+    plannedMealTitles: mealPlans.filter((meal) => meal.status === 'planned').map((meal) => meal.title),
+    openChoreTitles: urgentChores.map((chore) => chore.title),
+    upcomingEventTitles: upcomingEvents.map((item) => item.title),
+    maintenanceTitles: activeRequests.map((request) => request.title),
+    spendingInsightSummaries: spendingInsights.map((insight) => insight.summary),
+    fairnessSummary: fairness.members.slice(0, 3).map((member) => `${member.memberName}: ${member.summary}`),
+  });
+  const onboarding = useOnboarding({
+    householdId: activeHouseholdId,
+    householdName,
+    memberCount,
+    timelineCount: calendarItems.length,
+    plannedMealCount: mealPlans.filter((meal) => meal.status === 'planned').length,
+    lowStockCount: lowStockAlerts.length,
+    activeMaintenanceCount: activeRequests.length,
+    hasExpenses: expenses.length > 0,
+    hasChores: instances.length > 0,
+  });
 
   function handleNotificationReferencePress(reference: NotificationReference) {
     router.push(reference.route);
@@ -314,6 +342,14 @@ export default function HouseholdHomeScreen() {
               summary={dashboard}
               onMetricPress={(route) => router.push(route)}
             />
+            <UnifiedTimelineCard
+              summary={timelineSummary}
+              onOpenCalendar={() => router.push('/(app)/calendar')}
+            />
+            <ContextSuggestionCard
+              suggestions={contextSuggestions}
+              onPressSuggestion={(route) => router.push(route)}
+            />
             <DailyDigestPreviewCard
               digest={digestPreview}
               onReferencePress={handleNotificationReferencePress}
@@ -400,6 +436,17 @@ export default function HouseholdHomeScreen() {
           const result = await assistant.executeAction(action);
           if (result.route) {
             router.push(result.route as any);
+          }
+        }}
+      />
+      <OnboardingFlowSheet
+        visible={onboarding.shouldShow}
+        steps={onboarding.steps}
+        onClose={onboarding.markSeen}
+        onComplete={onboarding.markSeen}
+        onOpenRoute={(route) => {
+          if (route) {
+            router.push(route);
           }
         }}
       />

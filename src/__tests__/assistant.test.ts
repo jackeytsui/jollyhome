@@ -1,4 +1,5 @@
 import { buildAssistantSnapshot, buildGroundedAssistantResponse } from '@/lib/assistantActions';
+import { buildOnboardingSteps } from '@/lib/onboarding';
 
 describe('household assistant', () => {
   const snapshot = buildAssistantSnapshot({
@@ -67,5 +68,33 @@ describe('household assistant', () => {
     expect(buildGroundedAssistantResponse('How is the house doing?', snapshot).facts[0]).toMatch(
       /active coordination areas/
     );
+  });
+
+  it('builds onboarding steps that introduce HomeOS as one connected system', () => {
+    const steps = buildOnboardingSteps({
+      householdName: 'Jolly Home',
+      memberCount: 2,
+      timelineCount: 3,
+      plannedMealCount: 2,
+      lowStockCount: 1,
+      activeMaintenanceCount: 1,
+      hasExpenses: true,
+      hasChores: true,
+    });
+
+    expect(steps).toEqual([
+      expect.objectContaining({
+        id: 'overview',
+        title: expect.stringMatching(/Jolly Home/),
+      }),
+      expect.objectContaining({
+        id: 'timeline',
+        route: '/(app)/calendar',
+      }),
+      expect.objectContaining({
+        id: 'systems',
+        route: '/(app)/meals',
+      }),
+    ]);
   });
 });
