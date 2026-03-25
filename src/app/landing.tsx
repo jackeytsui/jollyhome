@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
+  FlatList,
   Linking,
   Platform,
   Pressable,
@@ -135,10 +136,13 @@ function BrandMark({ size = 48 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 64 64" fill="none">
       <Rect x="6" y="6" width="52" height="52" rx="18" fill="#FFF8F1" />
-      <Path d="M14 29.5L32 15L50 29.5" stroke="#A34E20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M18 28.5V48.5C18 50.7 19.8 52.5 22 52.5H42C44.2 52.5 46 50.7 46 48.5V28.5" stroke="#A34E20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M37 25V39.5C37 44.7 33.2 48 28.6 48C24.8 48 22 45.8 22 42.2" stroke="#234C53" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Circle cx="42.5" cy="22.5" r="3.25" fill="#234C53" />
+      <Path d="M14 28.5L32 15L50 28.5" stroke="#A34E20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M18 27.5V48C18 50.2 19.8 52 22 52H42C44.2 52 46 50.2 46 48V27.5" stroke="#A34E20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <Rect x="22" y="24" width="8" height="8" rx="2.5" fill="#234C53" />
+      <Circle cx="39" cy="28" r="4" fill="#A34E20" />
+      <Rect x="22" y="36" width="8" height="8" rx="4" stroke="#234C53" strokeWidth="2.5" />
+      <Path d="M34 36L43 45" stroke="#A34E20" strokeWidth="2.5" strokeLinecap="round" />
+      <Path d="M43 36L34 45" stroke="#A34E20" strokeWidth="2.5" strokeLinecap="round" />
     </Svg>
   );
 }
@@ -146,22 +150,12 @@ function BrandMark({ size = 48 }: { size?: number }) {
 function JollyFigure({ compact }: { compact: boolean }) {
   return (
     <View style={[styles.jollyPanel, compact && styles.jollyPanelCompact]}>
-      <Svg width={compact ? 220 : 280} height={compact ? 220 : 280} viewBox="0 0 280 280" fill="none">
-        <Circle cx="140" cy="110" r="54" fill="#FFF9F2" />
-        <Circle cx="140" cy="110" r="54" stroke="#234C53" strokeWidth="5" />
-        <Rect x="95" y="171" width="90" height="58" rx="24" fill="#234C53" />
-        <Circle cx="122" cy="104" r="7.5" fill="#234C53" />
-        <Circle cx="158" cy="104" r="7.5" fill="#234C53" />
-        <Path d="M123 132C128 139 134 142 140 142C146 142 152 139 157 132" stroke="#A34E20" strokeWidth="6" strokeLinecap="round" />
-        <Path d="M140 48V61" stroke="#234C53" strokeWidth="5" strokeLinecap="round" />
-        <Circle cx="140" cy="37" r="10" fill="#A34E20" />
-        <Path d="M111 175C120 168 129 165 140 165C151 165 160 168 169 175" stroke="#FFF9F2" strokeWidth="6" strokeLinecap="round" />
-      </Svg>
+      <Text style={styles.jollyEmoji}>{compact ? '🤖' : '🤖'}</Text>
       <View style={styles.jollySpeech}>
         <Text style={styles.jollySpeechEyebrow}>Meet Jolly</Text>
-        <Text style={styles.jollySpeechTitle}>A simple helper, not a complicated mascot.</Text>
+        <Text style={styles.jollySpeechTitle}>A small robot helper for the home.</Text>
         <Text style={styles.jollySpeechBody}>
-          Jolly is the friendly assistant for the home. The design stays small, clear, and approachable so it supports the product instead of distracting from it.
+          Jolly keeps the product feeling friendly and approachable without turning the page into a mascot showcase.
         </Text>
       </View>
     </View>
@@ -233,7 +227,7 @@ export default function LandingScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 1120;
   const isMedium = width >= 760;
-  const [openCard, setOpenCard] = useState<string>(ACCORDION_ITEMS[0].title);
+  const [openCard, setOpenCard] = useState<string>('');
   const featureRows = useMemo(() => FEATURE_CARDS, []);
 
   return (
@@ -246,18 +240,6 @@ export default function LandingScreen() {
               <View style={styles.brandCopy}>
                 <Text style={[styles.brandName, { fontFamily: displayFamily }]}>Jolly Home</Text>
               </View>
-            </View>
-
-            <View style={styles.navLinks}>
-              <Pressable onPress={() => router.push('/terms')}>
-                <Text style={styles.navLink}>Terms</Text>
-              </Pressable>
-              <Pressable onPress={() => Linking.openURL('https://github.com/jackeytsui/jollyhome')}>
-                <Text style={styles.navLink}>GitHub</Text>
-              </Pressable>
-              <Pressable onPress={() => router.push('/(auth)/sign-in')}>
-                <Text style={styles.navLinkStrong}>Sign in</Text>
-              </Pressable>
             </View>
           </View>
 
@@ -284,7 +266,7 @@ export default function LandingScreen() {
             <View style={styles.headerBandCopy}>
               <Text style={styles.headerBandTitle}>Private beta</Text>
               <Text style={styles.headerBandBody}>
-                Built for invited testers who want one calm place to manage money, meals, routines, and shared-home coordination.
+                Built for invited testers only.
               </Text>
             </View>
           </View>
@@ -311,7 +293,6 @@ export default function LandingScreen() {
               <View style={styles.ctaRow}>
                 <CTAButton label="Create account" variant="primary" onPress={() => router.push('/(auth)/sign-up')} />
                 <CTAButton label="Sign in" variant="secondary" onPress={() => router.push('/(auth)/sign-in')} />
-                <CTAButton label="View code" variant="ghost" onPress={() => Linking.openURL('https://github.com/jackeytsui/jollyhome')} />
               </View>
 
               <View style={[styles.previewRail, !isMedium && styles.previewRailStack]}>
@@ -335,9 +316,9 @@ export default function LandingScreen() {
           <View style={styles.section}>
             <Text style={[styles.sectionEyebrow, { fontFamily: sansFamily }]}>What you should expect</Text>
             <Text style={[styles.sectionHeading, { fontFamily: displayFamily }]}>The feature story is simple.</Text>
-            <View style={[styles.featureGrid, isWide ? styles.featureGridWide : styles.featureGridStack]}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carouselContent}>
               {featureRows.map((item, index) => (
-                <View key={item.title} style={styles.featureCard}>
+                <View key={item.title} style={[styles.featureCard, styles.featureCardCarousel]}>
                   <View style={styles.featureIllustration}>
                     <View style={styles.featureIllustrationOrb}>
                       <InlineIcon kind={index === 0 ? 'money' : index === 1 ? 'home' : index === 2 ? 'meal' : 'jolly'} size={28} />
@@ -353,7 +334,7 @@ export default function LandingScreen() {
                   <Text style={styles.featureDetail}>{item.details}</Text>
                 </View>
               ))}
-            </View>
+            </ScrollView>
           </View>
 
           <View style={[styles.section, styles.sectionTint]}>
@@ -432,12 +413,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 16,
   },
-  navLinks: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    flexWrap: 'wrap',
-  },
   brand: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -459,16 +434,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#211712',
     letterSpacing: -0.3,
-  },
-  navLink: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6E5948',
-  },
-  navLinkStrong: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#9A4A18',
   },
   navBar: {
     flexDirection: 'row',
@@ -654,10 +619,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEF2EA',
     overflow: 'hidden',
     padding: 18,
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
   jollyPanelCompact: {
     minHeight: 320,
+  },
+  jollyEmoji: {
+    fontSize: 128,
+    lineHeight: 144,
+    textAlign: 'center',
+    marginTop: 8,
   },
   jollySpeech: {
     borderRadius: 20,
@@ -715,6 +687,10 @@ const styles = StyleSheet.create({
   featureGrid: {
     gap: 14,
   },
+  carouselContent: {
+    gap: 14,
+    paddingRight: 12,
+  },
   featureGridWide: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -729,6 +705,10 @@ const styles = StyleSheet.create({
     padding: 18,
     backgroundColor: '#F3E7DB',
     gap: 8,
+  },
+  featureCardCarousel: {
+    width: 296,
+    flexShrink: 0,
   },
   featureIllustration: {
     height: 72,
@@ -837,21 +817,21 @@ const styles = StyleSheet.create({
     color: '#4F4238',
   },
   footerBand: {
-    backgroundColor: '#261C16',
-    borderColor: '#3A2B22',
+    backgroundColor: '#F6EFE7',
+    borderColor: '#E5D8CA',
   },
   footerHeading: {
     fontSize: 32,
     lineHeight: 37,
     fontWeight: '700',
-    color: '#FFF6EE',
+    color: '#241A15',
     maxWidth: 760,
   },
   footerBody: {
     maxWidth: 760,
     fontSize: 14,
     lineHeight: 22,
-    color: '#DCCABD',
+    color: '#5A4C41',
   },
   footer: {
     flexDirection: 'row',
