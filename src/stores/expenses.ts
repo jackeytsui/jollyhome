@@ -1,18 +1,37 @@
 import { createMMKV } from 'react-native-mmkv';
+import { Platform } from 'react-native';
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware.js';
 import type { CreateExpenseInput, ExpenseFilters } from '@/types/expenses';
 
 // ============================================================
 // MMKV storage for offline queue persistence
 // ============================================================
 
-const expenseStorage = createMMKV({ id: 'expense-queue' });
+const createExpenseStorage = () => {
+  if (typeof window === 'undefined') {
+    const memoryStorage = new Map<string, string>();
+    return {
+      getItem: (key: string) => memoryStorage.get(key) ?? null,
+      setItem: (key: string, value: string) => memoryStorage.set(key, value),
+      removeItem: (key: string) => memoryStorage.delete(key),
+    };
+  }
 
-const mmkvStorage = {
-  getItem: (key: string) => expenseStorage.getString(key) ?? null,
-  setItem: (key: string, value: string) => expenseStorage.set(key, value),
-  removeItem: (key: string) => expenseStorage.remove(key),
+  if (Platform.OS === 'web') {
+    return {
+      getItem: (key: string) => window.localStorage.getItem(key),
+      setItem: (key: string, value: string) => window.localStorage.setItem(key, value),
+      removeItem: (key: string) => window.localStorage.removeItem(key),
+    };
+  }
+
+  const expenseStorage = createMMKV({ id: 'expense-queue' });
+  return {
+    getItem: (key: string) => expenseStorage.getString(key) ?? null,
+    setItem: (key: string, value: string) => expenseStorage.set(key, value),
+    removeItem: (key: string) => expenseStorage.remove(key),
+  };
 };
 
 // ============================================================
@@ -88,7 +107,7 @@ export const useExpenseStore = create<ExpenseState>()(
     }),
     {
       name: 'expense-queue',
-      storage: createJSONStorage(() => mmkvStorage),
+      storage: createJSONStorage(createExpenseStorage),
       // Only persist the offline queue — filters should reset on app restart
       partialize: (state) => ({ offlineQueue: state.offlineQueue }),
     }

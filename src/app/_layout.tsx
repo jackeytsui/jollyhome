@@ -26,6 +26,10 @@ function RootLayoutInner() {
   const systemScheme = useColorScheme();
 
   useEffect(() => {
+    if (Platform.OS === 'web' || typeof Appearance.setColorScheme !== 'function') {
+      return;
+    }
+
     if (themeOverride === 'system') {
       Appearance.setColorScheme(systemScheme ?? 'light');
     } else {
