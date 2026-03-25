@@ -28,18 +28,19 @@ Eliminate the friction of shared living by giving every household a single, inte
 - [x] Payment app deep links (Venmo/CashApp/PayPal/Zelle) — Validated in Phase 2
 
 ### Active
-- [ ] Chore assignment, rotation, and completion tracking
-- [ ] Shared household calendar
-- [ ] Meal planning and coordination
-- [ ] Shared shopping/supply lists with low-stock alerts
-- [ ] Home maintenance request tracking
-- [ ] Guest management and shared space scheduling
-- [ ] House rules and quiet hours
-- [ ] Push notifications to household members
-- [ ] AI smart suggestions (predictive reminders, spending patterns)
-- [ ] AI meal planning (preferences, budget, dietary needs)
-- [ ] AI chore optimization (fair rotation based on availability)
-- [ ] Cross-platform: mobile app (iOS/Android) + web app
+- [x] Chore assignment, rotation, and completion tracking
+- [x] Shared household calendar
+- [x] Meal planning and coordination
+- [x] Shared shopping/supply lists with low-stock alerts
+- [x] Home maintenance request tracking
+- [x] Guest management and shared space scheduling
+- [x] House rules and quiet hours
+- [x] Push notifications to household members
+- [x] AI smart suggestions (predictive reminders, spending patterns)
+- [x] AI meal planning (preferences, budget, dietary needs)
+- [x] AI chore optimization (fair rotation based on availability)
+- [x] Cross-platform: mobile app (iOS/Android) + web app
+- [ ] Launch readiness: deployment, QA hardening, store packaging, and web presentation
 - [ ] In-app payment integration (v1: tracking only, later: Stripe/payment processing)
 
 ### Out of Scope
@@ -74,4 +75,4 @@ Eliminate the friction of shared living by giving every household a single, inte
 | Cross-platform from day one | Users need mobile + web access | — Pending |
 
 ---
-*Last updated: 2026-03-21 — Phase 2 (Expense Tracking + Receipt OCR) complete, 7/7 plans, all 17 requirements verified*
+*Last updated: 2026-03-24 — Phase 6 complete, launch-readiness milestone started*

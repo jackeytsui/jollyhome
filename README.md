@@ -29,14 +29,21 @@ The product thesis is simple: shared living creates repeated coordination work a
 
 ## Current Status
 
-This repo is actively in development.
-
-Completed so far:
+This repo now contains the full v1 household product milestone:
 
 - Phase 1: Foundation + Household
 - Phase 2: Expense Tracking + Receipt OCR
 - Phase 3: Chores + Calendar
-- Phase 4: Shopping + Meals + Supplies is in progress
+- Phase 4: Shopping + Meals + Supplies
+- Phase 5: Maintenance + House Rules
+- Phase 6: Intelligence + Polish
+
+Current work has moved into launch readiness:
+
+- public web entry
+- deployment and CI scaffolding
+- release hardening and QA
+- app and GitHub packaging
 
 ## Tech Stack
 
@@ -53,9 +60,19 @@ Completed so far:
 npm install
 npm test
 npm run start
+npm run web
 ```
 
-You will also need environment variables for Supabase. See [.env.example](./.env.example).
+Environment variables are documented in [.env.example](./.env.example).
+
+For release builds, EAS is configured through [eas.json](./eas.json).
+
+## Repository Readiness
+
+- MIT licensed
+- GitHub issue templates and PR template included
+- CI workflow runs Jest on push and pull request
+- Launch planning artifacts are committed alongside implementation
 
 ## Why This Repo Exists
 
@@ -75,13 +92,15 @@ Most tools for shared living solve one narrow problem well but create more fragm
 - Phase 4: Shopping + Meals + Supplies
 - Phase 5: Maintenance + House Rules
 - Phase 6: Intelligence + Polish
+- Phase 7: Launch Readiness
 
 ## Repository Notes
 
 - This is the product repository, not a polished template.
 - Planning artifacts are committed alongside implementation as part of the build workflow.
-- The app is currently optimized around the housemate and family use case first.
+- The app is optimized around the housemate and family use case first.
+- Web visitors now land on a public product page before auth.
 
 ## License
 
-No license has been added yet.
+MIT

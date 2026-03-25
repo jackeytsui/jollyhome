@@ -2,7 +2,7 @@
 
 ## Overview
 
-HomeOS delivers a unified household management platform in six phases, ordered by dependency and validation priority. Foundation and auth come first because every feature requires household isolation (RLS) and user identity. Expenses follow immediately as the highest-friction shared-living problem and the primary "replace Splitwise" validation target -- receipt OCR ships here as the acquisition hook. Chores and Calendar ship together because they share scheduling dependencies. Shopping, Meals, and Supplies form the food pipeline where the "one photo, three workflows" magic moment lives. Maintenance and House Rules fill the remaining household coordination gaps. Finally, the Intelligence layer wires everything together with notifications, dashboards, the AI assistant, and cross-feature synergies that only work when all underlying data exists.
+HomeOS delivers a unified household management platform in seven phases, ordered by dependency and validation priority. Foundation and auth come first because every feature requires household isolation (RLS) and user identity. Expenses follow immediately as the highest-friction shared-living problem and the primary "replace Splitwise" validation target -- receipt OCR ships here as the acquisition hook. Chores and Calendar ship together because they share scheduling dependencies. Shopping, Meals, and Supplies form the food pipeline where the "one photo, three workflows" magic moment lives. Maintenance and House Rules fill the remaining household coordination gaps. The Intelligence layer wires everything together with notifications, dashboards, the AI assistant, and cross-feature synergies that only work when all underlying data exists. Launch Readiness then closes the remaining gap between "feature complete" and "publicly shippable."
 
 ## Phases
 
@@ -15,9 +15,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation + Household** - Auth, household creation, member invites, profiles, and solo-first value (completed 2026-03-20)
 - [x] **Phase 2: Expense Tracking + Receipt OCR** - Full expense splitting, balances, debt simplification, and AI receipt scanning (completed 2026-03-21)
 - [x] **Phase 3: Chores + Calendar** - Condition-based chore management, AI rotation, and unified household calendar (completed 2026-03-23)
-- [ ] **Phase 4: Shopping + Meals + Supplies** - Real-time shopping lists, pantry tracking, meal planning, AI meal suggestions, and the receipt-to-everything pipeline
-- [ ] **Phase 5: Maintenance + House Rules** - Maintenance request lifecycle, house rules, shared space scheduling, and maintenance-expense-calendar synergies
-- [ ] **Phase 6: Intelligence + Polish** - Notifications, dashboards, AI assistant, spending insights, cross-feature synergies, and onboarding flow
+- [x] **Phase 4: Shopping + Meals + Supplies** - Real-time shopping lists, pantry tracking, meal planning, AI meal suggestions, and the receipt-to-everything pipeline (completed 2026-03-24)
+- [x] **Phase 5: Maintenance + House Rules** - Maintenance request lifecycle, house rules, shared space scheduling, and maintenance-expense-calendar synergies (completed 2026-03-24)
+- [x] **Phase 6: Intelligence + Polish** - Notifications, dashboards, AI assistant, spending insights, cross-feature synergies, and onboarding flow (completed 2026-03-24)
+- [ ] **Phase 7: Launch Readiness** - Public web entry, deployment scaffolding, GitHub readiness, QA hardening, and store packaging
 
 ## Phase Details
 
@@ -102,12 +103,12 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — Contracts, dependencies, and scaffold validation for the unified food domain
 - [x] 04-02-PLAN.md — Food schema, normalization, pantry-diff, and meal-planning core helpers
-- [ ] 04-03-PLAN.md — Shared food hooks, realtime orchestration, and meal projection into the calendar pipeline
-- [ ] 04-04-PLAN.md — Shopping lists, pantry inventory, thresholds, barcode scanning, and low-stock UX
-- [ ] 04-05-PLAN.md — Recipe CRUD/import plus weekly meal board, shopping generation, and cooked-meal flow
-- [ ] 04-06-PLAN.md — AI meal planning, replenishment prediction, and pantry-photo review flows
-- [ ] 04-07-PLAN.md — Atomic grocery receipt commit for expense + pantry + shopping synchronization
-- [ ] 04-08-PLAN.md — Gap closure: history-aware meal recommendations, pantry-fit ranking, and manual dish rotation
+- [x] 04-03-PLAN.md — Shared food hooks, realtime orchestration, and meal projection into the calendar pipeline
+- [x] 04-04-PLAN.md — Shopping lists, pantry inventory, thresholds, barcode scanning, and low-stock UX
+- [x] 04-05-PLAN.md — Recipe CRUD/import plus weekly meal board, shopping generation, and cooked-meal flow
+- [x] 04-06-PLAN.md — AI meal planning, replenishment prediction, and pantry-photo review flows
+- [x] 04-07-PLAN.md — Atomic grocery receipt commit for expense + pantry + shopping synchronization
+- [x] 04-08-PLAN.md — Gap closure: history-aware meal recommendations, pantry-fit ranking, and manual dish rotation
 
 ### Phase 5: Maintenance + House Rules
 **Goal**: Users can track the full maintenance request lifecycle and coordinate shared living through house rules, quiet hours, shared space scheduling, and guest management
@@ -120,10 +121,10 @@ Plans:
   4. User can schedule shared space usage via calendar booking and post guest notices that appear on the calendar
   5. Completing a cleaning chore prompts about low supplies, and low cleaning supplies show a warning on related chores
 **Plans**:
-- [ ] 05-RESEARCH.md — Existing code seams, schema strategy, and integration risks for maintenance, rules, bookings, and repair-expense sync
-- [ ] 05-01-PLAN.md — Maintenance lifecycle, history, and calendar-aware appointment tracking
-- [ ] 05-02-PLAN.md — House rules, acknowledgements, quiet hours, guest notices, and shared-space bookings
-- [ ] 05-03-PLAN.md — Repair receipt sync, expense prefill, and chore-supply coordination warnings
+- [x] 05-RESEARCH.md — Existing code seams, schema strategy, and integration risks for maintenance, rules, bookings, and repair-expense sync
+- [x] 05-01-PLAN.md — Maintenance lifecycle, history, and calendar-aware appointment tracking
+- [x] 05-02-PLAN.md — House rules, acknowledgements, quiet hours, guest notices, and shared-space bookings
+- [x] 05-03-PLAN.md — Repair receipt sync, expense prefill, and chore-supply coordination warnings
 
 ### Phase 6: Intelligence + Polish
 **Goal**: Users experience HomeOS as a single intelligent system -- smart notifications, at-a-glance dashboards, a conversational AI assistant, and cross-feature synergies that make the whole greater than the sum of parts
@@ -136,25 +137,40 @@ Plans:
   4. AI generates spending pattern insights after 30+ days and suggests budget optimizations based on trends
   5. Calendar shows the true unified timeline with all event types, notifications reference related features across domains, and new member onboarding introduces all features as one connected system
 **Plans**:
-- [ ] 06-RESEARCH.md — Cross-domain notification, dashboard, assistant, and onboarding integration strategy
-- [ ] 06-01-PLAN.md — Notification preferences, push categories, and cross-feature digest/reference flows
-- [ ] 06-02-PLAN.md — Household dashboard, fairness analytics, monthly report, and spending insights surfaces
-- [ ] 06-03-PLAN.md — Household AI assistant queries, cross-domain answers, and safe action execution
-- [ ] 06-04-PLAN.md — Unified timeline polish, context-aware AI suggestions, and connected onboarding flow
+- [x] 06-RESEARCH.md — Cross-domain notification, dashboard, assistant, and onboarding integration strategy
+- [x] 06-01-PLAN.md — Notification preferences, push categories, and cross-feature digest/reference flows
+- [x] 06-02-PLAN.md — Household dashboard, fairness analytics, monthly report, and spending insights surfaces
+- [x] 06-03-PLAN.md — Household AI assistant queries, cross-domain answers, and safe action execution
+- [x] 06-04-PLAN.md — Unified timeline polish, context-aware AI suggestions, and connected onboarding flow
+
+### Phase 7: Launch Readiness
+**Goal**: Ship the missing release layer so HomeOS is ready for public web, app builds, GitHub visitors, and launch QA
+**Depends on**: Phase 6
+**Requirements**: Launch packaging, web landing, CI, release docs, and deployment scaffolding
+**Success Criteria** (what must be TRUE):
+  1. Web visitors land on a clear product page instead of an auth wall
+  2. The repo is presentation-ready for public visitors and contributors
+  3. Expo/EAS build scaffolding exists for preview and production flows
+  4. Launch hardening has an explicit plan for QA, store packaging, and deployment
+**Plans**:
+- [x] 07-01-PLAN.md — Public web landing, GitHub/repo readiness, and release scaffolding
+- [ ] 07-02-PLAN.md — QA hardening, launch checklist, and app/store packaging
+- [ ] 07-03-PLAN.md — Web/app deployment docs, release automation, and final ship prep
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Household | 8/8 | Complete | 2026-03-20 |
 | 2. Expense Tracking + Receipt OCR | 7/7 | Complete   | 2026-03-21 |
 | 3. Chores + Calendar | 9/9 | Complete | 2026-03-23 |
-| 4. Shopping + Meals + Supplies | 2/7 | In Progress | - |
-| 5. Maintenance + House Rules | 0/3 | Not started | - |
-| 6. Intelligence + Polish | 0/4 | Not started | - |
+| 4. Shopping + Meals + Supplies | 8/8 | Complete | 2026-03-24 |
+| 5. Maintenance + House Rules | 3/3 | Complete | 2026-03-24 |
+| 6. Intelligence + Polish | 4/4 | Complete | 2026-03-24 |
+| 7. Launch Readiness | 1/3 | In Progress | - |
 
 ---
 *Roadmap created: 2026-03-19*

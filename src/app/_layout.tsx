@@ -1,7 +1,7 @@
 import '../../../global.css';
 import '@/lib/i18n';
 import { useEffect } from 'react';
-import { ActivityIndicator, Appearance, useColorScheme, View } from 'react-native';
+import { ActivityIndicator, Appearance, Platform, useColorScheme, View } from 'react-native';
 import { Stack, Redirect } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
@@ -27,11 +27,11 @@ function RootLayoutInner() {
 
   useEffect(() => {
     if (themeOverride === 'system') {
-      Appearance.setColorScheme(null); // follow system
+      Appearance.setColorScheme(systemScheme ?? 'light');
     } else {
       Appearance.setColorScheme(themeOverride);
     }
-  }, [themeOverride]);
+  }, [systemScheme, themeOverride]);
 
   useEffect(() => {
     // Get existing session on mount
@@ -64,7 +64,7 @@ function RootLayoutInner() {
 
   return (
     <>
-      {!session && <Redirect href="/(auth)/sign-in" />}
+      {!session && <Redirect href={Platform.OS === 'web' ? '/landing' : '/(auth)/sign-in'} />}
       {session && <Redirect href="/(app)" />}
       <Stack screenOptions={{ headerShown: false }} />
     </>
