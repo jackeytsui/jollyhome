@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Shopping + Meals + Supplies** - Real-time shopping lists, pantry tracking, meal planning, AI meal suggestions, and the receipt-to-everything pipeline (completed 2026-03-24)
 - [x] **Phase 5: Maintenance + House Rules** - Maintenance request lifecycle, house rules, shared space scheduling, and maintenance-expense-calendar synergies (completed 2026-03-24)
 - [x] **Phase 6: Intelligence + Polish** - Notifications, dashboards, AI assistant, spending insights, cross-feature synergies, and onboarding flow (completed 2026-03-24)
-- [ ] **Phase 7: Launch Readiness** - Public web entry, deployment scaffolding, GitHub readiness, QA hardening, and store packaging
+- [x] **Phase 7: Launch Readiness** - Public web entry, deployment scaffolding, GitHub readiness, QA hardening, and store packaging (completed 2026-03-24)
 
 ## Phase Details
 
@@ -154,8 +154,8 @@ Plans:
   4. Launch hardening has an explicit plan for QA, store packaging, and deployment
 **Plans**:
 - [x] 07-01-PLAN.md — Public web landing, GitHub/repo readiness, and release scaffolding
-- [ ] 07-02-PLAN.md — QA hardening, launch checklist, and app/store packaging
-- [ ] 07-03-PLAN.md — Web/app deployment docs, release automation, and final ship prep
+- [x] 07-02-PLAN.md — QA hardening, launch checklist, and app/store packaging
+- [x] 07-03-PLAN.md — Web/app deployment docs, release automation, and final ship prep
 
 ## Progress
 
@@ -170,7 +170,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Shopping + Meals + Supplies | 8/8 | Complete | 2026-03-24 |
 | 5. Maintenance + House Rules | 3/3 | Complete | 2026-03-24 |
 | 6. Intelligence + Polish | 4/4 | Complete | 2026-03-24 |
-| 7. Launch Readiness | 1/3 | In Progress | - |
+| 7. Launch Readiness | 3/3 | Complete | 2026-03-24 |
 
 ---
 *Roadmap created: 2026-03-19*

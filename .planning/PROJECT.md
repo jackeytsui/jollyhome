@@ -40,7 +40,7 @@ Eliminate the friction of shared living by giving every household a single, inte
 - [x] AI meal planning (preferences, budget, dietary needs)
 - [x] AI chore optimization (fair rotation based on availability)
 - [x] Cross-platform: mobile app (iOS/Android) + web app
-- [ ] Launch readiness: deployment, QA hardening, store packaging, and web presentation
+- [x] Launch readiness: deployment, QA hardening, store packaging, and web presentation
 - [ ] In-app payment integration (v1: tracking only, later: Stripe/payment processing)
 
 ### Out of Scope
@@ -75,4 +75,4 @@ Eliminate the friction of shared living by giving every household a single, inte
 | Cross-platform from day one | Users need mobile + web access | — Pending |
 
 ---
-*Last updated: 2026-03-24 — Phase 6 complete, launch-readiness milestone started*
+*Last updated: 2026-03-25 — Launch-readiness milestone complete*
