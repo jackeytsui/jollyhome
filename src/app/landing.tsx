@@ -10,7 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Ellipse, Path, Rect } from 'react-native-svg';
 import { router } from 'expo-router';
 
 const FEATURE_CARDS = [
@@ -79,11 +79,11 @@ const sansFamily = Platform.OS === 'web' ? '"Avenir Next", "Segoe UI", sans-seri
 function BrandMark({ size = 48 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-      <Rect x="8" y="18" width="48" height="38" rx="16" fill="#FFF7EE" />
-      <Path d="M14 29L32 13L50 29" stroke="#A34E20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M23 54V31H41V54" stroke="#A34E20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M35 25C33.6 23.1 31.3 22 28.7 22C24.6 22 21.5 24.9 21.5 28.8C21.5 32.8 24.6 35.7 28.7 35.7C32.8 35.7 35.9 32.7 35.9 28.8V20" stroke="#234C53" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Circle cx="45.5" cy="23.5" r="3.5" fill="#234C53" />
+      <Rect x="6" y="6" width="52" height="52" rx="18" fill="#FFF8F1" />
+      <Path d="M14 29.5L32 15L50 29.5" stroke="#A34E20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M18 28.5V48.5C18 50.7 19.8 52.5 22 52.5H42C44.2 52.5 46 50.7 46 48.5V28.5" stroke="#A34E20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M37 25V39.5C37 44.7 33.2 48 28.6 48C24.8 48 22 45.8 22 42.2" stroke="#234C53" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
+      <Circle cx="42.5" cy="22.5" r="3.25" fill="#234C53" />
     </Svg>
   );
 }
@@ -93,23 +93,30 @@ function JollyFigure({ compact }: { compact: boolean }) {
     <View style={[styles.jollyPanel, compact && styles.jollyPanelCompact]}>
       <View style={styles.jollyGlow} />
       <Svg width={compact ? 240 : 320} height={compact ? 240 : 320} viewBox="0 0 320 320" fill="none">
-        <Circle cx="160" cy="164" r="104" fill="#F3E7D8" />
-        <Path d="M101 130C101 92 127 67 160 67C193 67 219 92 219 130V166C219 205 193 233 160 233C127 233 101 205 101 166V130Z" fill="#FFF8F0" />
-        <Path d="M123 117C123 92 139 79 160 79C181 79 197 92 197 117V132H123V117Z" fill="#DDE5D3" />
-        <Circle cx="137" cy="153" r="11" fill="#234C53" />
-        <Circle cx="183" cy="153" r="11" fill="#234C53" />
-        <Path d="M143 189C149 198 157 202 166 202C175 202 183 198 189 189" stroke="#A34E20" strokeWidth="8" strokeLinecap="round" />
-        <Path d="M115 240C129 222 144 214 160 214C176 214 191 222 205 240" stroke="#A34E20" strokeWidth="10" strokeLinecap="round" />
-        <Path d="M160 42V71" stroke="#234C53" strokeWidth="8" strokeLinecap="round" />
-        <Circle cx="160" cy="28" r="11" fill="#A34E20" />
-        <Path d="M79 239L160 272L241 239V242C241 264 223 282 201 282H119C97 282 79 264 79 242V239Z" fill="#234C53" />
-        <Path d="M103 236L160 198L217 236" stroke="#FFF8F0" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+        <Circle cx="160" cy="160" r="108" fill="#F0E5D8" />
+        <Ellipse cx="160" cy="132" rx="76" ry="70" fill="#FFF9F2" />
+        <Path d="M104 118C108 88 130 70 160 70C190 70 212 88 216 118C203 99 184 90 160 90C136 90 117 99 104 118Z" fill="#D8E4DB" />
+        <Ellipse cx="132" cy="142" rx="21" ry="24" fill="#FFFFFF" />
+        <Ellipse cx="188" cy="142" rx="21" ry="24" fill="#FFFFFF" />
+        <Circle cx="136" cy="145" r="9" fill="#234C53" />
+        <Circle cx="184" cy="145" r="9" fill="#234C53" />
+        <Circle cx="132" cy="141" r="3" fill="#FFF9F2" />
+        <Circle cx="180" cy="141" r="3" fill="#FFF9F2" />
+        <Ellipse cx="160" cy="174" rx="10" ry="8" fill="#F5C4A6" />
+        <Path d="M136 196C143 207 151 212 160 212C169 212 177 207 184 196" stroke="#A34E20" strokeWidth="8" strokeLinecap="round" />
+        <Path d="M160 52V72" stroke="#234C53" strokeWidth="7" strokeLinecap="round" />
+        <Circle cx="160" cy="40" r="12" fill="#A34E20" />
+        <Rect x="112" y="226" width="96" height="48" rx="24" fill="#234C53" />
+        <Rect x="132" y="218" width="56" height="22" rx="11" fill="#FFF9F2" />
+        <Path d="M103 236C120 224 139 218 160 218C181 218 200 224 217 236" stroke="#FFF9F2" strokeWidth="8" strokeLinecap="round" />
+        <Path d="M118 238L97 260" stroke="#234C53" strokeWidth="8" strokeLinecap="round" />
+        <Path d="M202 238L223 260" stroke="#234C53" strokeWidth="8" strokeLinecap="round" />
       </Svg>
       <View style={styles.jollySpeech}>
         <Text style={styles.jollySpeechEyebrow}>Meet Jolly</Text>
-        <Text style={styles.jollySpeechTitle}>Homey, clear, and a little bit clever.</Text>
+        <Text style={styles.jollySpeechTitle}>Friendly guide, light tech feel, easy to trust.</Text>
         <Text style={styles.jollySpeechBody}>
-          Jolly is the face of the product: part guide, part assistant, part friendly presence in the home.
+          Jolly is the face of the product: a warm little helper for the house, designed to feel approachable before it feels technical.
         </Text>
       </View>
     </View>
@@ -195,7 +202,6 @@ export default function LandingScreen() {
             <View style={styles.brand}>
               <BrandMark size={52} />
               <View style={styles.brandCopy}>
-                <Text style={styles.brandOverline}>Yes, Jolly Home</Text>
                 <Text style={[styles.brandName, { fontFamily: serifFamily }]}>Jolly Home</Text>
               </View>
             </View>
